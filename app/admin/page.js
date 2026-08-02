@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { isSupabaseConfigured, supabase } from "../../lib/supabase";
 
 const euro = (n) =>
   Number(n).toLocaleString("fr-FR", {
