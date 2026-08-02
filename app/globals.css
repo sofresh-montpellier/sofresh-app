@@ -66,3 +66,26 @@
 .pickup-date-button.selected,.pickup-time-button.selected{border:2px solid var(--green);background:#edf8f0;font-weight:800}
 .pickup-time-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .pickup-time-button{text-align:center}
+
+/* ===== SO FRESH : COMMANDES SUR TÉLÉPHONE ===== */
+.orders-mobile-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.orders-mobile-header h1{margin:0}
+.orders-date{margin:5px 0 0;color:var(--muted);text-transform:capitalize}
+.orders-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}
+.orders-tabs button{border:1px solid var(--line);background:white;padding:11px;border-radius:12px;font-weight:800;cursor:pointer}
+.orders-tabs button.active{background:var(--text);color:white}
+.orders-time-groups{display:grid;gap:20px}
+.orders-time-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.orders-time-title strong{font-size:1.2rem}
+.orders-time-title span{color:var(--muted)}
+.orders-mobile-list{display:grid;gap:11px}
+.order-mobile-card{border:1px solid var(--line);border-radius:16px;padding:15px;background:white}
+.order-mobile-top{display:flex;justify-content:space-between;gap:12px}
+.order-customer{font-size:1.15rem;text-transform:uppercase}
+.order-number{font-size:.84rem;color:var(--muted);margin-top:4px}
+.order-phone{display:inline-block;margin:10px 0;color:var(--green);font-weight:800;text-decoration:none}
+.order-mobile-items{display:grid;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.recovered-button{width:100%;margin-top:8px}
+@media(max-width:600px){
+  .orders-mobile-page{padding:10px}
+  .orders-mobile-page .admin-card{padding:13px}
