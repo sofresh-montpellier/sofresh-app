@@ -50,22 +50,26 @@ export default function AdminLayout({ children }) {
         </div>
 
         <nav>
-          <Link
-            href="/admin"
-            className={pathname === "/admin" ? "active" : ""}
-          >
-            Cuisine
+          <Link href="/admin" className={pathname === "/admin" ? "active" : ""}>
+            Commandes
           </Link>
+
           <Link
             href="/admin/products"
             className={pathname.startsWith("/admin/products") ? "active" : ""}
           >
             Produits
           </Link>
-          <Link href="/">Boutique</Link>
+
+          <Link
+            href="/admin/settings"
+            className={pathname.startsWith("/admin/settings") ? "active" : ""}
+          >
+            Paramètres
+          </Link>
         </nav>
 
-        <button className="secondary" onClick={logout}>
+        <button className="secondary admin-logout" onClick={logout}>
           Déconnexion
         </button>
       </header>
