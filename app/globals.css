@@ -60,3 +60,9 @@
   .product-admin-visual{width:64px;height:60px}
   .product-admin-actions{grid-column:1/-1;justify-content:flex-start}
 }
+/* SO FRESH V5A */
+.pickup-date-list{display:grid;gap:8px}
+.pickup-date-button,.pickup-time-button{border:1px solid var(--line);background:white;color:var(--text);padding:11px 12px;border-radius:12px;cursor:pointer;text-align:left}
+.pickup-date-button.selected,.pickup-time-button.selected{border:2px solid var(--green);background:#edf8f0;font-weight:800}
+.pickup-time-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.pickup-time-button{text-align:center}
