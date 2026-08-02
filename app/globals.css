@@ -90,3 +90,17 @@
   .orders-mobile-page{padding:10px}
   .orders-mobile-page .admin-card{padding:13px}
 }
+
+/* ===== SO FRESH V6 ADMIN ===== */
+.admin-navigation nav a{text-align:center}
+.admin-logout{padding:8px 10px;font-size:.9rem}
+.orders-count{margin:6px 0 0;font-weight:800}
+.orders-day-navigation{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+.orders-day-navigation button{border:1px solid var(--line);background:white;padding:10px;border-radius:12px;font-weight:800;cursor:pointer}
+@media(max-width:650px){
+  .admin-navigation{gap:10px}
+  .admin-navigation .brand{font-size:1.1rem}
+  .admin-navigation nav{display:grid;grid-template-columns:repeat(3,1fr)}
+  .admin-navigation nav a{padding:8px 7px;font-size:.9rem}
+  .admin-logout{margin-left:auto}
+}
