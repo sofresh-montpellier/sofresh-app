@@ -182,15 +182,28 @@ export default function Cart({
 
         {/* CRÉNEAU CHOISI SUR L'ACCUEIL */}
 
-        <div className="cart-pickup-summary">
-          <span>RETRAIT</span>
+<div className="cart-pickup-summary">
+  <div className="cart-pickup-summary-text">
+    <span>RETRAIT</span>
 
-          <strong>
-            {selectedDate && pickupTime
-              ? `${dateLabel(selectedDate)} • ${pickupTime}`
-              : "Créneau de retrait non sélectionné"}
-          </strong>
-        </div>
+    <strong>
+      {selectedDate && pickupTime
+        ? `${dateLabel(selectedDate)} • ${pickupTime}`
+        : "Créneau de retrait non sélectionné"}
+    </strong>
+  </div>
+
+  <button
+    type="button"
+    className="cart-pickup-edit"
+    onClick={() => {
+      onClose();
+      window.location.href = "/accueil-v2#retrait";
+    }}
+  >
+    Modifier
+  </button>
+</div>
 
         <label htmlFor="customer-name">
           Nom
@@ -220,6 +233,7 @@ export default function Cart({
           placeholder="06 00 00 00 00"
           autoComplete="tel"
         />
+
 
         <div className="cart-summary">
           <span>

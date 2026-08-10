@@ -15,16 +15,7 @@ export default function HomeHeader({
   return (
     <header className="home-header">
 
-      {/* COMPTE */}
-      <Link
-        href="/compte"
-        className="home-header-action home-header-account"
-      >
-        <UserRound size={26} strokeWidth={1.7} />
-        <span>Compte</span>
-      </Link>
-
-      {/* LOGO CENTRÉ */}
+      {/* LOGO À GAUCHE */}
       <Link
         href="/accueil-v2"
         className="home-header-logo"
@@ -40,37 +31,42 @@ export default function HomeHeader({
         />
       </Link>
 
-      {/* ACTIONS À DROITE */}
-      {/* ACTIONS À DROITE */}
-<nav className="home-header-actions">
+      {/* COMPTE */}
+      <Link
+        href="/compte"
+        className="home-header-action"
+      >
+        <UserRound size={25} strokeWidth={1.7} />
+        <span>Compte</span>
+      </Link>
 
-  <Link
-    href="/commander"
-    className="home-header-action"
-  >
-    <Utensils size={26} strokeWidth={1.7} />
-    <span>Commander</span>
-  </Link>
+      {/* COMMANDER */}
+      <Link
+        href="/commander"
+        className="home-header-action"
+      >
+        <Utensils size={25} strokeWidth={1.7} />
+        <span>Commander</span>
+      </Link>
 
-  <button
-    type="button"
-    className="home-header-action home-header-cart"
-    onClick={onCartClick}
-  >
-    <span className="home-header-cart-icon">
-      <ShoppingBag size={27} strokeWidth={1.7} />
+      {/* PANIER */}
+      <button
+        type="button"
+        className="home-header-action home-header-cart"
+        onClick={onCartClick}
+      >
+        <span className="home-header-cart-icon">
+          <ShoppingBag size={25} strokeWidth={1.7} />
 
-      {cartCount > 0 && (
-        <span className="home-header-cart-count">
-          {cartCount}
+          {cartCount > 0 && (
+            <span className="home-header-cart-count">
+              {cartCount}
+            </span>
+          )}
         </span>
-      )}
-    </span>
 
-    <span>Panier</span>
-  </button>
-
-</nav>
+        <span>Panier</span>
+      </button>
 
     </header>
   );

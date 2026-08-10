@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, CalendarDays, Clock3, ShoppingBag } from "lucide-react";
+
 
 function parseTimeToMinutes(value) {
   const normalized = String(value || "")
@@ -219,40 +220,66 @@ useEffect(() => {
 
       
  {/* ===============================
-          VISUEL SO FRESH
-      =============================== */}
+    NOUVEAU HERO SO FRESH
+=============================== */}
 
-      <section className="home-v2-hero">
+<div className="hero-final">
 
-        <div className="home-v2-hero-overlay" />
+  {/* TEXTE */}
+  <div className="hero-final-text">
+    <h1>
+      Votre pause
+      <br />
+      déjeuner
+    </h1>
 
-        <div className="home-v2-hero-content">
+    <div className="hero-final-script">
+      fraîche & gourmande
+    </div>
 
-          <h1>
-            FRAIS,
-            <br />
-            TOUS LES
-            <br />
-            JOURS
-          </h1>
+   
+  </div>
 
-        </div>
+  {/* PHOTO */}
+  <img
+    src="/hero-sofresh.png"
+    alt="Salade fraîche So Fresh"
+    className="hero-final-image"
+  />
 
-      </section>
+  {/* BOUTON */}
+  <Link
+    href="/commander"
+    className="hero-final-order-btn"
+  >
+    <span className="hero-final-cart">
+  <ShoppingBag size={21} strokeWidth={2.3} />
+</span>
+
+    <span className="hero-final-order-text">
+      COMMANDER MAINTENANT
+    </span>
+
+    <span className="hero-final-arrow">→</span>
+  </Link>
+
+ 
+
+</div>
 
       {/* ===============================
           RETRAIT
       =============================== */}
 
-      <section className="pickup-card">
+      <section className="pickup-card" id="retrait">
 
         <div className="pickup-location">
 
           <span className="pickup-location-label">
-            RETRAIT CHEZ SO FRESH
+            SO FRESH MONTPELLIER MILLÉNAIRE
           </span>
 
-          <strong>Millénaire, Montpellier</strong>
+          
 
           {/* CONTACT */}
 
@@ -375,12 +402,7 @@ useEffect(() => {
           COMMANDER
       =============================== */}
 
-      <Link
-        href="/commander"
-        className="home-v2-main-order"
-      >
-        COMMANDER MAINTENANT
-      </Link>
+     
 
       {/* ===============================
           FIDELITE

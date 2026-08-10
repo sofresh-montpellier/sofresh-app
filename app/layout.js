@@ -17,12 +17,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="fr">
-      <body>
-        <AppShell>
-          {children}
-        </AppShell>
-      </body>
-    </html>
-  );
+  <html lang="fr" suppressHydrationWarning>
+    <body suppressHydrationWarning>
+      <AppShell>
+        {children}
+      </AppShell>
+    </body>
+  </html>
+);
 }
