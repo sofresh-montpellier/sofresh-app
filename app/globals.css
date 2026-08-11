@@ -5157,4 +5157,9 @@ right: 4px;
 
 .pickup-section-label svg {
   flex-shrink: 0;
+}/* PAGE COMMANDER - CONTENU SOUS LE HEADER FIXE */
+@media (max-width: 600px) {
+  main.container {
+    padding-top:80px !important;
+  }
 }
