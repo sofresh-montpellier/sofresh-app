@@ -5,16 +5,9 @@ import Link from "next/link";
 export default function ComptePage() {
   return (
     <main className="account-page">
-
       <div className="account-container">
 
-        <Link href="/accueil-v2" className="account-back">
-          ← Retour
-        </Link>
-
-        <div className="account-logo">
-          <img src="/logo-carre.png" alt="So Fresh" />
-        </div>
+      
 
         <h1>Mon compte</h1>
 
@@ -23,7 +16,6 @@ export default function ComptePage() {
         </p>
 
         <div className="account-actions">
-
           <Link href="/login" className="account-login-btn">
             Se connecter
           </Link>
@@ -34,7 +26,6 @@ export default function ComptePage() {
           >
             Créer mon compte
           </button>
-
         </div>
 
         <div className="account-benefits">
@@ -52,7 +43,9 @@ export default function ComptePage() {
             <span>↻</span>
             <div>
               <strong>Commandez plus rapidement</strong>
-              <p>Retrouvez vos informations lors de vos prochaines commandes.</p>
+              <p>
+                Retrouvez vos informations lors de vos prochaines commandes.
+              </p>
             </div>
           </div>
 

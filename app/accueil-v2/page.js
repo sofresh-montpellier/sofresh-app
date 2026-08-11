@@ -6,6 +6,24 @@ import { Phone, Mail, MapPin, CalendarDays, Clock3, ShoppingBag } from "lucide-r
 
 
 function parseTimeToMinutes(value) {
+  function getParisCurrentMinutes() {
+  const parts = new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Europe/Paris",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const hour = Number(
+    parts.find((part) => part.type === "hour")?.value || 0
+  );
+
+  const minute = Number(
+    parts.find((part) => part.type === "minute")?.value || 0
+  );
+
+  return hour * 60 + minute;
+}
   const normalized = String(value || "")
     .trim()
     .replace(/\s*h\s*/i, ":");
@@ -180,13 +198,38 @@ setAvailability({
 const visibleSlots = showAllSlots
   ? allSlots
   : allSlots.slice(0, 6);
+  const isPastSlot = (time) => {
+  if (selectedDay !== 0) return false;
+
+  const slotMinutes = parseTimeToMinutes(time);
+
+  if (slotMinutes === null) return false;
+
+  const parts = new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Europe/Paris",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const currentHour = Number(
+    parts.find((part) => part.type === "hour")?.value || 0
+  );
+
+  const currentMinute = Number(
+    parts.find((part) => part.type === "minute")?.value || 0
+  );
+
+  const currentMinutes =
+    currentHour * 60 + currentMinute;
+
+  return slotMinutes <= currentMinutes;
+};
   const isSlotFull = (time) => {
   const capacity = Number(availability.capacity || 0);
 
   if (capacity <= 0) return false;
 
-  // L'API Commander peut utiliser "12 h 00"
-  // alors que l'accueil affiche "12h00"
   const commanderFormat = time.replace(
     /^(\d{2})h(\d{2})$/,
     "$1 h $2"
@@ -200,6 +243,7 @@ const visibleSlots = showAllSlots
 
   return count >= capacity;
 };
+  
 useEffect(() => {
   const selectedDate = pickupDates[selectedDay]?.iso;
 
@@ -353,23 +397,27 @@ useEffect(() => {
 
           <div className="pickup-slots">
 
-           {visibleSlots.map((time) => {
+        {visibleSlots.map((time) => {
   const full = isSlotFull(time);
+  const past = isPastSlot(time);
+  const disabled = full || past;
 
   return (
     <button
       key={time}
       type="button"
-      disabled={full}
+      disabled={disabled}
       className={
         full
           ? "full"
+          : past
+          ? "past"
           : `${formattedHour}h${formattedMinutes}` === time
           ? "selected"
           : ""
       }
       onClick={() => {
-        if (full) return;
+        if (disabled) return;
 
         const [h, m] = time.split("h");
         setHour(Number(h));

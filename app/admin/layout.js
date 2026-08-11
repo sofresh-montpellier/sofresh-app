@@ -37,27 +37,27 @@ export default function AdminLayout({ children }) {
     useState(0);
 
   async function loadFutureOrdersCount() {
-  const today = parisTodayIso();
+    const today = parisTodayIso();
 
-  const { count, error } = await supabase
-    .from("orders")
-    .select("id", {
-      count: "exact",
-      head: true,
-    })
-    .gte("pickup_date", today)
-    .not("status", "in", '("Terminée","Annulée")');
+    const { count, error } = await supabase
+      .from("orders")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .gte("pickup_date", today)
+      .not("status", "in", '("Terminée","Annulée")');
 
-  if (error) {
-    console.error(
-      "Erreur compteur commandes :",
-      error
-    );
-    return;
+    if (error) {
+      console.error(
+        "Erreur compteur commandes :",
+        error
+      );
+      return;
+    }
+
+    setFutureOrdersCount(count || 0);
   }
-
-  setFutureOrdersCount(count || 0);
-}
 
   useEffect(() => {
     async function checkSession() {
@@ -201,13 +201,7 @@ export default function AdminLayout({ children }) {
           </Link>
         </nav>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-        >
+      <div className="sf-admin-actions">
           <Link
             href="/"
             target="_blank"

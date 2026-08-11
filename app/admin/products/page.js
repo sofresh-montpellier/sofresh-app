@@ -511,19 +511,7 @@ export default function ProductsPage() {
             />
           </div>
 
-          <div>
-            <label htmlFor="product-emoji">Emoji</label>
-
-            <input
-              id="product-emoji"
-              value={form.emoji}
-              onChange={(event) =>
-                updateField("emoji", event.target.value)
-              }
-              placeholder="🥗"
-              maxLength={8}
-            />
-          </div>
+        
 
           <div className="product-form-wide">
             <label htmlFor="product-description">

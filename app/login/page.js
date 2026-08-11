@@ -44,14 +44,24 @@ export default function LoginPage() {
         className="login-card"
         onSubmit={login}
         autoComplete="on"
+        style={{
+          textAlign: "left",
+        }}
       >
-        <div className="brand">
-          SO <span>FRESH</span>
-        </div>
+        <h1
+          style={{
+            marginBottom: "8px",
+          }}
+        >
+          Administration
+        </h1>
 
-        <h1>Administration</h1>
-
-        <p>
+        <p
+          style={{
+            marginBottom: "24px",
+            lineHeight: 1.5,
+          }}
+        >
           Connectez-vous pour gérer les commandes et les
           produits.
         </p>
