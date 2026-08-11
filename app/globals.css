@@ -5163,3 +5163,15 @@ right: 4px;
     padding-top:80px !important;
   }
 }
+/* SUPPRIMER LE FOND DERRIÈRE LE LOGO */
+header.home-header .home-header-logo {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+header.home-header .home-header-logo-img {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
