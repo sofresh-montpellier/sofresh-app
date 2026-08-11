@@ -3891,10 +3891,10 @@ padding: 7px 12px;
 @media (max-width: 600px) {
 
   .home-v2 {
-    height: 100dvh;
-    min-height: 100dvh;
-    overflow: hidden;
-  }
+  min-height: 100dvh;
+  height: auto;
+  overflow: visible;
+}
 
   .pickup-card {
     margin-top: 8px;
