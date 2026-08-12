@@ -6215,40 +6215,18 @@ header.home-header {
     margin-bottom: 9px;
   }
 
-  .account-register-form input {
-    height: 42px;
-    padding: 8px 12px;
-  }
-
-  .account-register-form .account-login-btn {
-    height: 44px;
-    margin-top: 2px;
-  }
+ .account-register-form input:not([type="checkbox"]) {
+  height: 42px;
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
-/* =========================================
-   INSCRIPTION - COMPACT MOBILE
-========================================= */
-
-@media (max-width: 600px) {
-
-  .account-page:has(.account-register-form) {
-    padding-top: 30px;
-    padding-bottom: 18px;
-  }
-
-  .account-register-form {
-    padding: 14px;
-  }
-
-.account-register-form label {
-  gap: 3px;
-  margin-bottom: 7px;
+.account-register-form input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  flex: 0 0 17px;
 }
-
-  .account-register-form input {
-    height: 42px;
-    padding: 8px 12px;
-  }
 
   .account-register-form .account-login-btn {
     height: 44px;
