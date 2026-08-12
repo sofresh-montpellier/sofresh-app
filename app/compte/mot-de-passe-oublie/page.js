@@ -33,11 +33,12 @@ export default function MotDePasseOubliePage() {
       setLoading(true);
 
       const { error } = await supabase.auth.resetPasswordForEmail(
-        email.trim(),
-        {
-          redirectTo: "http://localhost:3000",
-        }
-      );
+  email.trim(),
+  {
+    redirectTo:
+      "https://sofresh-app-five.vercel.app/compte/nouveau-mot-de-passe",
+  }
+);
 
     if (error) {
   console.error("ERREUR SUPABASE RESET :", error);
