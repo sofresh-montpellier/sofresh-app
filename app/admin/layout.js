@@ -59,13 +59,47 @@ export default function AdminLayout({ children }) {
     setFutureOrdersCount(count || 0);
   }
 
+  async function verifyAdmin(session) {
+    if (!session?.user) {
+      router.replace("/login");
+      return false;
+    }
+
+    const user = session.user;
+
+    const metadata =
+      user.user_metadata || {};
+
+    const appMetadata =
+      user.app_metadata || {};
+
+    const role =
+      appMetadata.role ||
+      metadata.role ||
+      "";
+
+    if (role !== "admin") {
+      console.warn(
+        "Accès administration refusé : utilisateur non admin"
+      );
+
+      router.replace("/compte");
+      return false;
+    }
+
+    return true;
+  }
+
   useEffect(() => {
     async function checkSession() {
-      const { data } =
-        await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (!data.session) {
-        router.replace("/login");
+      const isAdmin =
+        await verifyAdmin(session);
+
+      if (!isAdmin) {
         return;
       }
 
@@ -78,10 +112,16 @@ export default function AdminLayout({ children }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (!session) {
-          router.replace("/login");
+      async (_event, session) => {
+        const isAdmin =
+          await verifyAdmin(session);
+
+        if (!isAdmin) {
+          setReady(false);
+          return;
         }
+
+        setReady(true);
       }
     );
 
@@ -123,7 +163,7 @@ export default function AdminLayout({ children }) {
   if (!ready) {
     return (
       <main className="admin-loading">
-        Vérification de la connexion…
+        Vérification de l'accès administrateur…
       </main>
     );
   }
@@ -201,7 +241,7 @@ export default function AdminLayout({ children }) {
           </Link>
         </nav>
 
-      <div className="sf-admin-actions">
+        <div className="sf-admin-actions">
           <Link
             href="/"
             target="_blank"
