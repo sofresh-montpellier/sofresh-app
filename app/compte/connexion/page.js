@@ -22,7 +22,9 @@ export default function ConnexionPage() {
     setErrorMessage("");
 
     if (!isSupabaseConfigured || !supabase) {
-      setErrorMessage("La connexion est momentanément indisponible.");
+      setErrorMessage(
+        "La connexion est momentanément indisponible."
+      );
       return;
     }
 
@@ -43,37 +45,49 @@ export default function ConnexionPage() {
         });
 
       if (error) {
-        setErrorMessage("E-mail ou mot de passe incorrect.");
+        setErrorMessage(
+          "E-mail ou mot de passe incorrect."
+        );
         return;
       }
 
       const connectedUser = data?.user;
 
       if (connectedUser) {
-        const metadata = connectedUser.user_metadata || {};
+        const metadata =
+          connectedUser.user_metadata || {};
 
-        const firstName = metadata.first_name || "";
-        const lastName = metadata.last_name || "";
-        const phone = metadata.phone || "";
+        const firstName =
+          metadata.first_name || "";
 
+        const lastName =
+          metadata.last_name || "";
+
+        const phone =
+          metadata.phone || "";
+
+        // Compatible avec les anciens ET les nouveaux comptes
         const emailOptIn =
-          metadata.email_opt_in === true;
+          metadata.email_opt_in === true ||
+          metadata.email_marketing === true;
 
         const smsOptIn =
-          metadata.sms_opt_in === true;
+          metadata.sms_opt_in === true ||
+          metadata.sms_marketing === true;
 
         // -----------------------------
-        // ENREGISTREMENT DE LA CONNEXION
+        // HISTORIQUE DES CONNEXIONS
         // -----------------------------
 
-        const { error: loginEventError } = await supabase
-          .from("login_events")
-          .insert({
-            user_id: connectedUser.id,
-            email: connectedUser.email,
-            first_name: firstName,
-            last_name: lastName,
-          });
+        const { error: loginEventError } =
+          await supabase
+            .from("login_events")
+            .insert({
+              user_id: connectedUser.id,
+              email: connectedUser.email,
+              first_name: firstName,
+              last_name: lastName,
+            });
 
         if (loginEventError) {
           console.error(
@@ -82,26 +96,27 @@ export default function ConnexionPage() {
           );
         }
 
-        // --------------------------------
-        // ENREGISTREMENT CONTACT MARKETING
+        // -----------------------------
+        // CONTACT MARKETING
         // UNE SEULE FOIS
-        // --------------------------------
+        // -----------------------------
 
         const marketingAlreadySaved =
           metadata.marketing_contact_saved === true;
 
         if (!marketingAlreadySaved) {
-          const { error: marketingError } = await supabase
-            .from("marketing_contacts")
-            .insert({
-              user_id: connectedUser.id,
-              first_name: firstName,
-              last_name: lastName,
-              email: connectedUser.email,
-              phone: phone,
-              email_opt_in: emailOptIn,
-              sms_opt_in: smsOptIn,
-            });
+          const { error: marketingError } =
+            await supabase
+              .from("marketing_contacts")
+              .insert({
+                user_id: connectedUser.id,
+                first_name: firstName,
+                last_name: lastName,
+                email: connectedUser.email,
+                phone: phone,
+                email_opt_in: emailOptIn,
+                sms_opt_in: smsOptIn,
+              });
 
           if (marketingError) {
             console.error(
@@ -130,7 +145,10 @@ export default function ConnexionPage() {
       router.push("/compte");
       router.refresh();
     } catch (error) {
-      console.error("Erreur connexion :", error);
+      console.error(
+        "Erreur connexion :",
+        error
+      );
 
       setErrorMessage(
         "Une erreur est survenue. Veuillez réessayer."
@@ -206,7 +224,9 @@ export default function ConnexionPage() {
             className="account-login-btn"
             disabled={loading}
           >
-            {loading ? "Connexion..." : "Se connecter"}
+            {loading
+              ? "Connexion..."
+              : "Se connecter"}
           </button>
         </form>
 
