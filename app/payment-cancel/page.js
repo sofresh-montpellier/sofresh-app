@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+
 
 export default function PaymentCancelPage() {
   return (
@@ -11,18 +11,22 @@ export default function PaymentCancelPage() {
           maxWidth: "520px",
         }}
       >
-        <Image
-          src="/logo-sofresh.png"
-          alt="So Fresh"
-          width={260}
-          height={110}
-          priority
-          style={{
-            width: "220px",
-            height: "auto",
-            marginBottom: "28px",
-          }}
-        />
+       <div
+  style={{
+    width: "54px",
+    height: "54px",
+    margin: "0 auto 14px",
+    borderRadius: "50%",
+    display: "grid",
+    placeItems: "center",
+    background: "#D9534F",
+    color: "#ffffff",
+    fontSize: "30px",
+    fontWeight: "800",
+  }}
+>
+  ✕
+</div>
 
         <h1
           style={{

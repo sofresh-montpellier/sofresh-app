@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+
 
 function formatPickupDate(value) {
   if (!value) return "";
@@ -68,18 +68,7 @@ export default function PaymentSuccessPage() {
           maxWidth: "520px",
         }}
       >
-        <Image
-          src="/logo-sofresh.png"
-          alt="So Fresh"
-          width={260}
-          height={110}
-          priority
-          style={{
-            width: "220px",
-            height: "auto",
-            marginBottom: "22px",
-          }}
-        />
+     
 
         <div
           style={{

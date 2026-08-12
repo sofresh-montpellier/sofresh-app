@@ -319,45 +319,55 @@ useEffect(() => {
 
         <div className="pickup-location">
 
-          <span className="pickup-location-label">
-            SO FRESH MONTPELLIER MILLÉNAIRE
-          </span>
+  <span className="pickup-location-label">
+    SO FRESH MONTPELLIER MILLÉNAIRE
+  </span>
 
-          
+  <div className="pickup-store-card">
 
-          {/* CONTACT */}
+    <img
+      src="/facade-sofresh.jpg"
+      alt="Façade So Fresh Montpellier Millénaire"
+      className="pickup-store-image"
+    />
 
-          <div className="pickup-contact-actions">
+    <div className="pickup-store-info">
+  <span>1350 avenue Albert Einstein, Montpellier</span>
+</div>
 
-            <a
-              href="tel:+33467859954"
-              className="pickup-contact-btn"
-            >
-              <Phone size={22} strokeWidth={1.8} />
-              <small>Appeler</small>
-            </a>
+    <div className="pickup-contact-actions">
 
-            <a
-              href="mailto:sofreshsalad@orange.fr"
-              className="pickup-contact-btn"
-            >
-              <Mail size={22} strokeWidth={1.8} />
-              <small>Contact</small>
-            </a>
+      <a
+        href="tel:+33467859954"
+        className="pickup-contact-btn"
+      >
+        <Phone size={21} strokeWidth={1.8} />
+        <small>Appeler</small>
+      </a>
 
-            <a
-              href="https://www.google.com/maps/search/?api=1&query=1350+Avenue+Albert+Einstein+34000+Montpellier"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pickup-contact-btn pickup-contact-map"
-            >
-              <MapPin size={22} strokeWidth={1.8} />
-              <small>J'y vais</small>
-            </a>
+      <a
+        href="mailto:sofreshsalad@orange.fr"
+        className="pickup-contact-btn"
+      >
+        <Mail size={21} strokeWidth={1.8} />
+        <small>Contact</small>
+      </a>
 
-          </div>
+      <a
+        href="https://www.google.com/maps/search/?api=1&query=1350+Avenue+Albert+Einstein+34000+Montpellier"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pickup-contact-btn"
+      >
+        <MapPin size={21} strokeWidth={1.8} />
+        <small>J'y vais</small>
+      </a>
 
-        </div>
+    </div>
+
+  </div>
+
+</div>
 
         {/* ===============================
             JOUR DE RETRAIT
