@@ -465,15 +465,55 @@ useEffect(() => {
   );
 
   useEffect(() => {
-    setCustomerName(
-      localStorage.getItem("sofresh_customer_name") || ""
-    );
+  async function loadCustomer() {
+    if (!supabase) return;
 
-    setCustomerPhone(
-      localStorage.getItem("sofresh_customer_phone") ||
-        ""
-    );
-  }, []);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const firstName =
+        user.user_metadata?.first_name || "";
+
+      const lastName =
+        user.user_metadata?.last_name || "";
+
+      const phone =
+        user.user_metadata?.phone || "";
+
+      const fullName =
+        `${firstName} ${lastName}`.trim();
+
+      setCustomerName(fullName);
+      setCustomerPhone(phone);
+
+      localStorage.setItem(
+        "sofresh_customer_name",
+        fullName
+      );
+
+      localStorage.setItem(
+        "sofresh_customer_phone",
+        phone
+      );
+    } else {
+      setCustomerName(
+        localStorage.getItem(
+          "sofresh_customer_name"
+        ) || ""
+      );
+
+      setCustomerPhone(
+        localStorage.getItem(
+          "sofresh_customer_phone"
+        ) || ""
+      );
+    }
+  }
+
+  loadCustomer();
+}, []);
 
   useEffect(() => {
     async function loadSettings() {
@@ -744,14 +784,23 @@ useEffect(() => {
     setPaymentLoading(true);
 
     try {
+      const {
+  data: { session },
+} = await supabase.auth.getSession();
+
       const response = await fetch(
         "/api/create-checkout-session",
         {
           method: "POST",
 
           headers: {
-            "Content-Type": "application/json",
-          },
+  "Content-Type": "application/json",
+  ...(session?.access_token
+    ? {
+        Authorization: `Bearer ${session.access_token}`,
+      }
+    : {}),
+},
 
           body: JSON.stringify({
             customer_name: customerName.trim(),
@@ -862,6 +911,7 @@ useEffect(() => {
 
         {!loadingProducts && (
   <section className="product-list-mobile">
+  
     {visibleProducts.map((product) => (
       <article className="product-row-card" key={product.id}>
         <div className="product-row-image">

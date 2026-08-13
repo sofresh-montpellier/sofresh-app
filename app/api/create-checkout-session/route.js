@@ -172,6 +172,24 @@ export async function POST(request) {
 
     const body = await request.json();
 
+    // Récupération éventuelle du client connecté
+const authHeader = request.headers.get("authorization");
+
+let userId = null;
+
+if (authHeader?.startsWith("Bearer ")) {
+  const accessToken = authHeader.slice(7);
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseAdmin.auth.getUser(accessToken);
+
+  if (!userError && user) {
+    userId = user.id;
+  }
+}
+
     const customerName = String(
       body.customer_name || ""
     ).trim();
@@ -504,6 +522,7 @@ export async function POST(request) {
       .insert({
         customer_name: customerName,
         customer_phone: customerPhone,
+        user_id: userId,
         pickup_date: pickupDate,
         pickup_time: pickupTime,
         items,

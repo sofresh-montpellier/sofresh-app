@@ -152,6 +152,7 @@ export async function POST(request) {
             pendingCheckout.customer_name,
           customer_phone:
             pendingCheckout.customer_phone,
+            user_id: pendingCheckout.user_id,
           pickup_date:
             pendingCheckout.pickup_date,
           pickup_time:
