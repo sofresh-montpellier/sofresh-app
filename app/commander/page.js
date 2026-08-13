@@ -368,17 +368,52 @@ export default function Home() {
 
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
+  
   useEffect(() => {
   const savedDate = localStorage.getItem("sofresh_pickup_date");
   const savedTime = localStorage.getItem("sofresh_pickup_time");
 
-  if (savedDate) {
-    setPickupDate(savedDate);
+  if (!savedDate || !savedTime) return;
+
+  // Heure actuelle en France
+  const nowParts = new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Europe/Paris",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const get = (type) =>
+    nowParts.find((part) => part.type === type)?.value;
+
+  const today = `${get("year")}-${get("month")}-${get("day")}`;
+
+  const currentMinutes =
+    Number(get("hour")) * 60 + Number(get("minute"));
+
+  const savedMinutes = parseTimeToMinutes(savedTime);
+
+  const dateIsPast = savedDate < today;
+
+  const timeIsPastToday =
+    savedDate === today &&
+    savedMinutes !== null &&
+    savedMinutes <= currentMinutes;
+
+  if (dateIsPast || timeIsPastToday) {
+    // Ancien créneau : on l'efface
+    localStorage.removeItem("sofresh_pickup_date");
+    localStorage.removeItem("sofresh_pickup_time");
+    setPickupDate("");
+    setPickupTime("");
+    return;
   }
 
-  if (savedTime) {
-    setPickupTime(savedTime);
-  }
+  setPickupDate(savedDate);
+  setPickupTime(savedTime);
 }, []);
 
   const [message, setMessage] = useState("");
