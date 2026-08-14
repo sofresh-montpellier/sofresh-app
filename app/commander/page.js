@@ -10,7 +10,6 @@ import {
   supabase,
 } from "../../lib/supabase";
 
-
 const euro = (value) =>
   Number(value || 0).toLocaleString("fr-FR", {
     style: "currency",
@@ -59,6 +58,7 @@ const categoryAliases = {
   dessert: "Desserts",
   desserts: "Desserts",
 };
+
 const categoryOrder = [
   "Formules",
   "Burgers",
@@ -86,8 +86,12 @@ const dayLabels = {
 };
 
 function normalizeCategory(category) {
-  const cleanCategory = String(category || "Autres").trim();
-  const key = cleanCategory.toLocaleLowerCase("fr-FR");
+  const cleanCategory = String(
+    category || "Autres"
+  ).trim();
+
+  const key =
+    cleanCategory.toLocaleLowerCase("fr-FR");
 
   return categoryAliases[key] || cleanCategory;
 }
@@ -97,7 +101,9 @@ function parseTimeToMinutes(value) {
     .trim()
     .replace(/\s*h\s*/i, ":");
 
-  const match = normalized.match(/^(\d{1,2}):(\d{2})$/);
+  const match = normalized.match(
+    /^(\d{1,2}):(\d{2})$/
+  );
 
   if (!match) {
     return null;
@@ -121,12 +127,16 @@ function parseTimeToMinutes(value) {
 }
 
 function formatPickupTime(totalMinutes) {
-  const hours = Math.floor(totalMinutes / 60);
+  const hours = Math.floor(
+    totalMinutes / 60
+  );
+
   const minutes = totalMinutes % 60;
 
-  return `${String(hours).padStart(2, "0")} h ${String(
-    minutes
-  ).padStart(2, "0")}`;
+  return `${String(hours).padStart(
+    2,
+    "0"
+  )} h ${String(minutes).padStart(2, "0")}`;
 }
 
 function generatePickupTimes(settings) {
@@ -142,7 +152,9 @@ function generatePickupTimes(settings) {
     settings.last_pickup_time
   );
 
-  const interval = Number(settings.slot_interval);
+  const interval = Number(
+    settings.slot_interval
+  );
 
   if (
     firstMinutes === null ||
@@ -168,19 +180,22 @@ function generatePickupTimes(settings) {
 }
 
 function parisNow() {
-  const parts = new Intl.DateTimeFormat("fr-FR", {
-    timeZone: "Europe/Paris",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(new Date());
+  const parts =
+    new Intl.DateTimeFormat("fr-FR", {
+      timeZone: "Europe/Paris",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(new Date());
 
   const get = (type) =>
     Number(
-      parts.find((part) => part.type === type)?.value || 0
+      parts.find(
+        (part) => part.type === type
+      )?.value || 0
     );
 
   return {
@@ -194,10 +209,54 @@ function parisNow() {
 
 function iso(date) {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+
+  const month = String(
+    date.getMonth() + 1
+  ).padStart(2, "0");
+
+  const day = String(
+    date.getDate()
+  ).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+/* =========================================
+   FERMETURE EXCEPTIONNELLE / CONGÉS
+========================================= */
+
+function isDateInsideClosure(
+  isoDate,
+  settings
+) {
+  if (!settings?.closure_enabled) {
+    return false;
+  }
+
+  const start =
+    settings.closure_start_date || "";
+
+  const end =
+    settings.closure_end_date || "";
+
+  if (!start || !end || !isoDate) {
+    return false;
+  }
+
+  return (
+    isoDate >= start &&
+    isoDate <= end
+  );
+}
+
+function getParisTodayIso() {
+  const now = parisNow();
+
+  return `${now.year}-${String(
+    now.month
+  ).padStart(2, "0")}-${String(
+    now.day
+  ).padStart(2, "0")}`;
 }
 
 function isOpenDay(date, settings) {
@@ -215,8 +274,14 @@ function isOpenDay(date, settings) {
     6: settings.open_saturday,
   };
 
-  return Boolean(openDays[date.getDay()]);
+  return Boolean(
+    openDays[date.getDay()]
+  );
 }
+
+/* =========================================
+   PROCHAINES DATES DE RETRAIT
+========================================= */
 
 function getPickupDates(settings) {
   if (!settings) {
@@ -234,33 +299,80 @@ function getPickupDates(settings) {
     0
   );
 
-  const cutoffMinutes = parseTimeToMinutes(
-    settings.cutoff_time
-  );
+  const todayIso = iso(today);
 
-  const currentMinutes = now.hour * 60 + now.minute;
+  /*
+   * Si nous sommes actuellement
+   * pendant les congés, aucune date
+   * de retrait n'est proposée.
+   */
+  if (
+    isDateInsideClosure(
+      todayIso,
+      settings
+    )
+  ) {
+    return [];
+  }
+
+  const cutoffMinutes =
+    parseTimeToMinutes(
+      settings.cutoff_time
+    );
+
+  const currentMinutes =
+    now.hour * 60 + now.minute;
 
   const dates = [];
-  const cursor = new Date(today);
+
+  const cursor =
+    new Date(today);
 
   let checkedDays = 0;
 
-  while (dates.length < 4 && checkedDays < 31) {
-    const isToday = iso(cursor) === iso(today);
+  /*
+   * 90 jours de sécurité permettent
+   * également de traverser une longue
+   * période de congés.
+   */
+  while (
+    dates.length < 4 &&
+    checkedDays < 90
+  ) {
+    const cursorIso =
+      iso(cursor);
+
+    const isToday =
+      cursorIso === todayIso;
 
     const todayStillAvailable =
       !isToday ||
       cutoffMinutes === null ||
       currentMinutes < cutoffMinutes;
 
+    const insideClosure =
+      isDateInsideClosure(
+        cursorIso,
+        settings
+      );
+
     if (
-      isOpenDay(cursor, settings) &&
-      todayStillAvailable
+      isOpenDay(
+        cursor,
+        settings
+      ) &&
+      todayStillAvailable &&
+      !insideClosure
     ) {
-      dates.push(new Date(cursor));
+      dates.push(
+        new Date(cursor)
+      );
     }
 
-    cursor.setDate(cursor.getDate() + 1);
+    cursor.setDate(
+      cursor.getDate() + 1
+    );
+
     checkedDays += 1;
   }
 
@@ -268,11 +380,12 @@ function getPickupDates(settings) {
 }
 
 function dateLabel(date) {
-  const formattedDate = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  }).format(date);
+  const formattedDate =
+    new Intl.DateTimeFormat("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).format(date);
 
   const now = parisNow();
 
@@ -285,14 +398,22 @@ function dateLabel(date) {
     0
   );
 
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrow =
+    new Date(today);
 
-  if (iso(date) === iso(today)) {
+  tomorrow.setDate(
+    tomorrow.getDate() + 1
+  );
+
+  if (
+    iso(date) === iso(today)
+  ) {
     return `Aujourd’hui • ${formattedDate}`;
   }
 
-  if (iso(date) === iso(tomorrow)) {
+  if (
+    iso(date) === iso(tomorrow)
+  ) {
     return `Demain • ${formattedDate}`;
   }
 
@@ -300,23 +421,28 @@ function dateLabel(date) {
 }
 
 function formatCutoffTime(value) {
-  const minutes = parseTimeToMinutes(value);
+  const minutes =
+    parseTimeToMinutes(value);
 
   if (minutes === null) {
     return value || "";
   }
 
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
+  const hours =
+    Math.floor(minutes / 60);
 
-  if (remainingMinutes === 0) {
+  const remainingMinutes =
+    minutes % 60;
+
+  if (
+    remainingMinutes === 0
+  ) {
     return `${hours} h`;
   }
 
-  return `${hours} h ${String(remainingMinutes).padStart(
-    2,
-    "0"
-  )}`;
+  return `${hours} h ${String(
+    remainingMinutes
+  ).padStart(2, "0")}`;
 }
 
 function getOpenDaysText(settings) {
@@ -335,27 +461,36 @@ function getOpenDaysText(settings) {
   ];
 
   const openDays = openValues
-    .map((isOpen, index) => (isOpen ? index : null))
-    .filter((value) => value !== null);
+    .map((isOpen, index) =>
+      isOpen ? index : null
+    )
+    .filter(
+      (value) => value !== null
+    );
 
-  if (openDays.length === 7) {
+  if (
+    openDays.length === 7
+  ) {
     return "Tous les jours";
   }
 
   if (
     openDays.length === 5 &&
-    openDays.join(",") === "1,2,3,4,5"
+    openDays.join(",") ===
+      "1,2,3,4,5"
   ) {
     return "Du lundi au vendredi";
   }
 
   return openDays
-    .map((day) => dayLabels[day])
+    .map(
+      (day) => dayLabels[day]
+    )
     .join(", ");
 }
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
+   const [products, setProducts] = useState([]);
   const [settings, setSettings] = useState(null);
 
   const [category, setCategory] = useState(null);
@@ -368,53 +503,6 @@ export default function Home() {
 
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
-  
-  useEffect(() => {
-  const savedDate = localStorage.getItem("sofresh_pickup_date");
-  const savedTime = localStorage.getItem("sofresh_pickup_time");
-
-  if (!savedDate || !savedTime) return;
-
-  // Heure actuelle en France
-  const nowParts = new Intl.DateTimeFormat("fr-FR", {
-    timeZone: "Europe/Paris",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(new Date());
-
-  const get = (type) =>
-    nowParts.find((part) => part.type === type)?.value;
-
-  const today = `${get("year")}-${get("month")}-${get("day")}`;
-
-  const currentMinutes =
-    Number(get("hour")) * 60 + Number(get("minute"));
-
-  const savedMinutes = parseTimeToMinutes(savedTime);
-
-  const dateIsPast = savedDate < today;
-
-  const timeIsPastToday =
-    savedDate === today &&
-    savedMinutes !== null &&
-    savedMinutes <= currentMinutes;
-
-  if (dateIsPast || timeIsPastToday) {
-    // Ancien créneau : on l'efface
-    localStorage.removeItem("sofresh_pickup_date");
-    localStorage.removeItem("sofresh_pickup_time");
-    setPickupDate("");
-    setPickupTime("");
-    return;
-  }
-
-  setPickupDate(savedDate);
-  setPickupTime(savedTime);
-}, []);
 
   const [message, setMessage] = useState("");
 
@@ -426,37 +514,316 @@ export default function Home() {
 
   const [paymentLoading, setPaymentLoading] =
     useState(false);
+
   const [availability, setAvailability] = useState({
     capacity: 0,
     counts: {},
   });
 
+  /* =========================================
+     ANCIEN RETRAIT MÉMORISÉ
+  ========================================= */
+
+  useEffect(() => {
+    const savedDate = localStorage.getItem(
+      "sofresh_pickup_date"
+    );
+
+    const savedTime = localStorage.getItem(
+      "sofresh_pickup_time"
+    );
+
+    if (!savedDate || !savedTime) return;
+
+    const nowParts =
+      new Intl.DateTimeFormat("fr-FR", {
+        timeZone: "Europe/Paris",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).formatToParts(new Date());
+
+    const get = (type) =>
+      nowParts.find(
+        (part) => part.type === type
+      )?.value;
+
+    const today =
+      `${get("year")}-${get("month")}-${get("day")}`;
+
+    const currentMinutes =
+      Number(get("hour")) * 60 +
+      Number(get("minute"));
+
+    const savedMinutes =
+      parseTimeToMinutes(savedTime);
+
+    const dateIsPast =
+      savedDate < today;
+
+    const timeIsPastToday =
+      savedDate === today &&
+      savedMinutes !== null &&
+      savedMinutes <= currentMinutes;
+
+    if (
+      dateIsPast ||
+      timeIsPastToday
+    ) {
+      localStorage.removeItem(
+        "sofresh_pickup_date"
+      );
+
+      localStorage.removeItem(
+        "sofresh_pickup_time"
+      );
+
+      setPickupDate("");
+      setPickupTime("");
+
+      return;
+    }
+
+    setPickupDate(savedDate);
+    setPickupTime(savedTime);
+  }, []);
+
+  /* =========================================
+     PANIER
+  ========================================= */
+
+  useEffect(() => {
+    const savedCart =
+      localStorage.getItem(
+        "sofresh_cart"
+      );
+
+    if (savedCart) {
+      try {
+        setCart(
+          JSON.parse(savedCart)
+        );
+      } catch (error) {
+        console.error(
+          "Erreur lecture panier :",
+          error
+        );
+      }
+    }
+
+    setCartLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!cartLoaded) return;
+
+    localStorage.setItem(
+      "sofresh_cart",
+      JSON.stringify(cart)
+    );
+  }, [cart, cartLoaded]);
+
+  /* =========================================
+     HORAIRES
+  ========================================= */
+
   const pickupTimes = useMemo(
-    () => generatePickupTimes(settings),
+    () =>
+      generatePickupTimes(
+        settings
+      ),
     [settings]
   );
-useEffect(() => {
-  const savedCart = localStorage.getItem("sofresh_cart");
 
-  if (savedCart) {
-    try {
-      setCart(JSON.parse(savedCart));
-    } catch (error) {
-      console.error("Erreur lecture panier :", error);
+  /* =========================================
+     CHARGEMENT DES PARAMÈTRES
+  ========================================= */
+
+  useEffect(() => {
+    async function loadSettings() {
+      setLoadingSettings(true);
+
+      try {
+        const response =
+          await fetch(
+            "/api/settings",
+            {
+              cache: "no-store",
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              "Impossible de charger les paramètres."
+          );
+        }
+
+        setSettings(data);
+      } catch (error) {
+        console.error(
+          "Erreur paramètres :",
+          error
+        );
+
+        setMessage(
+          "Les horaires du Click & Collect sont indisponibles."
+        );
+      } finally {
+        setLoadingSettings(false);
+      }
     }
-  }
 
-  setCartLoaded(true);
-}, []);
+    loadSettings();
+  }, []);
 
-useEffect(() => {
-  if (!cartLoaded) return;
+  /* =========================================
+     ÉTAT DE FERMETURE
+  ========================================= */
 
-  localStorage.setItem(
-    "sofresh_cart",
-    JSON.stringify(cart)
+  const closureActiveToday =
+    isDateInsideClosure(
+      getParisTodayIso(),
+      settings
+    );
+
+  const serviceOpen =
+    Boolean(
+      settings?.restaurant_open
+    ) &&
+    !closureActiveToday;
+
+  const closureMessage =
+    settings?.closure_message ||
+    "So Fresh est fermé pour congés. À très bientôt !";
+
+  /*
+   * Si les congés commencent alors qu'une ancienne
+   * date de retrait était mémorisée, on l'efface.
+   */
+  useEffect(() => {
+    if (!settings) return;
+
+    if (closureActiveToday) {
+      localStorage.removeItem(
+        "sofresh_pickup_date"
+      );
+
+      localStorage.removeItem(
+        "sofresh_pickup_time"
+      );
+
+      setPickupDate("");
+      setPickupTime("");
+    }
+  }, [
+    settings,
+    closureActiveToday,
+  ]);
+
+  /* =========================================
+     DATES DISPONIBLES
+  ========================================= */
+
+  const dates = useMemo(
+    () =>
+      getPickupDates(
+        settings
+      ),
+    [settings]
   );
-}, [cart, cartLoaded]);
+
+  useEffect(() => {
+    if (
+      dates.length === 0
+    ) {
+      setPickupDate("");
+      return;
+    }
+
+    const savedDate =
+      localStorage.getItem(
+        "sofresh_pickup_date"
+      );
+
+    if (
+      savedDate &&
+      dates.some(
+        (date) =>
+          iso(date) === savedDate
+      )
+    ) {
+      setPickupDate(savedDate);
+      return;
+    }
+
+    const dateStillAvailable =
+      dates.some(
+        (date) =>
+          iso(date) ===
+          pickupDate
+      );
+
+    if (!dateStillAvailable) {
+      setPickupDate(
+        iso(dates[0])
+      );
+    }
+  }, [dates, pickupDate]);
+
+  /* =========================================
+     HEURE DE RETRAIT
+  ========================================= */
+
+  useEffect(() => {
+    if (
+      pickupTimes.length === 0 ||
+      closureActiveToday
+    ) {
+      setPickupTime("");
+      return;
+    }
+
+    const savedTime =
+      localStorage.getItem(
+        "sofresh_pickup_time"
+      );
+
+    if (
+      savedTime &&
+      pickupTimes.includes(
+        savedTime
+      )
+    ) {
+      setPickupTime(savedTime);
+      return;
+    }
+
+    if (
+      !pickupTimes.includes(
+        pickupTime
+      )
+    ) {
+      setPickupTime(
+        pickupTimes[0]
+      );
+    }
+  }, [
+    pickupTimes,
+    pickupTime,
+    closureActiveToday,
+  ]);
+
+  /* =========================================
+     DISPONIBILITÉ DES CRÉNEAUX
+  ========================================= */
+
   useEffect(() => {
     if (!pickupDate) {
       setAvailability({
@@ -469,18 +836,20 @@ useEffect(() => {
 
     async function loadAvailability() {
       try {
-        const response = await fetch(
-          `/api/availability?date=${pickupDate}`,
-          {
-            cache: "no-store",
-          }
-        );
+        const response =
+          await fetch(
+            `/api/availability?date=${pickupDate}`,
+            {
+              cache: "no-store",
+            }
+          );
 
         if (!response.ok) {
           return;
         }
 
-        const data = await response.json();
+        const data =
+          await response.json();
 
         setAvailability(data);
       } catch (error) {
@@ -494,264 +863,310 @@ useEffect(() => {
     loadAvailability();
   }, [pickupDate]);
 
-  const dates = useMemo(
-    () => getPickupDates(settings),
-    [settings]
-  );
+  /* =========================================
+     CLIENT
+  ========================================= */
 
   useEffect(() => {
-  async function loadCustomer() {
-    if (!supabase) return;
+    async function loadCustomer() {
+      if (!supabase) return;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } =
+        await supabase.auth.getUser();
 
-    if (user) {
-      const firstName =
-        user.user_metadata?.first_name || "";
+      if (user) {
+        const firstName =
+          user.user_metadata
+            ?.first_name || "";
 
-      const lastName =
-        user.user_metadata?.last_name || "";
+        const lastName =
+          user.user_metadata
+            ?.last_name || "";
 
-      const phone =
-        user.user_metadata?.phone || "";
+        const phone =
+          user.user_metadata
+            ?.phone || "";
 
-      const fullName =
-        `${firstName} ${lastName}`.trim();
+        const fullName =
+          `${firstName} ${lastName}`.trim();
 
-      setCustomerName(fullName);
-      setCustomerPhone(phone);
-
-      localStorage.setItem(
-        "sofresh_customer_name",
-        fullName
-      );
-
-      localStorage.setItem(
-        "sofresh_customer_phone",
-        phone
-      );
-    } else {
-      setCustomerName(
-        localStorage.getItem(
-          "sofresh_customer_name"
-        ) || ""
-      );
-
-      setCustomerPhone(
-        localStorage.getItem(
-          "sofresh_customer_phone"
-        ) || ""
-      );
-    }
-  }
-
-  loadCustomer();
-}, []);
-
-  useEffect(() => {
-    async function loadSettings() {
-      setLoadingSettings(true);
-
-      try {
-        const response = await fetch("/api/settings", {
-          cache: "no-store",
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.error ||
-              "Impossible de charger les paramètres."
-          );
-        }
-
-        setSettings(data);
-      } catch (error) {
-        console.error("Erreur paramètres :", error);
-
-        setMessage(
-          "Les horaires du Click & Collect sont indisponibles."
+        setCustomerName(
+          fullName
         );
-      } finally {
-        setLoadingSettings(false);
+
+        setCustomerPhone(
+          phone
+        );
+
+        localStorage.setItem(
+          "sofresh_customer_name",
+          fullName
+        );
+
+        localStorage.setItem(
+          "sofresh_customer_phone",
+          phone
+        );
+      } else {
+        setCustomerName(
+          localStorage.getItem(
+            "sofresh_customer_name"
+          ) || ""
+        );
+
+        setCustomerPhone(
+          localStorage.getItem(
+            "sofresh_customer_phone"
+          ) || ""
+        );
       }
     }
 
-    loadSettings();
+    loadCustomer();
   }, []);
 
-useEffect(() => {
-  if (dates.length === 0) {
-    setPickupDate("");
-    return;
-  }
-
-  const savedDate = localStorage.getItem("sofresh_pickup_date");
-
-  if (
-    savedDate &&
-    dates.some((date) => iso(date) === savedDate)
-  ) {
-    setPickupDate(savedDate);
-    return;
-  }
-
-  const dateStillAvailable = dates.some(
-    (date) => iso(date) === pickupDate
-  );
-
-  if (!dateStillAvailable) {
-    setPickupDate(iso(dates[0]));
-  }
-}, [dates]);
-
-  useEffect(() => {
-  if (pickupTimes.length === 0) {
-    setPickupTime("");
-    return;
-  }
-
-  const savedTime = localStorage.getItem("sofresh_pickup_time");
-
-  if (savedTime && pickupTimes.includes(savedTime)) {
-    setPickupTime(savedTime);
-    return;
-  }
-
-  if (!pickupTimes.includes(pickupTime)) {
-    setPickupTime(pickupTimes[0]);
-  }
-}, [pickupTimes]);
+  /* =========================================
+     PRODUITS
+  ========================================= */
 
   useEffect(() => {
     async function loadProducts() {
       setLoadingProducts(true);
 
-      if (!isSupabaseConfigured) {
-        setMessage("Supabase n’est pas configuré.");
+      if (
+        !isSupabaseConfigured
+      ) {
+        setMessage(
+          "Supabase n’est pas configuré."
+        );
+
         setLoadingProducts(false);
         return;
       }
 
-      const { data, error } = await supabase
+      const {
+        data,
+        error,
+      } = await supabase
         .from("products")
         .select("*")
         .eq("available", true)
-        .order("display_order", { ascending: true })
-        .order("name", { ascending: true });
+        .order(
+          "display_order",
+          {
+            ascending: true,
+          }
+        )
+        .order("name", {
+          ascending: true,
+        });
 
       if (error) {
-        console.error("Erreur produits :", error);
+        console.error(
+          "Erreur produits :",
+          error
+        );
 
-        setMessage("Le menu n’a pas pu être chargé.");
+        setMessage(
+          "Le menu n’a pas pu être chargé."
+        );
+
         setLoadingProducts(false);
         return;
       }
 
-      const normalizedProducts = (data || []).map(
-        (product) => ({
-          ...product,
-          normalized_category: normalizeCategory(
-            product.category
-          ),
-        })
+      const normalizedProducts =
+        (data || []).map(
+          (product) => ({
+            ...product,
+
+            normalized_category:
+              normalizeCategory(
+                product.category
+              ),
+          })
+        );
+
+      setProducts(
+        normalizedProducts
       );
 
-      setProducts(normalizedProducts);
       setLoadingProducts(false);
     }
 
     loadProducts();
   }, []);
 
-  const categories = useMemo(() => {
-    const productCategories = products
-      .map((product) => product.normalized_category)
-      .filter(Boolean);
+  /* =========================================
+     CATÉGORIES
+  ========================================= */
 
-    return ["Tout", ...new Set(productCategories)];
+  const categories = useMemo(() => {
+    const productCategories =
+      products
+        .map(
+          (product) =>
+            product.normalized_category
+        )
+        .filter(Boolean);
+
+    return [
+      "Tout",
+      ...new Set(
+        productCategories
+      ),
+    ];
   }, [products]);
 
-  const visibleProducts = useMemo(() => {
-    if (category === "Tout") {
-      return products;
-    }
+  const visibleProducts =
+    useMemo(() => {
+      if (
+        category === "Tout"
+      ) {
+        return products;
+      }
 
-    return products.filter(
-      (product) =>
-        product.normalized_category === category
-    );
-  }, [products, category]);
-
-  const cartCount = Object.values(cart).reduce(
-    (sum, quantity) => sum + quantity,
-    0
-  );
-  useEffect(() => {
-  window.dispatchEvent(
-    new CustomEvent("sofresh-cart-count", {
-      detail: cartCount,
-    })
-  );
-}, [cartCount]);
-
-useEffect(() => {
-  const openCart = () => {
-    setCartOpen(true);
-  };
-
-  window.addEventListener("sofresh-open-cart", openCart);
-
-  return () => {
-    window.removeEventListener("sofresh-open-cart", openCart);
-  };
-}, []);
-
-  const cartTotal = Object.entries(cart).reduce(
-    (sum, [id, quantity]) => {
-      const product = products.find(
-        (currentProduct) =>
-          String(currentProduct.id) === String(id)
+      return products.filter(
+        (product) =>
+          product.normalized_category ===
+          category
       );
+    }, [
+      products,
+      category,
+    ]);
 
-      if (!product) {
-        return sum;
-      }
+  /* =========================================
+     PANIER : TOTAL ET QUANTITÉ
+  ========================================= */
 
-      return sum + Number(product.price) * quantity;
-    },
-    0
-  );
+  const cartCount =
+    Object.values(
+      cart
+    ).reduce(
+      (sum, quantity) =>
+        sum + quantity,
+      0
+    );
 
-  const serviceOpen = Boolean(
-    settings?.restaurant_open
-  );
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent(
+        "sofresh-cart-count",
+        {
+          detail: cartCount,
+        }
+      )
+    );
+  }, [cartCount]);
 
-  function addProduct(productId) {
-    setCart((current) => ({
-      ...current,
-      [productId]: (current[productId] || 0) + 1,
-    }));
-  }
+  useEffect(() => {
+    const openCart = () => {
+      setCartOpen(true);
+    };
 
-  function changeQuantity(productId, difference) {
-    setCart((current) => {
-      const nextCart = {
+    window.addEventListener(
+      "sofresh-open-cart",
+      openCart
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sofresh-open-cart",
+        openCart
+      );
+    };
+  }, []);
+
+  const cartTotal =
+    Object.entries(
+      cart
+    ).reduce(
+      (
+        sum,
+        [id, quantity]
+      ) => {
+        const product =
+          products.find(
+            (
+              currentProduct
+            ) =>
+              String(
+                currentProduct.id
+              ) ===
+              String(id)
+          );
+
+        if (!product) {
+          return sum;
+        }
+
+        return (
+          sum +
+          Number(
+            product.price
+          ) *
+            quantity
+        );
+      },
+      0
+    );
+
+  /* =========================================
+     AJOUT / SUPPRESSION PRODUITS
+  ========================================= */
+
+  function addProduct(
+    productId
+  ) {
+    setCart(
+      (current) => ({
         ...current,
+
         [productId]:
-          (current[productId] || 0) + difference,
-      };
-
-      if (nextCart[productId] <= 0) {
-        delete nextCart[productId];
-      }
-
-      return nextCart;
-    });
+          (current[
+            productId
+          ] || 0) + 1,
+      })
+    );
   }
+
+  function changeQuantity(
+    productId,
+    difference
+  ) {
+    setCart(
+      (current) => {
+        const nextCart = {
+          ...current,
+
+          [productId]:
+            (current[
+              productId
+            ] || 0) +
+            difference,
+        };
+
+        if (
+          nextCart[
+            productId
+          ] <= 0
+        ) {
+          delete nextCart[
+            productId
+          ];
+        }
+
+        return nextCart;
+      }
+    );
+  }
+
+  /* =========================================
+     VALIDATION / PAIEMENT
+  ========================================= */
 
   async function submitOrder() {
     setMessage("");
@@ -760,6 +1175,20 @@ useEffect(() => {
       setMessage(
         "Les réglages du Click & Collect ne sont pas disponibles."
       );
+
+      return;
+    }
+
+    /*
+     * Protection spécifique aux congés.
+     */
+    if (
+      closureActiveToday
+    ) {
+      setMessage(
+        closureMessage
+      );
+
       return;
     }
 
@@ -767,11 +1196,15 @@ useEffect(() => {
       setMessage(
         "Le Click & Collect est actuellement fermé."
       );
+
       return;
     }
 
     if (cartCount === 0) {
-      setMessage("Ajoutez au moins un produit.");
+      setMessage(
+        "Ajoutez au moins un produit."
+      );
+
       return;
     }
 
@@ -779,6 +1212,25 @@ useEffect(() => {
       setMessage(
         "Aucune date de retrait n’est disponible."
       );
+
+      return;
+    }
+
+    /*
+     * Deuxième sécurité :
+     * même avec une ancienne date mémorisée,
+     * impossible de commander pendant les congés.
+     */
+    if (
+      isDateInsideClosure(
+        pickupDate,
+        settings
+      )
+    ) {
+      setMessage(
+        "Cette date de retrait n’est pas disponible pendant la fermeture exceptionnelle."
+      );
+
       return;
     }
 
@@ -786,6 +1238,7 @@ useEffect(() => {
       setMessage(
         "Aucun créneau de retrait n’est disponible."
       );
+
       return;
     }
 
@@ -796,6 +1249,7 @@ useEffect(() => {
       setMessage(
         "Indiquez votre nom et votre numéro de téléphone."
       );
+
       return;
     }
 
@@ -809,59 +1263,87 @@ useEffect(() => {
       customerPhone.trim()
     );
 
-    const items = Object.entries(cart).map(
-      ([id, quantity]) => ({
-        id: Number(id),
-        qty: quantity,
-      })
-    );
+    const items =
+      Object.entries(
+        cart
+      ).map(
+        ([
+          id,
+          quantity,
+        ]) => ({
+          id: Number(id),
+          qty: quantity,
+        })
+      );
 
     setPaymentLoading(true);
 
     try {
       const {
-  data: { session },
-} = await supabase.auth.getSession();
+        data: { session },
+      } =
+        await supabase.auth.getSession();
 
-      const response = await fetch(
-        "/api/create-checkout-session",
-        {
-          method: "POST",
+      const response =
+        await fetch(
+          "/api/create-checkout-session",
+          {
+            method: "POST",
 
-          headers: {
-  "Content-Type": "application/json",
-  ...(session?.access_token
-    ? {
-        Authorization: `Bearer ${session.access_token}`,
-      }
-    : {}),
-},
+            headers: {
+              "Content-Type":
+                "application/json",
 
-          body: JSON.stringify({
-            customer_name: customerName.trim(),
-            customer_phone: customerPhone.trim(),
-            pickup_date: pickupDate,
-            pickup_time: pickupTime,
-            items,
-          }),
-        }
-      );
+              ...(session?.access_token
+                ? {
+                    Authorization:
+                      `Bearer ${session.access_token}`,
+                  }
+                : {}),
+            },
 
-      const data = await response.json();
+            body: JSON.stringify({
+              customer_name:
+                customerName.trim(),
 
-      if (!response.ok || !data.url) {
+              customer_phone:
+                customerPhone.trim(),
+
+              pickup_date:
+                pickupDate,
+
+              pickup_time:
+                pickupTime,
+
+              items,
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.url
+      ) {
         setMessage(
           data.error ||
             "Le paiement n’a pas pu être initialisé."
         );
 
         setPaymentLoading(false);
+
         return;
       }
 
-      window.location.href = data.url;
+      window.location.href =
+        data.url;
     } catch (error) {
-      console.error("Erreur paiement :", error);
+      console.error(
+        "Erreur paiement :",
+        error
+      );
 
       setMessage(
         "Le paiement n’a pas pu être initialisé."
@@ -870,6 +1352,7 @@ useEffect(() => {
       setPaymentLoading(false);
     }
   }
+    
 
   return (
     <>

@@ -10,6 +10,7 @@ const defaultSettings = {
   lastPickupTime: "13:30",
   slotInterval: "15",
   slotCapacity: "10",
+
   openMonday: true,
   openTuesday: true,
   openWednesday: true,
@@ -17,6 +18,12 @@ const defaultSettings = {
   openFriday: true,
   openSaturday: false,
   openSunday: false,
+
+  closureEnabled: false,
+  closureStartDate: "",
+  closureEndDate: "",
+  closureMessage:
+    "So Fresh est fermé pour congés. À très bientôt !",
 };
 
 const days = [
@@ -37,6 +44,7 @@ function convertDatabaseToForm(data) {
     lastPickupTime: data.last_pickup_time || "13:30",
     slotInterval: String(data.slot_interval ?? 15),
     slotCapacity: String(data.slot_capacity ?? 10),
+
     openMonday: data.open_monday ?? true,
     openTuesday: data.open_tuesday ?? true,
     openWednesday: data.open_wednesday ?? true,
@@ -44,6 +52,13 @@ function convertDatabaseToForm(data) {
     openFriday: data.open_friday ?? true,
     openSaturday: data.open_saturday ?? false,
     openSunday: data.open_sunday ?? false,
+
+    closureEnabled: data.closure_enabled ?? false,
+    closureStartDate: data.closure_start_date || "",
+    closureEndDate: data.closure_end_date || "",
+    closureMessage:
+      data.closure_message ||
+      "So Fresh est fermé pour congés. À très bientôt !",
   };
 }
 
@@ -56,6 +71,7 @@ function convertFormToDatabase(settings) {
     last_pickup_time: settings.lastPickupTime,
     slot_interval: Number(settings.slotInterval),
     slot_capacity: Number(settings.slotCapacity),
+
     open_monday: Boolean(settings.openMonday),
     open_tuesday: Boolean(settings.openTuesday),
     open_wednesday: Boolean(settings.openWednesday),
@@ -63,6 +79,13 @@ function convertFormToDatabase(settings) {
     open_friday: Boolean(settings.openFriday),
     open_saturday: Boolean(settings.openSaturday),
     open_sunday: Boolean(settings.openSunday),
+
+    closure_enabled: Boolean(settings.closureEnabled),
+    closure_start_date: settings.closureStartDate || null,
+    closure_end_date: settings.closureEndDate || null,
+    closure_message:
+      settings.closureMessage?.trim() ||
+      "So Fresh est fermé pour congés. À très bientôt !",
   };
 }
 
@@ -95,6 +118,7 @@ export default function SettingsPage() {
         setMessage(
           "Impossible de charger les paramètres depuis Supabase."
         );
+
         setLoading(false);
         return;
       }
@@ -131,7 +155,9 @@ export default function SettingsPage() {
       !settings.lastPickupTime
     ) {
       setHasError(true);
-      setMessage("Tous les horaires doivent être renseignés.");
+      setMessage(
+        "Tous les horaires doivent être renseignés."
+      );
       return;
     }
 
@@ -141,7 +167,9 @@ export default function SettingsPage() {
       slotInterval > 120
     ) {
       setHasError(true);
-      setMessage("L’intervalle des créneaux est invalide.");
+      setMessage(
+        "L’intervalle des créneaux est invalide."
+      );
       return;
     }
 
@@ -155,6 +183,30 @@ export default function SettingsPage() {
         "La capacité doit être comprise entre 1 et 50 commandes."
       );
       return;
+    }
+
+    if (settings.closureEnabled) {
+      if (
+        !settings.closureStartDate ||
+        !settings.closureEndDate
+      ) {
+        setHasError(true);
+        setMessage(
+          "Renseignez la date de début et la date de fin de fermeture."
+        );
+        return;
+      }
+
+      if (
+        settings.closureEndDate <
+        settings.closureStartDate
+      ) {
+        setHasError(true);
+        setMessage(
+          "La date de fin doit être postérieure ou égale à la date de début."
+        );
+        return;
+      }
     }
 
     setSaving(true);
@@ -329,6 +381,113 @@ export default function SettingsPage() {
                   <span>{label}</span>
                 </label>
               ))}
+            </div>
+          </section>
+
+          <section className="settings-section-card">
+            <div className="settings-section-heading">
+              <div>
+                <h2>Fermeture exceptionnelle</h2>
+
+                <p>
+                  Programmez vos congés ou une période de
+                  fermeture temporaire.
+                </p>
+              </div>
+
+              <label className="settings-switch">
+                <input
+                  type="checkbox"
+                  checked={settings.closureEnabled}
+                  onChange={(event) =>
+                    updateSetting(
+                      "closureEnabled",
+                      event.target.checked
+                    )
+                  }
+                />
+
+                <span className="settings-switch-slider" />
+
+                <b>
+                  {settings.closureEnabled
+                    ? "Fermeture activée"
+                    : "Aucune fermeture"}
+                </b>
+              </label>
+            </div>
+
+            <div className="settings-form-grid">
+              <div>
+                <label htmlFor="closure-start-date">
+                  Fermé du
+                </label>
+
+                <input
+                  id="closure-start-date"
+                  type="date"
+                  value={settings.closureStartDate}
+                  disabled={!settings.closureEnabled}
+                  onChange={(event) =>
+                    updateSetting(
+                      "closureStartDate",
+                      event.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div>
+                <label htmlFor="closure-end-date">
+                  Jusqu’au
+                </label>
+
+                <input
+                  id="closure-end-date"
+                  type="date"
+                  value={settings.closureEndDate}
+                  disabled={!settings.closureEnabled}
+                  onChange={(event) =>
+                    updateSetting(
+                      "closureEndDate",
+                      event.target.value
+                    )
+                  }
+                />
+              </div>
+            </div>
+
+            <div
+              style={{
+                marginTop: "14px",
+              }}
+            >
+              <label htmlFor="closure-message">
+                Message affiché aux clients
+              </label>
+
+              <textarea
+                id="closure-message"
+                rows="3"
+                value={settings.closureMessage}
+                disabled={!settings.closureEnabled}
+                onChange={(event) =>
+                  updateSetting(
+                    "closureMessage",
+                    event.target.value
+                  )
+                }
+                style={{
+                  width: "100%",
+                  marginTop: "7px",
+                  padding: "12px",
+                  border: "1px solid #dfd178",
+                  borderRadius: "12px",
+                  font: "inherit",
+                  resize: "vertical",
+                  boxSizing: "border-box",
+                }}
+              />
             </div>
           </section>
 

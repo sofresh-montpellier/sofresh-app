@@ -196,10 +196,26 @@ export default function Cart({
   <button
     type="button"
     className="cart-pickup-edit"
-    onClick={() => {
-      onClose();
-      window.location.href = "/accueil-v2#retrait";
-    }}
+   onClick={() => {
+if (selectedDate) {
+  localStorage.setItem(
+    "sofresh_pickup_date",
+    iso(selectedDate)
+  );
+}
+
+  if (pickupTime) {
+    localStorage.setItem(
+      "sofresh_pickup_time",
+      pickupTime
+    );
+  }
+
+  onClose();
+
+  window.location.href =
+    "/accueil-v2#retrait";
+}}
   >
     Modifier
   </button>

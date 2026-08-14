@@ -7,9 +7,75 @@ import {
   isSupabaseConfigured,
 } from "../../lib/supabase";
 
+const euro = (value) =>
+  Number(value || 0).toLocaleString("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  });
+
+function formatPickupDate(value) {
+  if (!value) return "";
+
+  const [year, month, day] = value.split("-").map(Number);
+
+  const date = new Date(year, month - 1, day);
+
+  return new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(date);
+}
+
+function formatPickupTime(value) {
+  return String(value || "")
+    .replace(/\s*h\s*/i, " h ")
+    .trim();
+}
+
 export default function ComptePage() {
   const [user, setUser] = useState(null);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+
+  async function loadOrders(userId) {
+    if (!supabase || !userId) {
+      setOrders([]);
+      return;
+    }
+
+    setLoadingOrders(true);
+
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        `
+        id,
+        pickup_date,
+        pickup_time,
+        total,
+        status,
+        created_at
+        `
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(
+        "Erreur chargement historique commandes :",
+        error
+      );
+
+      setOrders([]);
+      setLoadingOrders(false);
+      return;
+    }
+
+    setOrders(data || []);
+    setLoadingOrders(false);
+  }
 
   useEffect(() => {
     async function loadUser() {
@@ -22,7 +88,16 @@ export default function ComptePage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      setUser(user || null);
+      const currentUser = user || null;
+
+      setUser(currentUser);
+
+      if (currentUser) {
+        await loadOrders(currentUser.id);
+      } else {
+        setOrders([]);
+      }
+
       setLoading(false);
     }
 
@@ -30,9 +105,19 @@ export default function ComptePage() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
+    } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        const currentUser = session?.user || null;
+
+        setUser(currentUser);
+
+        if (currentUser) {
+          await loadOrders(currentUser.id);
+        } else {
+          setOrders([]);
+        }
+      }
+    );
 
     return () => {
       subscription.unsubscribe();
@@ -43,7 +128,9 @@ export default function ComptePage() {
     if (!supabase) return;
 
     await supabase.auth.signOut();
+
     setUser(null);
+    setOrders([]);
   }
 
   if (loading) {
@@ -61,42 +148,50 @@ export default function ComptePage() {
   }
 
   if (user) {
-    const firstName = user.user_metadata?.first_name || "";
-    const lastName = user.user_metadata?.last_name || "";
-    const phone = user.user_metadata?.phone || "";
+    const firstName =
+      user.user_metadata?.first_name || "";
+
+    const lastName =
+      user.user_metadata?.last_name || "";
+
+    const phone =
+      user.user_metadata?.phone || "";
 
     return (
       <main className="account-page">
         <div className="account-container">
-
           <h1>Mon compte</h1>
 
           <p className="account-intro">
-  {firstName
-    ? `Bonjour ${firstName} 👋`
-    : "Bienvenue chez So Fresh 👋"}
-</p>
+            {firstName
+              ? `Bonjour ${firstName} 👋`
+              : "Bienvenue chez So Fresh 👋"}
+          </p>
 
           <div className="account-benefits">
             <h2>Mes informations</h2>
 
             <div className="account-benefit">
-  <span className="account-benefit-icon">👤</span>
+              <span className="account-benefit-icon">
+                👤
+              </span>
 
-  <div>
-    <strong>
-      {firstName || lastName
-        ? `${firstName} ${lastName}`.trim()
-        : "Mon profil"}
-    </strong>
+              <div>
+                <strong>
+                  {firstName || lastName
+                    ? `${firstName} ${lastName}`.trim()
+                    : "Mon profil"}
+                </strong>
 
-    <p>{user.email}</p>
-  </div>
-</div>
+                <p>{user.email}</p>
+              </div>
+            </div>
 
             {phone && (
               <div className="account-benefit">
-                <span className="account-benefit-icon">☎</span>
+                <span className="account-benefit-icon">
+                  ☎
+                </span>
 
                 <div>
                   <strong>Téléphone</strong>
@@ -105,6 +200,60 @@ export default function ComptePage() {
               </div>
             )}
           </div>
+
+          <div className="account-orders">
+  <h2>Mes commandes</h2>
+
+  {loadingOrders && (
+    <p className="account-intro">
+      Chargement de vos commandes...
+    </p>
+  )}
+
+  {!loadingOrders && orders.length === 0 && (
+    <p className="account-intro">
+      Vous n’avez pas encore de commande.
+    </p>
+  )}
+
+  {!loadingOrders &&
+    orders.map((order) => (
+      <div className="account-order-card" key={order.id}>
+        <div className="account-order-top">
+          <span className="account-order-title">
+            {order.status === "Nouvelle"
+              ? "Commande en cours"
+              : "Commande"}
+          </span>
+
+          <span className="account-order-status">
+            {order.status === "Nouvelle"
+              ? "Reçue"
+              : order.status || "Reçue"}
+          </span>
+        </div>
+
+        <div className="account-order-label">
+          Retrait
+        </div>
+
+        <div className="account-order-pickup">
+          {formatPickupDate(order.pickup_date)} ·{" "}
+          {formatPickupTime(order.pickup_time)}
+        </div>
+
+        <div className="account-order-bottom">
+          <span className="account-order-total-label">
+            Total
+          </span>
+
+          <span className="account-order-total">
+            {euro(order.total)}
+          </span>
+        </div>
+      </div>
+    ))}
+</div>
 
           <div className="account-actions">
             <Link
@@ -122,7 +271,6 @@ export default function ComptePage() {
               Se déconnecter
             </button>
           </div>
-
         </div>
       </main>
     );
@@ -131,7 +279,6 @@ export default function ComptePage() {
   return (
     <main className="account-page">
       <div className="account-container">
-
         <h1>Mon compte</h1>
 
         <p className="account-intro">
@@ -174,8 +321,13 @@ export default function ComptePage() {
             </span>
 
             <div>
-              <strong>Profitez de votre fidélité</strong>
-              <p>Cumulez des points à chaque commande.</p>
+              <strong>
+                Profitez de votre fidélité
+              </strong>
+
+              <p>
+                Retrouvez vos avantages fidélité.
+              </p>
             </div>
           </div>
 
@@ -196,9 +348,13 @@ export default function ComptePage() {
             </span>
 
             <div>
-              <strong>Commandez plus rapidement</strong>
+              <strong>
+                Commandez plus rapidement
+              </strong>
+
               <p>
-                Retrouvez vos informations lors de vos prochaines commandes.
+                Retrouvez vos informations lors de vos
+                prochaines commandes.
               </p>
             </div>
           </div>
@@ -221,12 +377,16 @@ export default function ComptePage() {
             </span>
 
             <div>
-              <strong>Retrouvez vos commandes</strong>
-              <p>Consultez facilement votre historique.</p>
+              <strong>
+                Retrouvez vos commandes
+              </strong>
+
+              <p>
+                Consultez facilement votre historique.
+              </p>
             </div>
           </div>
         </div>
-
       </div>
     </main>
   );

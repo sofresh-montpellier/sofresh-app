@@ -10,6 +10,12 @@ export async function POST(request) {
 
   const stripeWebhookSecret =
     process.env.STRIPE_WEBHOOK_SECRET;
+    console.log(
+  "Webhook secret chargé :",
+  stripeWebhookSecret
+    ? `${stripeWebhookSecret.slice(0, 4)}... / ${stripeWebhookSecret.length} caractères`
+    : "ABSENT"
+);
 
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL;
