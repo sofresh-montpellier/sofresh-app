@@ -158,6 +158,8 @@ export async function POST(request) {
     }
 
     const stripe = new Stripe(stripeSecretKey);
+    const stripeAccount = await stripe.accounts.retrieve();
+console.log("STRIPE ACCOUNT CHECKOUT :", stripeAccount.id);
 
     const supabaseAdmin = createClient(
       supabaseUrl,
