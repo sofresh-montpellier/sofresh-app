@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,13 +9,23 @@ export async function POST(request) {
   const stripeSecretKey =
     process.env.STRIPE_SECRET_KEY;
 
-  const stripeWebhookSecret =
-    process.env.STRIPE_WEBHOOK_SECRET;
-    console.log(
+ const stripeWebhookSecret =
+  process.env.STRIPE_WEBHOOK_SECRET;
+
+console.log(
   "Webhook secret chargé :",
   stripeWebhookSecret
     ? `${stripeWebhookSecret.slice(0, 6)}...${stripeWebhookSecret.slice(-4)} / ${stripeWebhookSecret.length} caractères`
     : "ABSENT"
+);
+
+console.log(
+  "Empreinte webhook :",
+  crypto
+    .createHash("sha256")
+    .update(stripeWebhookSecret)
+    .digest("hex")
+    .slice(0, 12)
 );
 
   const supabaseUrl =
