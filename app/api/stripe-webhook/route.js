@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
+
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,21 +12,9 @@ export async function POST(request) {
  const stripeWebhookSecret =
   process.env.STRIPE_WEBHOOK_SECRET;
 
-console.log(
-  "Webhook secret chargé :",
-  stripeWebhookSecret
-    ? `${stripeWebhookSecret.slice(0, 6)}...${stripeWebhookSecret.slice(-4)} / ${stripeWebhookSecret.length} caractères`
-    : "ABSENT"
-);
 
-console.log(
-  "Empreinte webhook :",
-  crypto
-    .createHash("sha256")
-    .update(stripeWebhookSecret)
-    .digest("hex")
-    .slice(0, 12)
-);
+
+
 
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -164,22 +152,24 @@ console.log(
     }
 
     const { error: orderError } =
-      await supabase
-        .from("orders")
-        .insert({
-          customer_name:
-            pendingCheckout.customer_name,
-          customer_phone:
-            pendingCheckout.customer_phone,
-            user_id: pendingCheckout.user_id,
-          pickup_date:
-            pendingCheckout.pickup_date,
-          pickup_time:
-            pendingCheckout.pickup_time,
-          items: pendingCheckout.items,
-          total: pendingCheckout.total,
-          status: "Nouvelle",
-        });
+  await supabase
+    .from("orders")
+    .insert({
+      customer_name:
+        pendingCheckout.customer_name,
+      customer_phone:
+        pendingCheckout.customer_phone,
+      user_id: pendingCheckout.user_id,
+      pickup_date:
+        pendingCheckout.pickup_date,
+      pickup_time:
+        pendingCheckout.pickup_time,
+      items: pendingCheckout.items,
+      total: pendingCheckout.total,
+      status: "Nouvelle",
+      payment_status: "paid",
+      stripe_session_id: session.id,
+    });
 
     if (orderError) {
       console.error(
