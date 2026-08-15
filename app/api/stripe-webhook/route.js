@@ -64,7 +64,9 @@ console.log(
     }
   );
 
-  const body = await request.text();
+  const body = Buffer.from(
+  await request.arrayBuffer()
+);
   const signature = request.headers.get(
     "stripe-signature"
   );
