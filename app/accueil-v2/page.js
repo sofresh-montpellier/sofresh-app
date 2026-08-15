@@ -456,38 +456,17 @@ useEffect(() => {
   return (
     <main className="home-v2">
       {settings?.closure_enabled && (
-  <section
-    style={{
-      margin: "14px 16px 0",
-      padding: "14px 16px",
-      borderRadius: "16px",
-      background: "#fff8d8",
-      border: "1px solid #dfd178",
-      textAlign: "center",
-    }}
-  >
-    <strong
-      style={{
-        display: "block",
-        fontSize: "17px",
-        marginBottom: "6px",
-        color: "#1f2f1f",
-      }}
-    >
-      So Fresh prend quelques jours de repos
-    </strong>
+  <div className="closure-marquee">
+  <div className="closure-marquee-track">
+    <span>
+      {settings?.closure_message || "So Fresh est fermé pour congés. À très bientôt !"}
+    </span>
 
-    <p
-      style={{
-        margin: 0,
-        lineHeight: 1.5,
-        color: "#4a5647",
-      }}
-    >
-      {settings?.closure_message ||
-        "So Fresh est fermé pour congés. À très bientôt !"}
-    </p>
-  </section>
+    <span>
+      {settings?.closure_message || "So Fresh est fermé pour congés. À très bientôt !"}
+    </span>
+  </div>
+</div>
 )}
       {/* ===============================
           HERO SO FRESH

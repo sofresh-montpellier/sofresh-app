@@ -6308,3 +6308,39 @@ header.home-header {
   font-weight: 800;
   color: #5a7f0d;
 }
+/* ===== BANDEAU CONGÉS DÉFILANT ===== */
+
+.closure-marquee {
+  width: 100%;
+  overflow: hidden;
+  background: #dfe8c8;
+  border-top: 1px solid #98bd12;
+  border-bottom: 1px solid #98bd12;
+  padding: 10px 0;
+  color: #1f2f1f;
+  font-weight: 400;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.closure-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: closure-scroll 24s linear infinite;
+}
+
+.closure-marquee-track span {
+  display: inline-block;
+  padding-right: 80px;
+  padding-left: 20px;
+}
+
+@keyframes closure-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}

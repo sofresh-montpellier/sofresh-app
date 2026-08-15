@@ -13,7 +13,7 @@ export async function POST(request) {
     console.log(
   "Webhook secret chargé :",
   stripeWebhookSecret
-    ? `${stripeWebhookSecret.slice(0, 4)}... / ${stripeWebhookSecret.length} caractères`
+    ? `${stripeWebhookSecret.slice(0, 6)}...${stripeWebhookSecret.slice(-4)} / ${stripeWebhookSecret.length} caractères`
     : "ABSENT"
 );
 
