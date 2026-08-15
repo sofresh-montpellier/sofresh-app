@@ -70,18 +70,6 @@ console.log(
   const signature = request.headers.get(
     "stripe-signature"
   );
-  console.log(
-  "Signature reçue :",
-  signature
-    ? signature.slice(0, 80)
-    : "ABSENTE"
-);
-
-console.log(
-  "Body webhook :",
-  body.length,
-  "octets"
-);
 
   if (!signature) {
     return new Response(
