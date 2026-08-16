@@ -17,7 +17,6 @@ function formatPickupDate(value) {
   if (!value) return "";
 
   const [year, month, day] = value.split("-").map(Number);
-
   const date = new Date(year, month - 1, day);
 
   return new Intl.DateTimeFormat("fr-FR", {
@@ -31,6 +30,23 @@ function formatPickupTime(value) {
   return String(value || "")
     .replace(/\s*h\s*/i, " h ")
     .trim();
+}
+
+function isFutureOrder(order) {
+  if (!order.pickup_date || !order.pickup_time) {
+    return false;
+  }
+
+  const time = String(order.pickup_time)
+    .replace(" h ", ":")
+    .replace("h", ":")
+    .trim();
+
+  const pickupDateTime = new Date(
+    `${order.pickup_date}T${time}`
+  );
+
+  return pickupDateTime > new Date();
 }
 
 export default function ComptePage() {
@@ -49,16 +65,15 @@ export default function ComptePage() {
 
     const { data, error } = await supabase
       .from("orders")
-      .select(
-        `
+      .select(`
         id,
+        order_number,
         pickup_date,
         pickup_time,
         total,
         status,
         created_at
-        `
-      )
+      `)
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
@@ -160,6 +175,7 @@ export default function ComptePage() {
     return (
       <main className="account-page">
         <div className="account-container">
+
           <h1>Mon compte</h1>
 
           <p className="account-intro">
@@ -201,61 +217,82 @@ export default function ComptePage() {
             )}
           </div>
 
-          <div className="account-orders">
-  <h2>Mes commandes</h2>
+          <div className="account-orders account-orders-compact">
 
-  {loadingOrders && (
-    <p className="account-intro">
-      Chargement de vos commandes...
-    </p>
-  )}
+            <div className="account-orders-header">
+              <h2>Mon historique de commandes</h2>
 
-  {!loadingOrders && orders.length === 0 && (
-    <p className="account-intro">
-      Vous n’avez pas encore de commande.
-    </p>
-  )}
+              <Link
+                href="/compte/commandes"
+                className="account-orders-all-link"
+              >
+                Voir tout →
+              </Link>
+            </div>
 
-  {!loadingOrders &&
-    orders.map((order) => (
-      <div className="account-order-card" key={order.id}>
-        <div className="account-order-top">
-          <span className="account-order-title">
-            {order.status === "Nouvelle"
-              ? "Commande en cours"
-              : "Commande"}
-          </span>
+            {loadingOrders && (
+              <p className="account-intro">
+                Chargement de vos commandes...
+              </p>
+            )}
 
-          <span className="account-order-status">
-            {order.status === "Nouvelle"
-              ? "Reçue"
-              : order.status || "Reçue"}
-          </span>
-        </div>
+            {!loadingOrders && orders.length === 0 && (
+              <p className="account-intro">
+                Vous n’avez pas encore de commande.
+              </p>
+            )}
 
-        <div className="account-order-label">
-          Retrait
-        </div>
+            {!loadingOrders &&
+              orders.slice(0, 3).map((order) => (
+                <Link
+                  href={`/compte/commandes/${order.id}`}
+                  className="account-order-line"
+                  key={order.id}
+                >
+                  <div className="account-order-line-main">
 
-        <div className="account-order-pickup">
-          {formatPickupDate(order.pickup_date)} ·{" "}
-          {formatPickupTime(order.pickup_time)}
-        </div>
+                    <div>
+                      <strong>
+                        Commande{" "}
+                        <span className="account-order-number">
+                          SF-{order.order_number}
+                        </span>
+                      </strong>
 
-        <div className="account-order-bottom">
-          <span className="account-order-total-label">
-            Total
-          </span>
+                      <p>
+                        {formatPickupDate(order.pickup_date)}
+                        {" · "}
+                        {formatPickupTime(order.pickup_time)}
+                      </p>
+                    </div>
 
-          <span className="account-order-total">
-            {euro(order.total)}
-          </span>
-        </div>
-      </div>
-    ))}
-</div>
+                    <div className="account-order-line-right">
+
+                      <span
+                        className={`account-order-mini-status ${
+                          isFutureOrder(order)
+                            ? "future"
+                            : "finished"
+                        }`}
+                      >
+                        {isFutureOrder(order)
+                          ? "À venir"
+                          : "Terminée"}
+                      </span>
+
+                      <strong>
+                        {euro(order.total)}
+                      </strong>
+
+                    </div>
+                  </div>
+                </Link>
+              ))}
+
+          </div>
 
           <div className="account-actions">
+
             <Link
               href="/commander"
               className="account-login-btn"
@@ -270,6 +307,7 @@ export default function ComptePage() {
             >
               Se déconnecter
             </button>
+
           </div>
         </div>
       </main>
@@ -279,6 +317,7 @@ export default function ComptePage() {
   return (
     <main className="account-page">
       <div className="account-container">
+
         <h1>Mon compte</h1>
 
         <p className="account-intro">
@@ -286,6 +325,7 @@ export default function ComptePage() {
         </p>
 
         <div className="account-actions">
+
           <Link
             href="/compte/connexion"
             className="account-login-btn"
@@ -299,9 +339,11 @@ export default function ComptePage() {
           >
             Créer mon compte
           </Link>
+
         </div>
 
         <div className="account-benefits">
+
           <h2>Pourquoi créer un compte ?</h2>
 
           <div className="account-benefit">
@@ -386,6 +428,7 @@ export default function ComptePage() {
               </p>
             </div>
           </div>
+
         </div>
       </div>
     </main>

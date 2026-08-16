@@ -6344,3 +6344,971 @@ header.home-header {
     transform: translateX(-50%);
   }
 }
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 48px;
+}
+
+.password-eye {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+.order-access-page {
+  min-height: 100vh;
+  background: #f8f8f4;
+}
+
+.order-access-hero {
+  min-height: 100vh;
+  background:
+    linear-gradient(
+      rgba(31, 47, 31, 0.15),
+      rgba(31, 47, 31, 0.35)
+      
+    ),
+    
+ url("/facade1-sofresh.jpeg") center top/contain no-repeat;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.order-access-overlay {
+  width: min(100%, 430px);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.order-access-logo {
+  text-align: center;
+  padding-top: 36px;
+}
+
+.order-access-logo img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+}
+
+.order-access-card {
+  background: #1f2f1f;
+  border-radius: 36px 36px 0 0;
+  padding: 34px 24px 30px;
+  text-align: center;
+  color: white;
+  margin-top: -20px;
+}
+
+.order-access-kicker {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #dfd178;
+}
+
+.order-access-card h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+.order-access-card h1 span {
+  display: block;
+  color: #ffd400;
+}
+
+.order-access-text {
+  margin: 18px auto 24px;
+  max-width: 320px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.order-access-login,
+.order-access-register {
+  display: block;
+  width: 100%;
+  text-decoration: none;
+  border-radius: 14px;
+  padding: 15px 18px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.order-access-login {
+  background: #98bd12;
+  color: white;
+  margin-bottom: 12px;
+}
+
+.order-access-register {
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  color: white;
+  background: transparent;
+}
+
+.order-access-note {
+  margin: 18px auto 0;
+  max-width: 320px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+  padding-bottom: 10px;
+}
+.password-eye {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  padding: 4px;
+  cursor: pointer;
+  color: #5a7f0d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-eye:hover {
+  opacity: 0.7;
+}
+.account-login-form input {
+  font-weight: 400;
+}
+/* Alléger les textes de la page Mon compte */
+.account-page {
+  font-weight: 400;
+}
+
+.account-page h2,
+.account-page h3,
+.account-page strong {
+  font-weight: 600;
+}
+.account-order-title {
+  font-weight: 600;
+}
+
+.account-order-pickup {
+  font-weight: 500;
+}
+
+.account-order-total {
+  font-weight: 600;
+}
+.order-detail-item {
+  padding: 12px 4px 16px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border-bottom: 1px solid rgba(90, 127, 13, 0.12);
+}
+
+.order-detail-item:last-child {
+  border-bottom: none;
+}
+.orders-history-page {
+  min-height: 100vh;
+  background: linear-gradient(
+    180deg,
+    #f7f3c8 0%,
+    #fbf8df 45%,
+    #f6f0c5 100%
+  );
+}
+
+.orders-history-container {
+  padding-bottom: 40px;
+}
+
+.orders-history-container h1 {
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #2f4b1f;
+  margin-bottom: 8px;
+}
+
+.orders-history-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.orders-history-card {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(90, 127, 13, 0.18);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 5px 14px rgba(31, 47, 31, 0.05);
+}
+
+.orders-history-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.orders-history-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: #263322;
+}
+
+.orders-history-number span {
+  color: #e95d57;
+  font-weight: 600;
+}
+
+.orders-history-date {
+  margin-top: 7px;
+  font-size: 13px;
+  color: #666;
+  text-transform: capitalize;
+}
+
+.orders-history-price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #5a7f0d;
+  white-space: nowrap;
+}
+
+.orders-history-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 13px;
+  padding: 10px 13px;
+  border: 1px solid #5a7f0d;
+  border-radius: 11px;
+  color: #5a7f0d;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.orders-history-link span {
+  font-size: 20px;
+  line-height: 1;
+}
+.order-reorder-btn {
+  width: 100%;
+  margin-top: 22px;
+  min-height: 54px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: #98bd12;
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(31, 47, 31, 0.15);
+}
+
+.order-reorder-btn:hover {
+  background: #5a7f0d;
+}
+/* ============================= */
+/* DÉTAIL D'UNE COMMANDE         */
+/* ============================= */
+
+.order-detail-page {
+  min-height: 100vh;
+  background: linear-gradient(
+    180deg,
+    #f4efb8 0%,
+    #f8f4cf 48%,
+    #f1eaa9 100%
+  );
+}
+
+.order-detail-container {
+  padding-bottom: 34px;
+}
+
+.order-detail-container h1 {
+  margin: 18px 0 10px;
+  font-size: 22px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #365718;
+  text-align: left;
+}
+
+.order-detail-container .account-intro {
+  text-align: left;
+  margin-bottom: 18px;
+  color: #666;
+  font-size: 13px;
+}
+
+/* Liste des produits */
+.order-detail-container .account-orders {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin-top: 14px;
+}
+
+.order-detail-item {
+  padding: 12px 2px 13px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border-bottom: 1px solid rgba(90, 127, 13, 0.22);
+}
+
+.order-detail-item:last-child {
+  border-bottom: 1px solid rgba(90, 127, 13, 0.22);
+}
+
+.order-detail-item .account-order-top {
+  align-items: center;
+}
+
+.order-detail-item .account-order-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2f1f;
+}
+
+.order-detail-item .account-order-total {
+  font-size: 14px;
+  font-weight: 500;
+  color: #5a7f0d;
+}
+
+.order-detail-item .account-order-label {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #777;
+}
+
+/* Total */
+.order-detail-container .account-order-bottom {
+  margin-top: 14px !important;
+  padding: 12px 2px !important;
+  border: none;
+  background: transparent;
+}
+
+.order-detail-container .account-order-total-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.order-detail-container .account-order-bottom .account-order-total {
+  font-size: 20px;
+  font-weight: 600;
+  color: #5a7f0d;
+}
+
+/* Bouton renouveler */
+.order-reorder-btn {
+  width: 100%;
+  margin-top: 20px;
+  min-height: 54px;
+  border: none;
+  border-radius: 12px;
+  background: #f35f54;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  box-shadow: 0 6px 14px rgba(31, 47, 31, 0.14);
+}
+
+.order-reorder-btn:hover {
+  background: #e85349;
+}
+/* ================================= */
+/* HISTORIQUE - LISTE DES COMMANDES  */
+/* même design que le détail         */
+/* ================================= */
+
+.account-page .account-container > h1 {
+  font-size: 22px;
+  line-height: 1.15;
+  color: #365718;
+}
+
+/* Page historique : fond identique au détail */
+.account-page {
+  background: linear-gradient(
+    180deg,
+    #f4efb8 0%,
+    #f8f4cf 48%,
+    #f1eaa9 100%
+  );
+}
+
+/* Liste des commandes */
+.account-order-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+
+  padding: 13px 2px 14px;
+  margin: 0;
+
+  border-bottom: 1px solid rgba(90, 127, 13, 0.22);
+}
+
+/* Première ligne : commande + prix */
+.account-order-card .account-order-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.account-order-card .account-order-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2f1f;
+}
+
+.account-order-card .account-order-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: #5a7f0d;
+}
+
+/* Retrait */
+.account-order-card .account-order-label {
+  display: none;
+}
+
+.account-order-card .account-order-pickup {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6f6f6f;
+}
+
+/* Bouton "Voir la commande" transformé en lien discret */
+.account-order-card .account-login-btn {
+  width: auto !important;
+  min-height: auto !important;
+
+  display: inline-block !important;
+
+  margin-top: 7px !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  color: #5a7f0d !important;
+
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+}
+
+/* petite flèche */
+.account-order-card .account-login-btn::after {
+  content: "  ›";
+  font-size: 15px;
+}
+
+/* Intro */
+.account-page .account-intro {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Un peu d'espace avant la première commande */
+.account-page .account-intro + .account-order-card {
+  margin-top: 14px;
+}
+/* ================================= */
+/* MON COMPTE - HISTORIQUE COMPACT   */
+/* ================================= */
+
+.account-orders-compact {
+  padding: 16px;
+}
+
+.account-orders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.account-orders-header h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #263322;
+}
+
+.account-orders-all-link {
+  color: #5a7f0d;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.account-order-line {
+  display: block;
+  padding: 12px 0;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(90, 127, 13, 0.18);
+}
+
+.account-order-line:last-child {
+  border-bottom: none;
+}
+
+.account-order-line-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-order-line strong {
+  font-size: 13px;
+  font-weight: 500;
+  color: #263322;
+}
+
+.account-order-number {
+  color: #e95d57;
+  font-weight: 600;
+}
+
+.account-order-line p {
+  margin: 5px 0 0;
+  font-size: 11px;
+  font-weight: 400;
+  color: #6f6f6f;
+  text-transform: capitalize;
+}
+
+.account-order-line-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.account-order-line-right > strong {
+  color: #5a7f0d;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.account-order-mini-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.account-order-mini-status.future {
+  background: #ffd400;
+  color: #263322;
+}
+
+.account-order-mini-status.finished {
+  background: #ecebdc;
+  color: #666;
+}
+/* ================================= */
+/* DÉTAIL COMMANDE - CARTE COHÉRENTE */
+/* ================================= */
+
+.order-detail-container .account-orders {
+  background: #ffffff;
+  border: 1px solid rgba(90, 127, 13, 0.18);
+  border-radius: 18px;
+  padding: 10px 16px;
+  margin-top: 16px;
+
+  box-shadow: 0 5px 14px rgba(31, 47, 31, 0.05);
+}
+
+.order-detail-item {
+  padding: 12px 0 13px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid rgba(90, 127, 13, 0.16);
+}
+
+.order-detail-item:last-child {
+  border-bottom: none;
+}
+
+.order-detail-container .account-order-bottom {
+  margin-top: 12px !important;
+  padding: 14px 16px !important;
+
+  background: #ffffff;
+  border: 1px solid rgba(90, 127, 13, 0.18);
+  border-radius: 16px;
+
+  box-shadow: 0 4px 10px rgba(31, 47, 31, 0.04);
+}
+
+.order-detail-container .account-order-bottom .account-order-total {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.order-reorder-btn {
+  margin-top: 12px;
+}
+/* ================================= */
+/* ACCÈS COMMANDE - VISITEUR         */
+/* ================================= */
+
+.access-gate-page {
+  width: min(390px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #1f2f1f;
+  overflow: hidden;
+}
+
+.access-gate-photo {
+  position: relative;
+  height: 360px;
+  overflow: hidden;
+}
+
+.access-gate-photo > img:first-child {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.access-gate-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.05) 0%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
+}
+
+.access-gate-logo {
+  position: absolute;
+  z-index: 2;
+
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 175px;
+  height: 175px;
+  object-fit: contain;
+}
+
+.access-gate-panel {
+  position: relative;
+  z-index: 3;
+  margin-top: -30px;
+  min-height: calc(100vh - 330px);
+
+  padding: 38px 22px 28px;
+
+  background: #1f2f1f;
+  border-radius: 30px 30px 0 0;
+
+  text-align: center;
+  color: white;
+}
+
+.access-gate-kicker {
+  margin: 0 0 12px;
+  color: #dfd178;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.access-gate-panel h1 {
+  margin: 0 auto 18px;
+  max-width: 310px;
+
+  font-size: 28px;
+  line-height: 1.08;
+  font-weight: 700;
+  color: white;
+}
+
+.access-gate-panel h1 span {
+  display: block;
+  color: #ffd400;
+}
+
+.access-gate-text {
+  max-width: 305px;
+  margin: 0 auto 24px;
+
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.access-gate-login,
+.access-gate-register {
+  width: 100%;
+  min-height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+  text-decoration: none;
+
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.access-gate-login {
+  margin-bottom: 11px;
+  background: #98bd12;
+  color: white;
+}
+
+.access-gate-register {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: transparent;
+  color: white;
+}
+
+.access-gate-note {
+  margin: 20px auto 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.62);
+}
+/* ========================================= */
+/* PAGE ACCÈS COMMANDE - DESIGN VALIDÉ       */
+/* ========================================= */
+
+.access-gate-page {
+  width: min(390px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #17301f;
+  overflow: hidden;
+}
+
+.access-gate-photo {
+  position: relative;
+  height: 390px;
+  overflow: hidden;
+  background: #ddd;
+}
+
+.access-gate-facade {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.access-gate-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.04) 0%,
+    rgba(0, 0, 0, 0.08) 55%,
+    rgba(0, 0, 0, 0.22) 100%
+  );
+  pointer-events: none;
+}
+
+.access-gate-logo {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 185px;
+  height: 185px;
+  object-fit: contain;
+
+  filter: drop-shadow(
+    0 5px 12px rgba(0, 0, 0, 0.22)
+  );
+}
+
+.access-gate-panel {
+  position: relative;
+  z-index: 3;
+
+  margin-top: -38px;
+  padding: 42px 22px 28px;
+
+  background: #17301f;
+  border-radius: 34px 34px 0 0;
+
+  text-align: center;
+  color: #ffffff;
+}
+
+.access-gate-kicker {
+  margin: 0 0 15px;
+
+  color: #98bd12;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.access-gate-title {
+  max-width: 330px;
+  margin: 0 auto 22px;
+
+  color: #ffffff;
+  font-size: 29px;
+  line-height: 1.08;
+  font-weight: 700;
+}
+
+.access-gate-title span {
+  display: block;
+  margin-top: 3px;
+  color: #ffd400;
+}
+
+.access-gate-text {
+  max-width: 320px;
+  margin: 0 auto 28px;
+
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.access-gate-login,
+.access-gate-register {
+  width: 100%;
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+
+  border-radius: 14px;
+
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+.access-gate-login {
+  margin-bottom: 13px;
+
+  background: #98bd12;
+  color: #ffffff;
+
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.16);
+}
+
+.access-gate-register {
+  background: transparent;
+  color: #ffffff;
+
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.access-gate-login:active,
+.access-gate-register:active {
+  transform: scale(0.985);
+}
+
+.access-gate-note {
+  margin: 24px auto 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  color: rgba(255, 255, 255, 0.72);
+
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.access-gate-note svg {
+  flex-shrink: 0;
+  color: #98bd12;
+}

@@ -13,6 +13,7 @@ export default function ConnexionPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -185,19 +186,50 @@ export default function ConnexionPage() {
             />
           </label>
 
-          <label>
-            Mot de passe
-            <input
-              type="password"
-              placeholder="Votre mot de passe"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
-              required
-            />
-          </label>
+         <label>
+  Mot de passe
+
+  <div className="password-field">
+    <input
+      type={showPassword ? "text" : "password"}
+      placeholder="Votre mot de passe"
+      autoComplete="current-password"
+      value={password}
+      onChange={(event) =>
+        setPassword(event.target.value)
+      }
+      required
+    />
+
+    <button
+      type="button"
+      className="password-eye"
+      onClick={() =>
+        setShowPassword(!showPassword)
+      }
+      aria-label={
+        showPassword
+          ? "Masquer le mot de passe"
+          : "Afficher le mot de passe"
+      }
+    >
+      <svg
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  strokeWidth="1.8"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+  aria-hidden="true"
+>
+  <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+  <circle cx="12" cy="12" r="2.5" />
+</svg>
+    </button>
+  </div>
+</label>
 
           <Link
             href="/compte/mot-de-passe-oublie"
