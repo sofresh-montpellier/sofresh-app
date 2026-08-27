@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Cart from "../components/Cart";
 
 import {
@@ -490,6 +491,7 @@ function getOpenDaysText(settings) {
 }
 
 export default function Home() {
+    const router = useRouter();
    const [products, setProducts] = useState([]);
   const [settings, setSettings] = useState(null);
 
@@ -519,6 +521,24 @@ export default function Home() {
     capacity: 0,
     counts: {},
   });
+  useEffect(() => {
+  async function checkAccess() {
+    if (!isSupabaseConfigured || !supabase) {
+      router.replace("/acces-commande");
+      return;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user || !user.email_confirmed_at) {
+      router.replace("/acces-commande");
+    }
+  }
+
+  checkAccess();
+}, [router]);
 
   /* =========================================
      ANCIEN RETRAIT MÉMORISÉ
