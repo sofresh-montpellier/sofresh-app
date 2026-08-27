@@ -2648,68 +2648,83 @@ padding: 7px 12px;
 /* SPLASH SCREEN */
 /* ============================= */
 
+/* ========================== */
+/* SPLASH SCREEN SO FRESH     */
+/* ========================== */
+
 .splash-screen {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #98bd12, #5f7f0b);
+  z-index: 99999;
+
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #b7d928 0%,
+      #98bd12 45%,
+      #5a7f0d 100%
+    );
+
+  animation: splashFadeOut 0.45s ease 1.25s forwards;
 }
 
 .splash-logo {
-  width: 170px;
-  animation: splashZoom 0.8s ease;
+  width: 190px;
+  height: 190px;
+  object-fit: contain;
+
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.2));
+
+  animation: splashLogo 1.1s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .splash-loader {
-  margin-top: 35px;
-  width: 42px;
-  height: 42px;
-  border: 4px solid rgba(255,255,255,.35);
-  border-top: 4px solid white;
+  width: 34px;
+  height: 34px;
+
+  margin-top: 24px;
+
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
   border-radius: 50%;
-  animation: spin .9s linear infinite;
+
+  animation: splashSpin 0.8s linear infinite;
 }
 
-@keyframes splashZoom {
-  from {
-    transform: scale(.75);
-    opacity:0;
+@keyframes splashLogo {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
   }
-  to {
+
+  55% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+
+  100% {
+    opacity: 1;
     transform: scale(1);
-    opacity:1;
   }
 }
 
-@keyframes spin {
+@keyframes splashSpin {
   to {
     transform: rotate(360deg);
   }
 }
-/* =========================
-   ACCUEIL V2 - RETRAIT
-========================= */
 
-.home-v2 {
-  min-height: 100vh;
-  background: #fbfbf9;
-  color: #1b2813;
+@keyframes splashFadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
-
-.pickup-card {
-  width: min(920px, calc(100% - 32px));
-  margin: 24px auto;
-  padding: 28px;
-  background: #ffffff;
-  border: 1px solid #dfd178;
-  border-radius: 28px;
-  box-shadow: 0 16px 40px rgba(27, 40, 19, 0.08);
-}
-
 .pickup-card h2 {
   margin: 0 0 24px;
   text-align: center;

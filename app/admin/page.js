@@ -72,7 +72,7 @@ export default function OrdersPage() {
 const audioRef = useRef(null);
 const knownOrderIdsRef = useRef(new Set());
 const firstLoadRef = useRef(true);
-const [soundEnabled, setSoundEnabled] = useState(false);
+const [soundEnabled, setSoundEnabled] = useState(true);
   const selectedIso = dateToIso(selectedDate);
 
   async function loadOrders() {
