@@ -309,6 +309,38 @@ export default function ComptePage() {
             </button>
 
           </div>
+          <div
+  style={{
+    marginTop: "24px",
+    paddingTop: "16px",
+    borderTop: "1px solid rgba(90, 127, 13, 0.18)",
+    display: "flex",
+    justifyContent: "center",
+    gap: "16px",
+    flexWrap: "wrap",
+    fontSize: "11px",
+  }}
+>
+  <Link
+    href="/mentions-legales"
+    style={{
+      color: "#5A7F0D",
+      textDecoration: "none",
+    }}
+  >
+    Mentions légales
+  </Link>
+
+  <Link
+    href="/confidentialite"
+    style={{
+      color: "#5A7F0D",
+      textDecoration: "none",
+    }}
+  >
+    Politique de confidentialité
+  </Link>
+</div>
         </div>
       </main>
     );
@@ -431,6 +463,38 @@ export default function ComptePage() {
 
         </div>
       </div>
+      <div
+  style={{
+    marginTop: "24px",
+    paddingTop: "16px",
+    borderTop: "1px solid rgba(90, 127, 13, 0.18)",
+    display: "flex",
+    justifyContent: "center",
+    gap: "16px",
+    flexWrap: "wrap",
+    fontSize: "11px",
+  }}
+>
+  <Link
+    href="/mentions-legales"
+    style={{
+      color: "#5A7F0D",
+      textDecoration: "none",
+    }}
+  >
+    Mentions légales
+  </Link>
+
+  <Link
+    href="/confidentialite"
+    style={{
+      color: "#5A7F0D",
+      textDecoration: "none",
+    }}
+  >
+    Politique de confidentialité
+  </Link>
+</div>
     </main>
   );
 }

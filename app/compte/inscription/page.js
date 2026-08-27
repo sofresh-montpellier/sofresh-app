@@ -94,8 +94,8 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
         return;
       }
 
-      router.push("/compte/connexion");
-      router.refresh();
+      router.push("/compte/connexion?inscription=ok");
+router.refresh();
     } catch (error) {
       console.error("Erreur inscription :", error);
 

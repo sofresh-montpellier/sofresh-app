@@ -2,14 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import {
   supabase,
   isSupabaseConfigured,
 } from "../../../lib/supabase";
 
 export default function ConnexionPage() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
+
+const inscriptionOk =
+  searchParams.get("inscription") === "ok";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -167,6 +173,33 @@ export default function ConnexionPage() {
         <p className="account-intro">
           Connectez-vous à votre compte So Fresh
         </p>
+        {inscriptionOk && (
+  <div
+    style={{
+      marginBottom: "18px",
+      padding: "14px 16px",
+      borderRadius: "14px",
+      background: "#F4F8DF",
+      border: "1px solid #DFD178",
+      color: "#365718",
+      fontSize: "13px",
+      lineHeight: "1.5",
+      textAlign: "center",
+    }}
+  >
+    <strong
+      style={{
+        display: "block",
+        marginBottom: "4px",
+      }}
+    >
+      Compte créé avec succès
+    </strong>
+
+    Consultez votre boîte e-mail et confirmez
+    votre adresse avant de vous connecter.
+  </div>
+)}
 
         <form
           className="account-login-form"

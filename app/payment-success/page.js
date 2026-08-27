@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-
 function formatPickupDate(value) {
   if (!value) return "";
 
@@ -29,7 +28,6 @@ export default function PaymentSuccessPage() {
   const [paymentReference, setPaymentReference] = useState("");
 
   useEffect(() => {
-    // Récupération du créneau AVANT de nettoyer le panier
     const savedDate =
       localStorage.getItem("sofresh_pickup_date") || "";
 
@@ -39,7 +37,6 @@ export default function PaymentSuccessPage() {
     setPickupDate(savedDate);
     setPickupTime(savedTime);
 
-    // Référence Stripe présente dans l'URL
     const sessionId = searchParams.get("session_id");
 
     if (sessionId) {
@@ -48,10 +45,8 @@ export default function PaymentSuccessPage() {
       );
     }
 
-    // Le paiement est validé : on vide le panier
     localStorage.removeItem("sofresh_cart");
 
-    // Mise à jour immédiate du compteur panier dans le header
     window.dispatchEvent(
       new CustomEvent("sofresh-cart-count", {
         detail: 0,
@@ -60,138 +55,63 @@ export default function PaymentSuccessPage() {
   }, [searchParams]);
 
   return (
-    <main className="login-page">
-      <div
-        className="login-card"
-        style={{
-          textAlign: "center",
-          maxWidth: "520px",
-        }}
-      >
-     
+    <main className="payment-success-page">
+      <div className="payment-success-card">
 
-        <div
-          style={{
-            width: "54px",
-            height: "54px",
-            margin: "0 auto 14px",
-            borderRadius: "50%",
-            display: "grid",
-            placeItems: "center",
-            background: "#98BD12",
-            color: "#ffffff",
-            fontSize: "30px",
-            fontWeight: "800",
-          }}
-        >
+        <div className="payment-success-check">
           ✓
         </div>
 
-        <h1
-          style={{
-            marginBottom: "10px",
-          }}
-        >
-          Paiement confirmé
-        </h1>
+        <p className="payment-success-kicker">
+          COMMANDE VALIDÉE
+        </p>
 
-        <p
-          style={{
-            fontSize: "1rem",
-            lineHeight: 1.5,
-            color: "#555",
-            marginBottom: "22px",
-          }}
-        >
+        <h1>Paiement confirmé</h1>
+
+        <p className="payment-success-intro">
           Votre commande a bien été enregistrée.
         </p>
 
         {(pickupDate || pickupTime) && (
-          <div
-            style={{
-              padding: "16px",
-              marginBottom: "18px",
-              border: "1px solid #DFD178",
-              borderRadius: "16px",
-              background: "#F4F8DF",
-              textAlign: "left",
-            }}
-          >
-            <div
-              style={{
-                color: "#5A7F0D",
-                fontSize: "11px",
-                fontWeight: "800",
-                marginBottom: "5px",
-              }}
-            >
-              RETRAIT
-            </div>
+          <div className="payment-success-pickup">
+            <span>RETRAIT</span>
 
-            <strong
-              style={{
-                display: "block",
-                color: "#263322",
-                fontSize: "16px",
-                lineHeight: 1.4,
-                textTransform: "capitalize",
-              }}
-            >
+            <strong>
               {formatPickupDate(pickupDate)}
-              {pickupTime && ` • ${pickupTime}`}
+              {pickupTime && ` · ${pickupTime}`}
             </strong>
           </div>
         )}
 
         {paymentReference && (
-          <div
-            style={{
-              marginBottom: "22px",
-              color: "#777",
-              fontSize: "12px",
-            }}
-          >
-            Référence paiement :{" "}
-            <strong style={{ color: "#5A7F0D" }}>
-              {paymentReference}
-            </strong>
-          </div>
+          <p className="payment-success-reference">
+            Référence paiement{" "}
+            <strong>{paymentReference}</strong>
+          </p>
         )}
 
-        <p
-          style={{
-            fontSize: "1rem",
-            lineHeight: 1.55,
-            color: "#555",
-            marginBottom: "26px",
-          }}
-        >
-          Votre commande sera préparée pour l'heure
+        <p className="payment-success-text">
+          Votre commande sera préparée pour l’heure
           de retrait choisie.
         </p>
 
-        <Link
-          href="/accueil-v2"
-          className="primary"
-          style={{
-            display: "inline-block",
-            width: "100%",
-            minHeight: "50px",
-            lineHeight: "50px",
-            textDecoration: "none",
-            borderRadius: "14px",
-          }}
-        >
-          Retour à l'accueil
-        </Link>
+        <div className="payment-success-actions">
+          <Link
+            href="/compte/commandes"
+            className="payment-success-orders-btn"
+          >
+            Voir ma commande
+          </Link>
 
-        <p
-          style={{
-            marginTop: "24px",
-            fontSize: "0.9rem",
-            color: "#777",
-          }}
-        >
+          <Link
+            href="/accueil-v2"
+            className="payment-success-home-btn"
+          >
+            Retour à l’accueil
+          </Link>
+        </div>
+
+        <p className="payment-success-thanks">
           Merci de votre confiance.
         </p>
       </div>
