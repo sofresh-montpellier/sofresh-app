@@ -581,7 +581,7 @@ useEffect(() => {
               </a>
 
               <a
-                href="mailto:sofreshsalad@orange.fr"
+                href="mailto:sofreshsalade@gmail.com"
                 className="pickup-contact-btn"
               >
                 <Mail
@@ -592,7 +592,7 @@ useEffect(() => {
               </a>
 
               <a
-                href="https://www.google.com/maps/search/?api=1&query=1350+Avenue+Albert+Einstein+34000+Montpellier"
+                href="https://www.google.com/maps/search/?api=1&query=So+Fresh+Salade+1350+Avenue+Albert+Einstein+34000+Montpellier"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="pickup-contact-btn"
