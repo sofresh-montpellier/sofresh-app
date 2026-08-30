@@ -556,7 +556,7 @@ useEffect(() => {
 
           <div className="pickup-store-card">
             <img
-              src="/facade-sofresh.jpg"
+              src="/facade1-sofresh.jpeg"
               alt="Façade So Fresh Montpellier Millénaire"
               className="pickup-store-image"
             />

@@ -13,6 +13,7 @@ import {
 
 export default function ConnexionPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
 const inscriptionOk =
   searchParams.get("inscription") === "ok";
