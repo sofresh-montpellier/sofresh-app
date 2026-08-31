@@ -24,9 +24,14 @@ export default function ConnexionPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Renvoi de l'e-mail de confirmation
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendMessage, setResendMessage] = useState("");
+  const [showResendConfirmation, setShowResendConfirmation] =
+    useState(false);
+
+  const [resendLoading, setResendLoading] =
+    useState(false);
+
+  const [resendMessage, setResendMessage] =
+    useState("");
 
   async function handleResendConfirmation() {
     setErrorMessage("");
@@ -63,6 +68,7 @@ export default function ConnexionPage() {
         setErrorMessage(
           "Impossible de renvoyer l'e-mail pour le moment. Veuillez réessayer."
         );
+
         return;
       }
 
@@ -88,6 +94,7 @@ export default function ConnexionPage() {
 
     setErrorMessage("");
     setResendMessage("");
+    setShowResendConfirmation(false);
 
     if (!isSupabaseConfigured || !supabase) {
       setErrorMessage(
@@ -113,9 +120,25 @@ export default function ConnexionPage() {
         });
 
       if (error) {
+        const message =
+          error.message?.toLowerCase() || "";
+
+        if (
+          message.includes("email not confirmed") ||
+          message.includes("email_not_confirmed")
+        ) {
+          setErrorMessage(
+            "Votre adresse e-mail n’a pas encore été confirmée."
+          );
+
+          setShowResendConfirmation(true);
+          return;
+        }
+
         setErrorMessage(
           "E-mail ou mot de passe incorrect."
         );
+
         return;
       }
 
@@ -134,7 +157,6 @@ export default function ConnexionPage() {
         const phone =
           metadata.phone || "";
 
-        // Compatible avec les anciens ET les nouveaux comptes
         const emailOptIn =
           metadata.email_opt_in === true ||
           metadata.email_marketing === true;
@@ -277,6 +299,7 @@ export default function ConnexionPage() {
               onChange={(event) => {
                 setEmail(event.target.value);
                 setResendMessage("");
+                setShowResendConfirmation(false);
               }}
               required
             />
@@ -375,27 +398,29 @@ export default function ConnexionPage() {
               : "Se connecter"}
           </button>
 
-          <button
-            type="button"
-            onClick={handleResendConfirmation}
-            disabled={resendLoading || loading}
-            style={{
-              width: "100%",
-              marginTop: "10px",
-              padding: "11px 14px",
-              borderRadius: "12px",
-              border: "1px solid #98BD12",
-              background: "#ffffff",
-              color: "#5A7F0D",
-              fontSize: "13px",
-              fontWeight: "600",
-              cursor: "pointer",
-            }}
-          >
-            {resendLoading
-              ? "Envoi en cours..."
-              : "Renvoyer l’e-mail de confirmation"}
-          </button>
+          {showResendConfirmation && (
+            <button
+              type="button"
+              onClick={handleResendConfirmation}
+              disabled={resendLoading || loading}
+              style={{
+                width: "100%",
+                marginTop: "10px",
+                padding: "11px 14px",
+                borderRadius: "12px",
+                border: "1px solid #98BD12",
+                background: "#ffffff",
+                color: "#5A7F0D",
+                fontSize: "13px",
+                fontWeight: "600",
+                cursor: "pointer",
+              }}
+            >
+              {resendLoading
+                ? "Envoi en cours..."
+                : "Renvoyer l’e-mail de confirmation"}
+            </button>
+          )}
         </form>
 
         <Link
