@@ -52,6 +52,35 @@ async function verifyAdmin(request, supabaseAdmin) {
   return user;
 }
 
+function getPushService(endpoint = "") {
+  if (endpoint.includes("web.push.apple.com")) {
+    return "Apple Push";
+  }
+
+  if (
+    endpoint.includes("fcm.googleapis.com") ||
+    endpoint.includes("googleapis.com")
+  ) {
+    return "Google Push";
+  }
+
+  if (endpoint.includes("mozilla.com")) {
+    return "Mozilla Push";
+  }
+
+  return "Service Push inconnu";
+}
+
+function shortEndpoint(endpoint = "") {
+  try {
+    const url = new URL(endpoint);
+
+    return `${url.hostname}${url.pathname.slice(0, 35)}...`;
+  } catch {
+    return endpoint.slice(0, 55);
+  }
+}
+
 export async function POST(request) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
@@ -125,26 +154,73 @@ export async function POST(request) {
     });
 
     let sent = 0;
+    let failed = 0;
+
+    const results = [];
 
     for (const subscription of subscriptions) {
+      const service = getPushService(
+        subscription.endpoint
+      );
+
       try {
-        await webpush.sendNotification(
-          {
-            endpoint: subscription.endpoint,
-            keys: {
-              p256dh: subscription.p256dh,
-              auth: subscription.auth,
+        const response =
+          await webpush.sendNotification(
+            {
+              endpoint: subscription.endpoint,
+              keys: {
+                p256dh: subscription.p256dh,
+                auth: subscription.auth,
+              },
             },
-          },
-          payload
-        );
+            payload
+          );
 
         sent += 1;
+
+        results.push({
+          id: subscription.id,
+          service,
+          endpoint: shortEndpoint(
+            subscription.endpoint
+          ),
+          success: true,
+          statusCode:
+            response?.statusCode || null,
+          body:
+            response?.body || null,
+        });
       } catch (pushError) {
+        failed += 1;
+
         console.error(
           "Erreur envoi notification :",
-          pushError
+          {
+            service,
+            statusCode:
+              pushError?.statusCode || null,
+            body:
+              pushError?.body || null,
+            message:
+              pushError?.message || null,
+          }
         );
+
+        results.push({
+          id: subscription.id,
+          service,
+          endpoint: shortEndpoint(
+            subscription.endpoint
+          ),
+          success: false,
+          statusCode:
+            pushError?.statusCode || null,
+          body:
+            pushError?.body || null,
+          message:
+            pushError?.message ||
+            "Erreur inconnue",
+        });
 
         if (
           pushError?.statusCode === 404 ||
@@ -163,7 +239,11 @@ export async function POST(request) {
 
     return Response.json({
       success: true,
+      subscriptions:
+        subscriptions.length,
       sent,
+      failed,
+      results,
     });
   } catch (error) {
     console.error(
