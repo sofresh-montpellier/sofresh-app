@@ -7550,3 +7550,47 @@ header.home-header {
 .legal-card li {
   margin-bottom: 5px;
 }
+/* =========================================
+   CORRECTION CARTES PRODUITS IPHONE
+========================================= */
+
+@media (max-width: 640px) {
+  .product-row-card {
+    grid-template-columns: 90px minmax(0, 1fr) !important;
+    height: auto !important;
+    min-height: 125px !important;
+  }
+
+  .product-row-image {
+    width: 90px !important;
+    min-width: 90px !important;
+    height: auto !important;
+    min-height: 125px !important;
+  }
+
+  .product-row-image img {
+    width: 100% !important;
+    height: 125px !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
+
+  .product-row-content {
+    min-width: 0 !important;
+    min-height: 125px !important;
+  }
+
+  .product-row-bottom {
+    margin-top: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .product-row-bottom strong,
+  .product-row-bottom button {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
