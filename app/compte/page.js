@@ -173,6 +173,9 @@ export default function ComptePage() {
     const phone =
       user.user_metadata?.phone || "";
 
+    const isAdmin =
+      user.app_metadata?.role === "admin";
+
     /*
      * Fidélité
      * Une commande compte si :
@@ -250,7 +253,8 @@ export default function ComptePage() {
           <div
             style={{
               background: "#ffffff",
-              border: "1px solid rgba(152, 189, 18, 0.45)",
+              border:
+                "1px solid rgba(152, 189, 18, 0.45)",
               borderRadius: "18px",
               padding: "16px",
               marginTop: "14px",
@@ -412,11 +416,12 @@ export default function ComptePage() {
               </p>
             )}
 
-            {!loadingOrders && orders.length === 0 && (
-              <p className="account-intro">
-                Vous n’avez pas encore de commande.
-              </p>
-            )}
+            {!loadingOrders &&
+              orders.length === 0 && (
+                <p className="account-intro">
+                  Vous n’avez pas encore de commande.
+                </p>
+              )}
 
             {!loadingOrders &&
               orders.slice(0, 3).map((order) => (
@@ -436,9 +441,13 @@ export default function ComptePage() {
                       </strong>
 
                       <p>
-                        {formatPickupDate(order.pickup_date)}
+                        {formatPickupDate(
+                          order.pickup_date
+                        )}
                         {" · "}
-                        {formatPickupTime(order.pickup_time)}
+                        {formatPickupTime(
+                          order.pickup_time
+                        )}
                       </p>
                     </div>
 
@@ -475,6 +484,19 @@ export default function ComptePage() {
             >
               Commander
             </Link>
+
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="account-login-btn"
+                style={{
+                  background: "#5A7F0D",
+                  color: "#ffffff",
+                }}
+              >
+                Administration
+              </Link>
+            )}
 
             <button
               type="button"
