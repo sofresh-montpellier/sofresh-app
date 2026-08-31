@@ -3,9 +3,9 @@
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
+
 import { supabase } from "../../lib/supabase";
 
 const euro = (value) =>
@@ -13,14 +13,6 @@ const euro = (value) =>
     style: "currency",
     currency: "EUR",
   });
-
-function dateToIso(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
 
 function parisToday() {
   const parts = new Intl.DateTimeFormat("fr-FR", {
@@ -31,7 +23,9 @@ function parisToday() {
   }).formatToParts(new Date());
 
   const get = (type) =>
-    Number(parts.find((part) => part.type === type)?.value || 0);
+    Number(
+      parts.find((part) => part.type === type)?.value || 0
+    );
 
   return new Date(
     get("year"),
@@ -43,37 +37,82 @@ function parisToday() {
   );
 }
 
-function nextOpenDay() {
-  const date = parisToday();
+function dateToIso(date) {
+  const year = date.getFullYear();
 
-  while (date.getDay() === 0 || date.getDay() === 6) {
-    date.setDate(date.getDate() + 1);
-  }
+  const month = String(
+    date.getMonth() + 1
+  ).padStart(2, "0");
 
-  return date;
+  const day = String(
+    date.getDate()
+  ).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
-function formatDate(date) {
-  const formatted = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  }).format(date);
+function isoToDate(isoDate) {
+  if (!isoDate) return null;
 
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  const [year, month, day] = isoDate
+    .split("-")
+    .map(Number);
+
+  return new Date(
+    year,
+    month - 1,
+    day,
+    12,
+    0,
+    0
+  );
+}
+
+function formatDateLabel(isoDate) {
+  const date = isoToDate(isoDate);
+
+  if (!date) {
+    return "Date non renseignée";
+  }
+
+  const today = parisToday();
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const dateIso = dateToIso(date);
+  const todayIso = dateToIso(today);
+  const tomorrowIso = dateToIso(tomorrow);
+
+  const formatted =
+    new Intl.DateTimeFormat("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).format(date);
+
+  const prettyDate =
+    formatted.charAt(0).toUpperCase() +
+    formatted.slice(1);
+
+  if (dateIso === todayIso) {
+    return `Aujourd’hui — ${prettyDate}`;
+  }
+
+  if (dateIso === tomorrowIso) {
+    return `Demain — ${prettyDate}`;
+  }
+
+  return prettyDate;
 }
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(nextOpenDay());
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [showFinished, setShowFinished] = useState(false);
-const audioRef = useRef(null);
-const knownOrderIdsRef = useRef(new Set());
-const firstLoadRef = useRef(true);
-const [soundEnabled, setSoundEnabled] = useState(true);
-  const selectedIso = dateToIso(selectedDate);
+
+  const [soundEnabled, setSoundEnabled] =
+    useState(true);
 
   async function loadOrders() {
     setLoading(true);
@@ -82,13 +121,26 @@ const [soundEnabled, setSoundEnabled] = useState(true);
     const { data, error } = await supabase
       .from("orders")
       .select("*")
-      .eq("pickup_date", selectedIso)
-      .order("pickup_time", { ascending: true })
-      .order("created_at", { ascending: true });
+      .order("pickup_date", {
+        ascending: true,
+      })
+      .order("pickup_time", {
+        ascending: true,
+      })
+      .order("created_at", {
+        ascending: true,
+      });
 
     if (error) {
-      console.error("Erreur de chargement :", error);
-      setMessage("Impossible de charger les commandes.");
+      console.error(
+        "Erreur de chargement :",
+        error
+      );
+
+      setMessage(
+        "Impossible de charger les commandes."
+      );
+
       setOrders([]);
     } else {
       setOrders(data || []);
@@ -96,65 +148,54 @@ const [soundEnabled, setSoundEnabled] = useState(true);
 
     setLoading(false);
   }
-function playNewOrderSound() {
-  const audio = new Audio("/ding.mp3");
 
-  audio.volume = 1;
+  function playNewOrderSound() {
+    const audio = new Audio("/ding.mp3");
 
-  audio.play().catch((error) => {
-    console.error(
-      "Le son n’a pas pu être joué :",
-      error
-    );
-  });
-}
+    audio.volume = 1;
 
-function enableSound() {
-  setSoundEnabled(true);
-  playNewOrderSound();
-}
-useEffect(() => {
-  loadOrders();
-
-  const channel = supabase
-    .channel(`orders-${selectedIso}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "orders",
-      },
-      (payload) => {
-        if (
-          payload.eventType === "INSERT" &&
-          soundEnabled
-        ) {
-          playNewOrderSound();
-        }
-
-        loadOrders();
-      }
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, [selectedIso, soundEnabled]);
-
-  function changeDay(delta) {
-    const nextDate = new Date(selectedDate);
-
-    do {
-      nextDate.setDate(nextDate.getDate() + delta);
-    } while (
-      nextDate.getDay() === 0 ||
-      nextDate.getDay() === 6
-    );
-
-    setSelectedDate(nextDate);
+    audio.play().catch((error) => {
+      console.error(
+        "Le son n’a pas pu être joué :",
+        error
+      );
+    });
   }
+
+  function enableSound() {
+    setSoundEnabled(true);
+    playNewOrderSound();
+  }
+
+  useEffect(() => {
+    loadOrders();
+
+    const channel = supabase
+      .channel("orders-admin")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "orders",
+        },
+        (payload) => {
+          if (
+            payload.eventType === "INSERT" &&
+            soundEnabled
+          ) {
+            playNewOrderSound();
+          }
+
+          loadOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [soundEnabled]);
 
   async function markAsFinished(orderId) {
     setMessage("");
@@ -167,118 +208,109 @@ useEffect(() => {
       .eq("id", orderId);
 
     if (error) {
-      console.error("Erreur de mise à jour :", error);
+      console.error(
+        "Erreur de mise à jour :",
+        error
+      );
+
       setMessage(
         "La commande n’a pas pu être marquée comme remise."
       );
+
       return;
     }
 
     setOrders((currentOrders) =>
-      currentOrders.map((order) =>
-        order.id === orderId
-          ? {
-              ...order,
-              status: "Terminée",
-            }
-          : order
+      currentOrders.filter(
+        (order) => order.id !== orderId
       )
     );
   }
 
   const waitingOrders = useMemo(
     () =>
-      orders.filter(
-        (order) =>
-          order.status !== "Terminée" &&
-          order.status !== "Annulée"
-      ),
+      orders
+        .filter(
+          (order) =>
+            order.status !== "Terminée" &&
+            order.status !== "Annulée"
+        )
+        .sort((a, b) => {
+          const dateA = a.pickup_date || "";
+          const dateB = b.pickup_date || "";
+
+          if (dateA !== dateB) {
+            return dateA.localeCompare(dateB);
+          }
+
+          const timeA = a.pickup_time || "";
+          const timeB = b.pickup_time || "";
+
+          return timeA.localeCompare(timeB);
+        }),
     [orders]
   );
 
-  const finishedOrders = useMemo(
-    () =>
-      orders.filter(
-        (order) => order.status === "Terminée"
-      ),
-    [orders]
-  );
+  const groupedByDate = useMemo(() => {
+    return waitingOrders.reduce(
+      (groups, order) => {
+        const date =
+          order.pickup_date || "Sans date";
 
-  const displayedOrders = showFinished
-    ? finishedOrders
-    : waitingOrders;
+        if (!groups[date]) {
+          groups[date] = [];
+        }
 
-  const groupedOrders = useMemo(() => {
-    return displayedOrders.reduce((groups, order) => {
-      const time = order.pickup_time || "Sans heure";
+        groups[date].push(order);
 
-      if (!groups[time]) {
-        groups[time] = [];
-      }
-
-      groups[time].push(order);
-
-      return groups;
-    }, {});
-  }, [displayedOrders]);
+        return groups;
+      },
+      {}
+    );
+  }, [waitingOrders]);
 
   return (
     <main className="admin-wrap orders-mobile-page">
       <section className="admin-card">
+
         <div className="orders-mobile-header">
-  <h1>Commandes</h1>
-
-  <button
-    type="button"
-    className="secondary"
-    onClick={enableSound}
-  >
-    {soundEnabled
-      ? "🔔 Sonnerie activée"
-      : "🔕 Activer la sonnerie"}
-  </button>
-</div>
-
-        <div className="orders-day-navigation">
-          <button
-            type="button"
-            aria-label="Jour précédent"
-            onClick={() => changeDay(-1)}
-          >
-            ‹
-          </button>
-
-          <strong>{formatDate(selectedDate)}</strong>
+          <h1>Commandes</h1>
 
           <button
             type="button"
-            aria-label="Jour suivant"
-            onClick={() => changeDay(1)}
+            className="secondary"
+            onClick={enableSound}
           >
-            ›
+            {soundEnabled
+              ? "🔔 Sonnerie activée"
+              : "🔕 Activer la sonnerie"}
           </button>
         </div>
 
-        <div className="orders-tabs">
-          <button
-            type="button"
-            className={!showFinished ? "active" : ""}
-            onClick={() => setShowFinished(false)}
-          >
-            En attente ({waitingOrders.length})
-          </button>
-
-          <button
-            type="button"
-            className={showFinished ? "active" : ""}
-            onClick={() => setShowFinished(true)}
-          >
-            Terminées ({finishedOrders.length})
-          </button>
+        <div
+          style={{
+            marginTop: "18px",
+            marginBottom: "26px",
+            background: "#F4F7E9",
+            border: "1px solid #DCE7B8",
+            borderRadius: "12px",
+            padding: "14px 18px",
+            fontWeight: "800",
+            color: "#31410A",
+            fontSize: "15px",
+          }}
+        >
+          {waitingOrders.length === 0
+            ? "✓ Aucune commande à traiter"
+            : `${waitingOrders.length} commande${
+                waitingOrders.length > 1 ? "s" : ""
+              } à traiter`}
         </div>
 
         {message && (
-          <div className="message">{message}</div>
+          <div className="message">
+            {message}
+          </div>
         )}
 
         {loading && (
@@ -287,33 +319,72 @@ useEffect(() => {
           </p>
         )}
 
-        {!loading && displayedOrders.length === 0 && (
-          <div className="empty">
-            {showFinished
-              ? "Aucune commande terminée pour cette date."
-              : "Aucune commande en attente pour cette date."}
-          </div>
-        )}
+        {!loading &&
+          waitingOrders.length === 0 && (
+            <div className="empty">
+              Toutes les commandes sont traitées.
+            </div>
+          )}
 
-        <div className="orders-time-groups">
-          {Object.entries(groupedOrders).map(
-            ([time, timeOrders]) => (
-              <section
-                className="orders-time-group"
-                key={time}
-              >
-                <div className="orders-time-title">
-                  <strong>🕚 {time}</strong>
+        {!loading && (
+          <div>
+            {Object.entries(groupedByDate).map(
+              ([pickupDate, dateOrders]) => (
+                <section
+                  key={pickupDate}
+                  style={{
+                    border: "1px solid #E2E2DA",
+                    borderRadius: "14px",
+                    overflow: "hidden",
+                    marginBottom: "18px",
+                    background: "#ffffff",
+                  }}
+                >
+                  <div
+                    style={{
+                      minHeight: "58px",
+                      padding: "0 18px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "16px",
+                      borderBottom:
+                        "1px solid #ECECE5",
+                    }}
+                  >
+                    <strong
+                      style={{
+                        fontSize: "17px",
+                        color: "#1f2b16",
+                      }}
+                    >
+                      📅{" "}
+                      {pickupDate === "Sans date"
+                        ? "Date non renseignée"
+                        : formatDateLabel(
+                            pickupDate
+                          )}
+                    </strong>
 
-                  <span>
-                    {timeOrders.length} commande
-                    {timeOrders.length > 1 ? "s" : ""}
-                  </span>
-                </div>
+                    <span
+                      style={{
+                        color: "#5A7F0D",
+                        fontWeight: "800",
+                        fontSize: "14px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {dateOrders.length} commande
+                      {dateOrders.length > 1
+                        ? "s"
+                        : ""}
+                    </span>
+                  </div>
 
-                <div className="orders-mobile-list">
-                  {timeOrders.map((order) => {
-                    const items = Array.isArray(order.items)
+                  {dateOrders.map((order) => {
+                    const items = Array.isArray(
+                      order.items
+                    )
                       ? order.items
                       : [];
 
@@ -325,74 +396,157 @@ useEffect(() => {
 
                     return (
                       <article
-                        className="order-mobile-card"
                         key={order.id}
+                        style={{
+                          minHeight: "92px",
+                          padding: "14px 18px",
+                          display: "grid",
+                          gridTemplateColumns:
+                            "120px 160px 180px minmax(220px, 1fr) 90px 130px",
+                          gap: "16px",
+                          alignItems: "center",
+                          borderBottom:
+                            "1px solid #F0F0EB",
+                        }}
                       >
-                        <div className="order-mobile-top">
-                          <div>
-                            <strong className="order-customer">
-                              {order.customer_name || "Client"}
-                            </strong>
+                        <div
+                          style={{
+                            fontWeight: "800",
+                            fontSize: "18px",
+                            color: "#1d2618",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          🕚{" "}
+                          {order.pickup_time ||
+                            "Sans heure"}
+                        </div>
 
-                            <div className="order-number">
-                              SF-{orderNumber}
-                            </div>
-                          </div>
-
-                          <strong className="order-total">
-                            {euro(order.total)}
+                        <div>
+                          <strong
+                            style={{
+                              display: "block",
+                              fontSize: "15px",
+                              color: "#111111",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            {order.customer_name ||
+                              "Client"}
                           </strong>
+
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              color: "#666666",
+                            }}
+                          >
+                            SF-{orderNumber}
+                          </span>
                         </div>
 
-                        {order.customer_phone && (
-                          <a
-                            className="order-phone"
-                            href={`tel:${String(
-                              order.customer_phone
-                            ).replace(/\s/g, "")}`}
-                          >
-                            ☎ {order.customer_phone}
-                          </a>
-                        )}
-
-                        <div className="order-mobile-items">
-                          {items.length === 0 && (
-                            <div>
-                              Aucun produit renseigné
-                            </div>
-                          )}
-
-                          {items.map((item, index) => (
-                            <div
-                              key={`${order.id}-${index}`}
+                        <div>
+                          {order.customer_phone ? (
+                            <a
+                              href={`tel:${String(
+                                order.customer_phone
+                              ).replace(/\s/g, "")}`}
+                              style={{
+                                color: "#5A7F0D",
+                                textDecoration: "none",
+                                fontWeight: "700",
+                                fontSize: "14px",
+                                whiteSpace: "nowrap",
+                              }}
                             >
-                              <b>{item.qty} ×</b>{" "}
-                              {item.name}
-                            </div>
-                          ))}
+                              ☎ {order.customer_phone}
+                            </a>
+                          ) : (
+                            <span
+                              style={{
+                                color: "#999999",
+                                fontSize: "13px",
+                              }}
+                            >
+                              Pas de téléphone
+                            </span>
+                          )}
                         </div>
 
-                        {!showFinished && (
-                          <button
-                            type="button"
-                            className="primary recovered-button"
-                            onClick={() =>
-                              markAsFinished(order.id)
-                            }
-                          >
-                            ✓ Remise
-                          </button>
-                        )}
+                        <div
+                          style={{
+                            color: "#222222",
+                            fontSize: "14px",
+                            lineHeight: "1.5",
+                          }}
+                        >
+                          {items.length === 0 ? (
+                            <span>
+                              Aucun produit renseigné
+                            </span>
+                          ) : (
+                            items.map(
+                              (item, index) => (
+                                <div
+                                  key={`${order.id}-${index}`}
+                                >
+                                  <b>{item.qty} ×</b>{" "}
+                                  {item.name}
+                                </div>
+                              )
+                            )
+                          )}
+                        </div>
+
+                        <strong
+                          style={{
+                            fontSize: "15px",
+                            color: "#111111",
+                            textAlign: "right",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {euro(order.total)}
+                        </strong>
+
+                        <button
+                          type="button"
+                          className="primary"
+                          onClick={() =>
+                            markAsFinished(order.id)
+                          }
+                          style={{
+                            width: "100%",
+                            minHeight: "44px",
+                            borderRadius: "11px",
+                            fontWeight: "800",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          ✓ Remise
+                        </button>
                       </article>
                     );
                   })}
-                </div>
-              
-              </section>
-            )
-          )}
-        </div>
+                </section>
+              )
+            )}
+          </div>
+        )}
+
+        {!loading && waitingOrders.length > 0 && (
+          <div
+            style={{
+              marginTop: "26px",
+              textAlign: "center",
+              color: "#5e6658",
+              fontSize: "13px",
+            }}
+          >
+            🌱 Les commandes terminées disparaissent de cette liste.
+          </div>
+        )}
       </section>
     </main>
-    );
+  );
 }
