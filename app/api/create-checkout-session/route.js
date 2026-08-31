@@ -158,7 +158,6 @@ export async function POST(request) {
     }
 
     const stripe = new Stripe(stripeSecretKey);
-   
 
     const supabaseAdmin = createClient(
       supabaseUrl,
@@ -174,22 +173,22 @@ export async function POST(request) {
     const body = await request.json();
 
     // Récupération éventuelle du client connecté
-const authHeader = request.headers.get("authorization");
+    const authHeader = request.headers.get("authorization");
 
-let userId = null;
+    let userId = null;
 
-if (authHeader?.startsWith("Bearer ")) {
-  const accessToken = authHeader.slice(7);
+    if (authHeader?.startsWith("Bearer ")) {
+      const accessToken = authHeader.slice(7);
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabaseAdmin.auth.getUser(accessToken);
+      const {
+        data: { user },
+        error: userError,
+      } = await supabaseAdmin.auth.getUser(accessToken);
 
-  if (!userError && user) {
-    userId = user.id;
-  }
-}
+      if (!userError && user) {
+        userId = user.id;
+      }
+    }
 
     const customerName = String(
       body.customer_name || ""
@@ -366,16 +365,18 @@ if (authHeader?.startsWith("Bearer ")) {
       );
     }
 
-    const { count: confirmedOrdersCount, error: countError } =
-      await supabaseAdmin
-        .from("orders")
-        .select("id", {
-          count: "exact",
-          head: true,
-        })
-        .eq("pickup_date", pickupDate)
-        .eq("pickup_time", pickupTime)
-        .neq("status", "Annulée");
+    const {
+      count: confirmedOrdersCount,
+      error: countError,
+    } = await supabaseAdmin
+      .from("orders")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq("pickup_date", pickupDate)
+      .eq("pickup_time", pickupTime)
+      .neq("status", "Annulée");
 
     if (countError) {
       console.error(
@@ -557,6 +558,11 @@ if (authHeader?.startsWith("Bearer ")) {
       await stripe.checkout.sessions.create({
         mode: "payment",
         locale: "fr",
+
+        // On limite Stripe aux paiements par carte.
+        // Apple Pay / Google Pay restent proposés
+        // sur les appareils compatibles.
+        payment_method_types: ["card"],
 
         line_items: items.map((item) => ({
           quantity: item.qty,
