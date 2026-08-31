@@ -72,6 +72,7 @@ export default function ComptePage() {
         pickup_time,
         total,
         status,
+        payment_status,
         created_at
       `)
       .eq("user_id", userId)
@@ -172,6 +173,33 @@ export default function ComptePage() {
     const phone =
       user.user_metadata?.phone || "";
 
+    /*
+     * Fidélité
+     * Une commande compte si :
+     * - elle appartient au client connecté
+     * - elle est réellement payée
+     * - son total est supérieur ou égal à 10 €
+     */
+    const loyaltyEligibleOrders = orders.filter(
+      (order) =>
+        order.payment_status === "paid" &&
+        Number(order.total || 0) >= 10
+    );
+
+    const loyaltyCount = loyaltyEligibleOrders.length;
+
+    const loyaltyProgress = Math.min(
+      loyaltyCount,
+      10
+    );
+
+    const loyaltyUnlocked = loyaltyCount >= 10;
+
+    const loyaltyRemaining = Math.max(
+      10 - loyaltyCount,
+      0
+    );
+
     return (
       <main className="account-page">
         <div className="account-container">
@@ -215,6 +243,154 @@ export default function ComptePage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* FIDÉLITÉ */}
+
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid rgba(152, 189, 18, 0.45)",
+              borderRadius: "18px",
+              padding: "16px",
+              marginTop: "14px",
+              marginBottom: "14px",
+              boxShadow:
+                "0 6px 18px rgba(90, 127, 13, 0.07)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+                marginBottom: "12px",
+              }}
+            >
+              <div>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: "18px",
+                    color: "#183D1F",
+                  }}
+                >
+                  Ma fidélité
+                </h2>
+
+                <p
+                  style={{
+                    margin: "3px 0 0",
+                    fontSize: "12px",
+                    color: "#6B715F",
+                  }}
+                >
+                  Achats de 10 € minimum
+                </p>
+              </div>
+
+              <div
+                style={{
+                  width: "46px",
+                  height: "46px",
+                  borderRadius: "50%",
+                  background: "#FFD400",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="#5A7F0D"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2l3 6 6.5 1-4.75 4.6 1.1 6.4L12 17l-5.85 3 1.1-6.4L2.5 9 9 8l3-6z" />
+                </svg>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                marginBottom: "10px",
+              }}
+            >
+              <strong
+                style={{
+                  color: "#5A7F0D",
+                  fontSize: "22px",
+                }}
+              >
+                {loyaltyProgress} / 10
+              </strong>
+
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  color: loyaltyUnlocked
+                    ? "#5A7F0D"
+                    : "#6B715F",
+                }}
+              >
+                {loyaltyUnlocked
+                  ? "Avantage débloqué"
+                  : `${loyaltyRemaining} restant${
+                      loyaltyRemaining > 1 ? "s" : ""
+                    }`}
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(10, minmax(0, 1fr))",
+                gap: "5px",
+                marginBottom: "12px",
+              }}
+            >
+              {Array.from({ length: 10 }).map(
+                (_, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      height: "9px",
+                      borderRadius: "999px",
+                      background:
+                        index < loyaltyProgress
+                          ? "#98BD12"
+                          : "#E8ECD8",
+                    }}
+                  />
+                )
+              )}
+            </div>
+
+            <p
+              style={{
+                margin: 0,
+                fontSize: "13px",
+                lineHeight: 1.45,
+                color: "#4F5548",
+              }}
+            >
+              {loyaltyUnlocked
+                ? "Votre avantage fidélité de 50 % est débloqué."
+                : `Encore ${loyaltyRemaining} achat${
+                    loyaltyRemaining > 1 ? "s" : ""
+                  } de 10 € minimum avant votre avantage de 50 %.`}
+            </p>
           </div>
 
           <div className="account-orders account-orders-compact">
@@ -309,38 +485,40 @@ export default function ComptePage() {
             </button>
 
           </div>
-          <div
-  style={{
-    marginTop: "24px",
-    paddingTop: "16px",
-    borderTop: "1px solid rgba(90, 127, 13, 0.18)",
-    display: "flex",
-    justifyContent: "center",
-    gap: "16px",
-    flexWrap: "wrap",
-    fontSize: "11px",
-  }}
->
-  <Link
-    href="/mentions-legales"
-    style={{
-      color: "#5A7F0D",
-      textDecoration: "none",
-    }}
-  >
-    Mentions légales
-  </Link>
 
-  <Link
-    href="/confidentialite"
-    style={{
-      color: "#5A7F0D",
-      textDecoration: "none",
-    }}
-  >
-    Politique de confidentialité
-  </Link>
-</div>
+          <div
+            style={{
+              marginTop: "24px",
+              paddingTop: "16px",
+              borderTop:
+                "1px solid rgba(90, 127, 13, 0.18)",
+              display: "flex",
+              justifyContent: "center",
+              gap: "16px",
+              flexWrap: "wrap",
+              fontSize: "11px",
+            }}
+          >
+            <Link
+              href="/mentions-legales"
+              style={{
+                color: "#5A7F0D",
+                textDecoration: "none",
+              }}
+            >
+              Mentions légales
+            </Link>
+
+            <Link
+              href="/confidentialite"
+              style={{
+                color: "#5A7F0D",
+                textDecoration: "none",
+              }}
+            >
+              Politique de confidentialité
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -463,38 +641,40 @@ export default function ComptePage() {
 
         </div>
       </div>
-      <div
-  style={{
-    marginTop: "24px",
-    paddingTop: "16px",
-    borderTop: "1px solid rgba(90, 127, 13, 0.18)",
-    display: "flex",
-    justifyContent: "center",
-    gap: "16px",
-    flexWrap: "wrap",
-    fontSize: "11px",
-  }}
->
-  <Link
-    href="/mentions-legales"
-    style={{
-      color: "#5A7F0D",
-      textDecoration: "none",
-    }}
-  >
-    Mentions légales
-  </Link>
 
-  <Link
-    href="/confidentialite"
-    style={{
-      color: "#5A7F0D",
-      textDecoration: "none",
-    }}
-  >
-    Politique de confidentialité
-  </Link>
-</div>
+      <div
+        style={{
+          marginTop: "24px",
+          paddingTop: "16px",
+          borderTop:
+            "1px solid rgba(90, 127, 13, 0.18)",
+          display: "flex",
+          justifyContent: "center",
+          gap: "16px",
+          flexWrap: "wrap",
+          fontSize: "11px",
+        }}
+      >
+        <Link
+          href="/mentions-legales"
+          style={{
+            color: "#5A7F0D",
+            textDecoration: "none",
+          }}
+        >
+          Mentions légales
+        </Link>
+
+        <Link
+          href="/confidentialite"
+          style={{
+            color: "#5A7F0D",
+            textDecoration: "none",
+          }}
+        >
+          Politique de confidentialité
+        </Link>
+      </div>
     </main>
   );
 }

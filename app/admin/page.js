@@ -106,6 +106,24 @@ function formatDateLabel(isoDate) {
   return prettyDate;
 }
 
+function urlBase64ToUint8Array(base64String) {
+  const padding =
+    "=".repeat((4 - (base64String.length % 4)) % 4);
+
+  const base64 =
+    (base64String + padding)
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+
+  return Uint8Array.from(
+    [...rawData].map((char) =>
+      char.charCodeAt(0)
+    )
+  );
+}
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -113,6 +131,30 @@ export default function OrdersPage() {
 
   const [soundEnabled, setSoundEnabled] =
     useState(true);
+
+  const [pushStatus, setPushStatus] =
+    useState("idle");
+
+  const [pushMessage, setPushMessage] =
+    useState("");
+
+  const [testLoading, setTestLoading] =
+    useState(false);
+
+  async function getAdminAccessToken() {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error || !session?.access_token) {
+      throw new Error(
+        "Votre session administrateur a expiré. Reconnectez-vous."
+      );
+    }
+
+    return session.access_token;
+  }
 
   async function loadOrders() {
     setLoading(true);
@@ -197,6 +239,219 @@ export default function OrdersPage() {
     };
   }, [soundEnabled]);
 
+  useEffect(() => {
+    async function checkPushStatus() {
+      if (
+        typeof window === "undefined" ||
+        !("serviceWorker" in navigator) ||
+        !("PushManager" in window) ||
+        !("Notification" in window)
+      ) {
+        setPushStatus("unsupported");
+        return;
+      }
+
+      if (Notification.permission === "denied") {
+        setPushStatus("denied");
+        return;
+      }
+
+      try {
+        const registration =
+          await navigator.serviceWorker.getRegistration(
+            "/"
+          );
+
+        if (!registration) {
+          setPushStatus("idle");
+          return;
+        }
+
+        const subscription =
+          await registration.pushManager.getSubscription();
+
+        if (subscription) {
+          setPushStatus("enabled");
+        } else {
+          setPushStatus("idle");
+        }
+      } catch (error) {
+        console.error(
+          "Erreur vérification notifications :",
+          error
+        );
+      }
+    }
+
+    checkPushStatus();
+  }, []);
+
+  async function enablePushNotifications() {
+    setPushMessage("");
+
+    if (
+      typeof window === "undefined" ||
+      !("serviceWorker" in navigator) ||
+      !("PushManager" in window) ||
+      !("Notification" in window)
+    ) {
+      setPushStatus("unsupported");
+
+      setPushMessage(
+        "Les notifications ne sont pas disponibles sur cet appareil."
+      );
+
+      return;
+    }
+
+    const publicKey =
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
+    if (!publicKey) {
+      setPushMessage(
+        "La clé publique des notifications est manquante."
+      );
+
+      return;
+    }
+
+    try {
+      setPushStatus("loading");
+
+      const accessToken =
+        await getAdminAccessToken();
+
+      const permission =
+        await Notification.requestPermission();
+
+      if (permission !== "granted") {
+        setPushStatus("denied");
+
+        setPushMessage(
+          "Les notifications n’ont pas été autorisées sur cet appareil."
+        );
+
+        return;
+      }
+
+      const registration =
+        await navigator.serviceWorker.register(
+          "/sw.js",
+          {
+            scope: "/",
+          }
+        );
+
+      await navigator.serviceWorker.ready;
+
+      let subscription =
+        await registration.pushManager.getSubscription();
+
+      if (!subscription) {
+        subscription =
+          await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey:
+              urlBase64ToUint8Array(publicKey),
+          });
+      }
+
+      const response = await fetch(
+        "/api/push/subscribe",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(
+            subscription.toJSON()
+          ),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error ||
+            "Impossible d’enregistrer les notifications."
+        );
+      }
+
+      setPushStatus("enabled");
+
+      setPushMessage(
+        "Notifications téléphone activées sur cet appareil."
+      );
+    } catch (error) {
+      console.error(
+        "Erreur activation notifications :",
+        error
+      );
+
+      setPushStatus("error");
+
+      setPushMessage(
+        error?.message ||
+          "Impossible d’activer les notifications."
+      );
+    }
+  }
+
+  async function sendTestNotification() {
+    setPushMessage("");
+    setTestLoading(true);
+
+    try {
+      const accessToken =
+        await getAdminAccessToken();
+
+      const response = await fetch(
+        "/api/push/test",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error ||
+            "Impossible d’envoyer la notification test."
+        );
+      }
+
+      if (!result.sent) {
+        throw new Error(
+          "Aucune notification n’a pu être envoyée."
+        );
+      }
+
+      setPushMessage(
+        `Notification test envoyée sur ${result.sent} appareil${
+          result.sent > 1 ? "s" : ""
+        }.`
+      );
+    } catch (error) {
+      console.error(
+        "Erreur notification test :",
+        error
+      );
+
+      setPushMessage(
+        error?.message ||
+          "Impossible d’envoyer la notification test."
+      );
+    } finally {
+      setTestLoading(false);
+    }
+  }
+
   async function markAsFinished(orderId) {
     setMessage("");
 
@@ -272,20 +527,108 @@ export default function OrdersPage() {
   return (
     <main className="admin-wrap orders-mobile-page">
       <section className="admin-card">
-
         <div className="orders-mobile-header">
           <h1>Commandes</h1>
 
-          <button
-            type="button"
-            className="secondary"
-            onClick={enableSound}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              flexWrap: "wrap",
+            }}
           >
-            {soundEnabled
-              ? "🔔 Sonnerie activée"
-              : "🔕 Activer la sonnerie"}
-          </button>
+            <button
+              type="button"
+              className="secondary"
+              onClick={enableSound}
+            >
+              {soundEnabled
+                ? "🔔 Sonnerie activée"
+                : "🔕 Activer la sonnerie"}
+            </button>
+
+            <button
+              type="button"
+              className="secondary"
+              onClick={enablePushNotifications}
+              disabled={
+                pushStatus === "loading" ||
+                pushStatus === "enabled"
+              }
+            >
+              {pushStatus === "enabled"
+                ? "✅ Notifications téléphone activées"
+                : pushStatus === "loading"
+                ? "Activation..."
+                : "📱 Activer les notifications téléphone"}
+            </button>
+
+            {pushStatus === "enabled" && (
+              <button
+                type="button"
+                className="secondary"
+                onClick={sendTestNotification}
+                disabled={testLoading}
+              >
+                {testLoading
+                  ? "Envoi..."
+                  : "🧪 Tester notification"}
+              </button>
+            )}
+          </div>
         </div>
+
+        {pushMessage && (
+          <div
+            style={{
+              marginTop: "14px",
+              background: "#F4F7E9",
+              border: "1px solid #DCE7B8",
+              borderRadius: "10px",
+              padding: "11px 14px",
+              color: "#31410A",
+              fontSize: "13px",
+              fontWeight: "700",
+            }}
+          >
+            {pushMessage}
+          </div>
+        )}
+
+        {pushStatus === "denied" && (
+          <div
+            style={{
+              marginTop: "14px",
+              background: "#FFF2F2",
+              border: "1px solid #EECACA",
+              borderRadius: "10px",
+              padding: "11px 14px",
+              color: "#8A2D2D",
+              fontSize: "13px",
+            }}
+          >
+            Les notifications sont bloquées dans les
+            réglages de votre navigateur.
+          </div>
+        )}
+
+        {pushStatus === "unsupported" && (
+          <div
+            style={{
+              marginTop: "14px",
+              background: "#FFF8E8",
+              border: "1px solid #F1D89A",
+              borderRadius: "10px",
+              padding: "11px 14px",
+              color: "#684F0C",
+              fontSize: "13px",
+            }}
+          >
+            Cet appareil ou ce navigateur ne prend pas en
+            charge les notifications push.
+          </div>
+        )}
 
         <div
           style={{
