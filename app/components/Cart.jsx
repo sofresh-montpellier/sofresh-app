@@ -35,6 +35,18 @@ const getProductImage = (product) => {
   return "/logo-carre.png";
 };
 
+const formatPickupDate = (date) => {
+  if (!date) return "";
+
+  const formatted = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(date);
+
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+};
+
 export default function Cart({
   open,
   onClose,
@@ -182,44 +194,44 @@ export default function Cart({
 
         {/* CRÉNEAU CHOISI SUR L'ACCUEIL */}
 
-<div className="cart-pickup-summary">
-  <div className="cart-pickup-summary-text">
-    <span>RETRAIT</span>
+        <div className="cart-pickup-summary">
+          <div className="cart-pickup-summary-text">
+            <span>RETRAIT</span>
 
-    <strong>
-      {selectedDate && pickupTime
-        ? `${dateLabel(selectedDate)} • ${pickupTime}`
-        : "Créneau de retrait non sélectionné"}
-    </strong>
-  </div>
+            <strong>
+              {selectedDate && pickupTime
+                ? `${formatPickupDate(selectedDate)} • ${pickupTime}`
+                : "Créneau de retrait non sélectionné"}
+            </strong>
+          </div>
 
-  <button
-    type="button"
-    className="cart-pickup-edit"
-   onClick={() => {
-if (selectedDate) {
-  localStorage.setItem(
-    "sofresh_pickup_date",
-    iso(selectedDate)
-  );
-}
+          <button
+            type="button"
+            className="cart-pickup-edit"
+            onClick={() => {
+              if (selectedDate) {
+                localStorage.setItem(
+                  "sofresh_pickup_date",
+                  iso(selectedDate)
+                );
+              }
 
-  if (pickupTime) {
-    localStorage.setItem(
-      "sofresh_pickup_time",
-      pickupTime
-    );
-  }
+              if (pickupTime) {
+                localStorage.setItem(
+                  "sofresh_pickup_time",
+                  pickupTime
+                );
+              }
 
-  onClose();
+              onClose();
 
-  window.location.href =
-    "/accueil-v2#retrait";
-}}
-  >
-    Modifier
-  </button>
-</div>
+              window.location.href =
+                "/accueil-v2#retrait";
+            }}
+          >
+            Modifier
+          </button>
+        </div>
 
         <label htmlFor="customer-name">
           Nom
@@ -250,16 +262,54 @@ if (selectedDate) {
           autoComplete="tel"
         />
 
+        {/* TOTAL */}
 
-        <div className="cart-summary">
-          <span>
+        <div
+          className="cart-summary"
+          style={{
+            marginTop: "18px",
+            marginBottom: "18px",
+            padding: "15px 16px",
+            borderRadius: "14px",
+            background: "#F8FAF1",
+            border: "1px solid #DDE8B5",
+            display: "grid",
+            gridTemplateColumns: "1fr auto",
+            alignItems: "center",
+            gap: "4px 16px",
+          }}
+        >
+          <span
+            style={{
+              gridRow: "1 / span 2",
+              color: "#6A6F63",
+              fontSize: "13px",
+            }}
+          >
             🛒 {cartCount}{" "}
             {cartCount > 1 ? "articles" : "article"}
           </span>
 
-          <span>TOTAL</span>
+          <span
+            style={{
+              textAlign: "right",
+              fontSize: "11px",
+              fontWeight: "900",
+              color: "#5A7F0D",
+              letterSpacing: ".5px",
+            }}
+          >
+            TOTAL
+          </span>
 
-          <strong>
+          <strong
+            style={{
+              textAlign: "right",
+              fontSize: "24px",
+              lineHeight: 1,
+              color: "#5A7F0D",
+            }}
+          >
             {euro(cartTotal)}
           </strong>
         </div>
