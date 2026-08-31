@@ -15,8 +15,8 @@ export default function ConnexionPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-const inscriptionOk =
-  searchParams.get("inscription") === "ok";
+  const inscriptionOk =
+    searchParams.get("inscription") === "ok";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,10 +24,70 @@ const inscriptionOk =
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Renvoi de l'e-mail de confirmation
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
+
+  async function handleResendConfirmation() {
+    setErrorMessage("");
+    setResendMessage("");
+
+    if (!isSupabaseConfigured || !supabase) {
+      setErrorMessage(
+        "Le service est momentanément indisponible."
+      );
+      return;
+    }
+
+    if (!email.trim()) {
+      setErrorMessage(
+        "Indiquez votre adresse e-mail avant de renvoyer le message de confirmation."
+      );
+      return;
+    }
+
+    try {
+      setResendLoading(true);
+
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+      });
+
+      if (error) {
+        console.error(
+          "Erreur renvoi e-mail confirmation :",
+          error
+        );
+
+        setErrorMessage(
+          "Impossible de renvoyer l'e-mail pour le moment. Veuillez réessayer."
+        );
+        return;
+      }
+
+      setResendMessage(
+        "E-mail de confirmation envoyé. Consultez votre boîte de réception et pensez à vérifier vos courriers indésirables (spam)."
+      );
+    } catch (error) {
+      console.error(
+        "Erreur renvoi confirmation :",
+        error
+      );
+
+      setErrorMessage(
+        "Une erreur est survenue. Veuillez réessayer."
+      );
+    } finally {
+      setResendLoading(false);
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
     setErrorMessage("");
+    setResendMessage("");
 
     if (!isSupabaseConfigured || !supabase) {
       setErrorMessage(
@@ -174,33 +234,34 @@ const inscriptionOk =
         <p className="account-intro">
           Connectez-vous à votre compte So Fresh
         </p>
-        {inscriptionOk && (
-  <div
-    style={{
-      marginBottom: "18px",
-      padding: "14px 16px",
-      borderRadius: "14px",
-      background: "#F4F8DF",
-      border: "1px solid #DFD178",
-      color: "#365718",
-      fontSize: "13px",
-      lineHeight: "1.5",
-      textAlign: "center",
-    }}
-  >
-    <strong
-      style={{
-        display: "block",
-        marginBottom: "4px",
-      }}
-    >
-      Compte créé avec succès
-    </strong>
 
-    Consultez votre boîte e-mail et confirmez
-    votre adresse avant de vous connecter.
-  </div>
-)}
+        {inscriptionOk && (
+          <div
+            style={{
+              marginBottom: "18px",
+              padding: "14px 16px",
+              borderRadius: "14px",
+              background: "#F4F8DF",
+              border: "1px solid #DFD178",
+              color: "#365718",
+              fontSize: "13px",
+              lineHeight: "1.5",
+              textAlign: "center",
+            }}
+          >
+            <strong
+              style={{
+                display: "block",
+                marginBottom: "4px",
+              }}
+            >
+              Compte créé avec succès
+            </strong>
+
+            Consultez votre boîte e-mail et confirmez
+            votre adresse avant de vous connecter.
+          </div>
+        )}
 
         <form
           className="account-login-form"
@@ -213,57 +274,58 @@ const inscriptionOk =
               placeholder="votre@email.fr"
               autoComplete="email"
               value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setResendMessage("");
+              }}
               required
             />
           </label>
 
-         <label>
-  Mot de passe
+          <label>
+            Mot de passe
 
-  <div className="password-field">
-    <input
-      type={showPassword ? "text" : "password"}
-      placeholder="Votre mot de passe"
-      autoComplete="current-password"
-      value={password}
-      onChange={(event) =>
-        setPassword(event.target.value)
-      }
-      required
-    />
+            <div className="password-field">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Votre mot de passe"
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) =>
+                  setPassword(event.target.value)
+                }
+                required
+              />
 
-    <button
-      type="button"
-      className="password-eye"
-      onClick={() =>
-        setShowPassword(!showPassword)
-      }
-      aria-label={
-        showPassword
-          ? "Masquer le mot de passe"
-          : "Afficher le mot de passe"
-      }
-    >
-      <svg
-  width="20"
-  height="20"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth="1.8"
-  strokeLinecap="round"
-  strokeLinejoin="round"
-  aria-hidden="true"
->
-  <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
-  <circle cx="12" cy="12" r="2.5" />
-</svg>
-    </button>
-  </div>
-</label>
+              <button
+                type="button"
+                className="password-eye"
+                onClick={() =>
+                  setShowPassword(!showPassword)
+                }
+                aria-label={
+                  showPassword
+                    ? "Masquer le mot de passe"
+                    : "Afficher le mot de passe"
+                }
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="2.5" />
+                </svg>
+              </button>
+            </div>
+          </label>
 
           <Link
             href="/compte/mot-de-passe-oublie"
@@ -285,14 +347,54 @@ const inscriptionOk =
             </p>
           )}
 
+          {resendMessage && (
+            <p
+              style={{
+                color: "#5A7F0D",
+                background: "#F4F8DF",
+                border: "1px solid #DFD178",
+                borderRadius: "12px",
+                padding: "10px 12px",
+                fontSize: "12px",
+                lineHeight: "1.5",
+                textAlign: "center",
+                margin: "0 0 12px",
+              }}
+            >
+              {resendMessage}
+            </p>
+          )}
+
           <button
             type="submit"
             className="account-login-btn"
-            disabled={loading}
+            disabled={loading || resendLoading}
           >
             {loading
               ? "Connexion..."
               : "Se connecter"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleResendConfirmation}
+            disabled={resendLoading || loading}
+            style={{
+              width: "100%",
+              marginTop: "10px",
+              padding: "11px 14px",
+              borderRadius: "12px",
+              border: "1px solid #98BD12",
+              background: "#ffffff",
+              color: "#5A7F0D",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: "pointer",
+            }}
+          >
+            {resendLoading
+              ? "Envoi en cours..."
+              : "Renvoyer l’e-mail de confirmation"}
           </button>
         </form>
 
