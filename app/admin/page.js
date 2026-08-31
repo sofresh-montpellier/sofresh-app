@@ -141,6 +141,9 @@ export default function OrdersPage() {
   const [testLoading, setTestLoading] =
     useState(false);
 
+  const [pushResults, setPushResults] =
+    useState([]);
+
   async function getAdminAccessToken() {
     const {
       data: { session },
@@ -288,6 +291,7 @@ export default function OrdersPage() {
 
   async function enablePushNotifications() {
     setPushMessage("");
+    setPushResults([]);
 
     if (
       typeof window === "undefined" ||
@@ -401,6 +405,7 @@ export default function OrdersPage() {
 
   async function sendTestNotification() {
     setPushMessage("");
+    setPushResults([]);
     setTestLoading(true);
 
     try {
@@ -432,9 +437,23 @@ export default function OrdersPage() {
         );
       }
 
+      setPushResults(
+        Array.isArray(result.results)
+          ? result.results
+          : []
+      );
+
       setPushMessage(
-        `Notification test envoyée sur ${result.sent} appareil${
+        `Notification test : ${result.sent} envoi${
           result.sent > 1 ? "s" : ""
+        } réussi${
+          result.sent > 1 ? "s" : ""
+        }${
+          result.failed
+            ? `, ${result.failed} échec${
+                result.failed > 1 ? "s" : ""
+              }`
+            : ""
         }.`
       );
     } catch (error) {
@@ -593,6 +612,74 @@ export default function OrdersPage() {
             }}
           >
             {pushMessage}
+          </div>
+        )}
+
+        {pushResults.length > 0 && (
+          <div
+            style={{
+              marginTop: "10px",
+              background: "#ffffff",
+              border: "1px solid #DCE7B8",
+              borderRadius: "10px",
+              padding: "12px 14px",
+            }}
+          >
+            <strong
+              style={{
+                display: "block",
+                color: "#31410A",
+                fontSize: "14px",
+                marginBottom: "8px",
+              }}
+            >
+              Diagnostic Push
+            </strong>
+
+            {pushResults.map((result, index) => (
+              <div
+                key={result.id || index}
+                style={{
+                  padding:
+                    index === 0
+                      ? "0 0 8px"
+                      : "8px 0",
+                  borderTop:
+                    index === 0
+                      ? "none"
+                      : "1px solid #EEEEEA",
+                  fontSize: "13px",
+                  lineHeight: 1.5,
+                }}
+              >
+                <strong>
+                  {result.service ||
+                    "Service Push"}
+                </strong>
+
+                <div>
+                  {result.success
+                    ? "✅ Accepté"
+                    : "❌ Échec"}
+
+                  {result.statusCode
+                    ? ` — HTTP ${result.statusCode}`
+                    : ""}
+                </div>
+
+                {!result.success &&
+                  result.message && (
+                    <div
+                      style={{
+                        color: "#8A2D2D",
+                        marginTop: "3px",
+                      }}
+                    >
+                      {result.message}
+                    </div>
+                  )}
+              </div>
+            ))}
           </div>
         )}
 
@@ -877,18 +964,19 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {!loading && waitingOrders.length > 0 && (
-          <div
-            style={{
-              marginTop: "26px",
-              textAlign: "center",
-              color: "#5e6658",
-              fontSize: "13px",
-            }}
-          >
-            🌱 Les commandes terminées disparaissent de cette liste.
-          </div>
-        )}
+        {!loading &&
+          waitingOrders.length > 0 && (
+            <div
+              style={{
+                marginTop: "26px",
+                textAlign: "center",
+                color: "#5e6658",
+                fontSize: "13px",
+              }}
+            >
+              🌱 Les commandes terminées disparaissent de cette liste.
+            </div>
+          )}
       </section>
     </main>
   );
