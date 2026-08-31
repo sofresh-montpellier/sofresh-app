@@ -302,11 +302,6 @@ function getPickupDates(settings) {
 
   const todayIso = iso(today);
 
-  /*
-   * Si nous sommes actuellement
-   * pendant les congés, aucune date
-   * de retrait n'est proposée.
-   */
   if (
     isDateInsideClosure(
       todayIso,
@@ -331,11 +326,6 @@ function getPickupDates(settings) {
 
   let checkedDays = 0;
 
-  /*
-   * 90 jours de sécurité permettent
-   * également de traverser une longue
-   * période de congés.
-   */
   while (
     dates.length < 4 &&
     checkedDays < 90
@@ -491,8 +481,9 @@ function getOpenDaysText(settings) {
 }
 
 export default function Home() {
-    const router = useRouter();
-   const [products, setProducts] = useState([]);
+  const router = useRouter();
+
+  const [products, setProducts] = useState([]);
   const [settings, setSettings] = useState(null);
 
   const [category, setCategory] = useState(null);
@@ -521,24 +512,25 @@ export default function Home() {
     capacity: 0,
     counts: {},
   });
+
   useEffect(() => {
-  async function checkAccess() {
-    if (!isSupabaseConfigured || !supabase) {
-      router.replace("/acces-commande");
-      return;
+    async function checkAccess() {
+      if (!isSupabaseConfigured || !supabase) {
+        router.replace("/acces-commande");
+        return;
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || !user.email_confirmed_at) {
+        router.replace("/acces-commande");
+      }
     }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user || !user.email_confirmed_at) {
-      router.replace("/acces-commande");
-    }
-  }
-
-  checkAccess();
-}, [router]);
+    checkAccess();
+  }, [router]);
 
   /* =========================================
      ANCIEN RETRAIT MÉMORISÉ
@@ -723,10 +715,6 @@ export default function Home() {
     settings?.closure_message ||
     "So Fresh est fermé pour congés. À très bientôt !";
 
-  /*
-   * Si les congés commencent alors qu'une ancienne
-   * date de retrait était mémorisée, on l'efface.
-   */
   useEffect(() => {
     if (!settings) return;
 
@@ -1199,9 +1187,6 @@ export default function Home() {
       return;
     }
 
-    /*
-     * Protection spécifique aux congés.
-     */
     if (
       closureActiveToday
     ) {
@@ -1236,11 +1221,6 @@ export default function Home() {
       return;
     }
 
-    /*
-     * Deuxième sécurité :
-     * même avec une ancienne date mémorisée,
-     * impossible de commander pendant les congés.
-     */
     if (
       isDateInsideClosure(
         pickupDate,
@@ -1372,13 +1352,9 @@ export default function Home() {
       setPaymentLoading(false);
     }
   }
-    
 
   return (
     <>
-      
-
-     
       <main className="container">
         {!loadingSettings &&
           settings &&
@@ -1397,110 +1373,230 @@ export default function Home() {
           )}
 
         {category === null ? (
-  <section className="category-family-grid">
-    {categoryOrder.map((currentCategory) => (
-      <button
-        type="button"
-        key={currentCategory}
-        className="category-family-card"
-        onClick={() => setCategory(currentCategory)}
-      >
-        <div className="category-family-image">
-  <img
-    src={`/cat-${currentCategory
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")}.png`}
-    alt={currentCategory}
-  />
-</div>
-        <div className="category-family-name">
-          {currentCategory}
-        </div>
-      </button>
-    ))}
-  </section>
-) : (
- <div className="category-nav">
-    
+          <section className="category-family-grid">
+            {categoryOrder.map((currentCategory) => (
+              <button
+                type="button"
+                key={currentCategory}
+                className="category-family-card"
+                onClick={() =>
+                  setCategory(currentCategory)
+                }
+              >
+                <div className="category-family-image">
+                  <img
+                    src={`/cat-${currentCategory
+                      .toLowerCase()
+                      .normalize("NFD")
+                      .replace(
+                        /[\u0300-\u036f]/g,
+                        ""
+                      )}.png`}
+                    alt={currentCategory}
+                  />
+                </div>
 
-    {categoryOrder.map((currentCategory) => (
-      <button
-        type="button"
-        key={currentCategory}
-        className={`chip ${
-          currentCategory === category ? "active" : ""
-        }`}
-        onClick={() => setCategory(currentCategory)}
-      >
-        {currentCategory}
-      </button>
-    ))}
-  </div>
-)}
-{category !== null && (
-  <>
-
-        {loadingProducts && (
-          <div className="empty">
-            Chargement du menu…
+                <div className="category-family-name">
+                  {currentCategory}
+                </div>
+              </button>
+            ))}
+          </section>
+        ) : (
+          <div className="category-nav">
+            {categoryOrder.map((currentCategory) => (
+              <button
+                type="button"
+                key={currentCategory}
+                className={`chip ${
+                  currentCategory === category
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() =>
+                  setCategory(currentCategory)
+                }
+              >
+                {currentCategory}
+              </button>
+            ))}
           </div>
         )}
 
-        {!loadingProducts && (
-  <section className="product-list-mobile">
-  
-    {visibleProducts.map((product) => (
-      <article className="product-row-card" key={product.id}>
-        <div className="product-row-image">
-          {product.image_url ? (
-            <img
-              src={product.image_url}
-              alt={product.name}
-            />
-          ) : (
-            <img
-              src={`/cat-${category
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")}.png`}
-              alt={product.name}
-            />
-          )}
-        </div>
+        {category !== null && (
+          <>
+            {loadingProducts && (
+              <div className="empty">
+                Chargement du menu…
+              </div>
+            )}
 
-        <div className="product-row-content">
-          <h3>{product.name}</h3>
+            {!loadingProducts && (
+              <section className="product-list-mobile">
+                {visibleProducts.map((product) => {
+                  const productQuantity =
+                    cart[product.id] || 0;
 
-          <p>
-            {product.description ||
-              "Préparé avec soin par So Fresh."}
-          </p>
+                  return (
+                    <article
+                      className="product-row-card"
+                      key={product.id}
+                    >
+                      <div className="product-row-image">
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                          />
+                        ) : (
+                          <img
+                            src={`/cat-${category
+                              .toLowerCase()
+                              .normalize("NFD")
+                              .replace(
+                                /[\u0300-\u036f]/g,
+                                ""
+                              )}.png`}
+                            alt={product.name}
+                          />
+                        )}
+                      </div>
 
-          <div className="product-row-bottom">
-            <strong>{euro(product.price)}</strong>
+                      <div className="product-row-content">
+                        <h3>{product.name}</h3>
 
-            <button
-              type="button"
-              onClick={() => addProduct(product.id)}
-            >
-              +
-            </button>
-          </div>
-        </div>
-      </article>
-    ))}
-  </section>
-)}
-        {!loadingProducts &&
-          visibleProducts.length === 0 && (
-            <div className="empty">
-              Aucun produit disponible dans cette
-              catégorie.
-            </div>
-          )}
-            </>
-)}
+                        <p>
+                          {product.description ||
+                            "Préparé avec soin par So Fresh."}
+                        </p>
+
+                        <div className="product-row-bottom">
+                          <strong>
+                            {euro(product.price)}
+                          </strong>
+
+                          {/* PANIER PRODUIT SO FRESH */}
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              addProduct(product.id)
+                            }
+                            aria-label={`Ajouter ${product.name} au panier`}
+                            style={{
+                              position: "relative",
+                              width: "54px",
+                              height: "50px",
+                              minWidth: "54px",
+                              border: "none",
+                              borderRadius: "14px",
+                              background: "#5A7F0D",
+                              color: "#ffffff",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              cursor: "pointer",
+                              boxShadow:
+                                "0 5px 12px rgba(90, 127, 13, 0.25)",
+                              overflow: "visible",
+                            }}
+                          >
+                            <svg
+                              width="27"
+                              height="27"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.9"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <circle
+                                cx="9"
+                                cy="20"
+                                r="1"
+                              />
+                              <circle
+                                cx="19"
+                                cy="20"
+                                r="1"
+                              />
+                              <path d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 8H6" />
+                            </svg>
+
+                            {/* + EN HAUT */}
+
+                            <span
+                              style={{
+                                position: "absolute",
+                                top: "-5px",
+                                right: "-5px",
+                                width: "21px",
+                                height: "21px",
+                                borderRadius: "50%",
+                                background: "#98BD12",
+                                color: "#ffffff",
+                                border: "2px solid #ffffff",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "16px",
+                                fontWeight: "800",
+                                lineHeight: "1",
+                              }}
+                            >
+                              +
+                            </span>
+
+                            {/* QUANTITÉ INTÉGRÉE */}
+
+                            {productQuantity > 0 && (
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  right: "2px",
+                                  bottom: "2px",
+                                  minWidth: "22px",
+                                  height: "22px",
+                                  padding: "0 4px",
+                                  borderRadius: "999px",
+                                  background: "#ffffff",
+                                  color: "#5A7F0D",
+                                  border:
+                                    "2px solid #5A7F0D",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: "12px",
+                                  fontWeight: "900",
+                                  lineHeight: "1",
+                                  boxShadow:
+                                    "0 1px 4px rgba(0,0,0,0.16)",
+                                  pointerEvents: "none",
+                                }}
+                              >
+                                {productQuantity}
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </section>
+            )}
+
+            {!loadingProducts &&
+              visibleProducts.length === 0 && (
+                <div className="empty">
+                  Aucun produit disponible dans cette
+                  catégorie.
+                </div>
+              )}
+          </>
+        )}
       </main>
 
       <Cart
@@ -1539,4 +1635,3 @@ export default function Home() {
     </>
   );
 }
-
