@@ -40,6 +40,9 @@ export default function MentionsLegalesPage() {
 
           <p>
             Gérante : <strong>Carole Tarrazona</strong>
+            <br />
+            Responsable de la publication :{" "}
+            <strong>Carole Tarrazona</strong>
           </p>
         </div>
 
@@ -47,9 +50,12 @@ export default function MentionsLegalesPage() {
           <h2>Contact</h2>
 
           <p>
-            Pour toute question concernant So Fresh Salad,
-            vous pouvez nous contacter par e-mail à
-            l’adresse habituelle So Fresh.
+            Pour toute question concernant So Fresh Salade,
+            vous pouvez nous contacter à l’adresse suivante :
+          </p>
+
+          <p>
+            <strong>sofreshsalade@gmail.com</strong>
           </p>
         </div>
 
@@ -77,8 +83,8 @@ export default function MentionsLegalesPage() {
           <p>
             Les contenus, textes, visuels, logos et éléments
             graphiques présents dans l’application So Fresh
-            Salad sont protégés et ne peuvent être reproduits
-            ou utilisés sans autorisation préalable.
+            Salade sont protégés et ne peuvent être reproduits,
+            représentés ou utilisés sans autorisation préalable.
           </p>
         </div>
       </div>
