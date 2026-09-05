@@ -9,6 +9,7 @@ import {
   Clock3,
   Navigation,
   Phone,
+  Mail,
   RotateCcw,
   ArrowRight,
 } from "lucide-react";
@@ -270,7 +271,15 @@ export default function AccueilV2() {
               className="home-restaurant-action"
             >
               <Phone size={30} />
-              <strong>Nous contacter</strong>
+              <strong>Téléphone</strong>
+            </a>
+
+            <a
+              href="mailto:sofreshsalade@gmail.com"
+              className="home-restaurant-action"
+            >
+              <Mail size={30} />
+              <strong>E-mail</strong>
             </a>
 
           </div>
