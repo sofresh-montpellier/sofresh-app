@@ -503,6 +503,24 @@ export default function Home() {
 
   const [message, setMessage] = useState("");
 
+  /* =========================================
+     CATÉGORIE DEMANDÉE DEPUIS L'ACCUEIL
+  ========================================= */
+
+  useEffect(() => {
+    const requestedCategory =
+      new URLSearchParams(window.location.search).get("categorie");
+
+    if (!requestedCategory) return;
+
+    const normalizedCategory =
+      normalizeCategory(requestedCategory);
+
+    if (categoryOrder.includes(normalizedCategory)) {
+      setCategory(normalizedCategory);
+    }
+  }, []);
+
   const [loadingProducts, setLoadingProducts] =
     useState(true);
 

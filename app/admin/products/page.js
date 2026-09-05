@@ -18,14 +18,18 @@ const emptyForm = {
 
 const categories = [
   "Formules",
-  "Salades",
   "Burgers",
+  "Salades",
   "Wraps",
   "Pâtes",
   "Soupes",
+  "Paninis",
+  "Clubs",
+  "Tacos",
+  "Sandwichs",
+  "Bagels",
   "Boissons",
   "Desserts",
-  "Autres",
 ];
 
 const euro = (value) =>

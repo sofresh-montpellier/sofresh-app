@@ -1611,8 +1611,8 @@ padding: 7px 12px;
 
 .home-header-cart-count {
   position: absolute;
-  top: -10px;
-  right: -11px;
+  top: -5px !important;
+right: -8px !important;
   display: grid;
   place-items: center;
   min-width: 22px;
@@ -7967,8 +7967,10 @@ header.home-header .home-header-action-active::after {
 }
 
 .home-category-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  width: 100%;
   border-radius: 14px;
   background: #ffffff;
   text-decoration: none;
@@ -7978,18 +7980,37 @@ header.home-header .home-header-action-active::after {
 .home-category-card img {
   display: block;
   width: 100%;
+  max-width: none;
   height: 105px;
   object-fit: cover;
+  object-position: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  transform: scale(1.025);
+  transform-origin: center center;
+  flex: 0 0 auto;
 }
 
 .home-category-card strong {
+  width: 100%;
   min-height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-sizing: border-box;
   color: #ffffff;
   font-size: 14px;
   font-weight: 800;
+  line-height: 1;
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
 }
 
 .category-salades {

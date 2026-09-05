@@ -173,7 +173,7 @@ export default function AccueilV2() {
         <div className="home-category-grid">
 
           <Link
-            href="/commander"
+            href="/commander?categorie=Salades"
             className="home-category-card"
           >
             <img
@@ -186,7 +186,7 @@ export default function AccueilV2() {
           </Link>
 
           <Link
-            href="/commander"
+            href="/commander?categorie=Wraps"
             className="home-category-card"
           >
             <img
@@ -199,7 +199,7 @@ export default function AccueilV2() {
           </Link>
 
           <Link
-            href="/commander"
+            href="/commander?categorie=Burgers"
             className="home-category-card"
           >
             <img
