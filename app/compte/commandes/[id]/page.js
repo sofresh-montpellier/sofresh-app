@@ -87,25 +87,27 @@ export default function CommandeDetailPage() {
 
     loadOrder();
   }, [params.id]);
+
   function reorder() {
-  if (!order || !Array.isArray(order.items)) return;
+    if (!order || !Array.isArray(order.items)) return;
 
-  const newCart = {};
+    const newCart = {};
 
-  order.items.forEach((item) => {
-    if (!item.id) return;
+    order.items.forEach((item) => {
+      if (!item.id) return;
 
-   newCart[String(item.id)] =
-  Number(item.qty || item.quantity || 1);
-  });
+      newCart[String(item.id)] = Number(
+        item.qty || item.quantity || 1
+      );
+    });
 
-  localStorage.setItem(
-    "sofresh_cart",
-    JSON.stringify(newCart)
-  );
+    localStorage.setItem(
+      "sofresh_cart",
+      JSON.stringify(newCart)
+    );
 
-  window.location.href = "/commander";
-}
+    window.location.href = "/commander";
+  }
 
   if (loading) {
     return (
@@ -141,9 +143,8 @@ export default function CommandeDetailPage() {
     : [];
 
   return (
-   <main className="account-page order-detail-page">
+    <main className="account-page order-detail-page">
       <div className="account-container order-detail-container">
-
         <Link
           href="/compte/commandes"
           className="account-back-link"
@@ -151,17 +152,18 @@ export default function CommandeDetailPage() {
           ← Retour à mes commandes
         </Link>
 
-      <h1>Mon historique de commandes</h1>
+        <h1>Mon historique de commandes</h1>
+
         <p
-  style={{
-    margin: "4px 0 6px",
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#5A7F0D",
-  }}
->
-  Commande SF-{order.order_number}
-</p>
+          style={{
+            margin: "4px 0 6px",
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "#5A7F0D",
+          }}
+        >
+          Commande SF-{order.order_number}
+        </p>
 
         <p className="account-intro">
           Retrait{" "}
@@ -173,26 +175,30 @@ export default function CommandeDetailPage() {
         <div className="account-orders">
           {items.map((item, index) => (
             <div
-            className="order-detail-item"
+              className="order-detail-item"
               key={index}
             >
               <div className="account-order-top">
-  <span className="account-order-title">
-    {item.name || "Produit"}
-  </span>
+                <span className="account-order-title">
+                  {item.name || "Produit"}
+                </span>
 
-  <span className="account-order-total">
-    {euro(
-      Number(item.unit_price || 0) *
-        Number(item.qty || item.quantity || 1)
-    )}
-  </span>
-</div>
+                <span className="account-order-total">
+                  {euro(
+                    Number(item.unit_price || 0) *
+                      Number(
+                        item.qty ||
+                          item.quantity ||
+                          1
+                      )
+                  )}
+                </span>
+              </div>
 
-<div className="account-order-label">
-  {item.qty || item.quantity || 1} ×{" "}
-  {euro(item.unit_price || 0)}
-</div>
+              <div className="account-order-label">
+                {item.qty || item.quantity || 1} ×{" "}
+                {euro(item.unit_price || 0)}
+              </div>
             </div>
           ))}
         </div>
@@ -212,30 +218,35 @@ export default function CommandeDetailPage() {
             {euro(order.total)}
           </span>
         </div>
-        <button
-  type="button"
-  onClick={reorder}
-  className="order-reorder-btn"
->
-  Renouveler cette commande
 
-  <svg
-    width="22"
-    height="22"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M6 8h12l-1 12H7L6 8Z" />
-    <path d="M9 8V6a3 3 0 0 1 6 0v2" />
-    <path d="M19 3v6" />
-    <path d="M16 6h6" />
-  </svg>
-</button>
+        <button
+          type="button"
+          onClick={reorder}
+          className="order-reorder-btn"
+          style={{
+            background: "#5A7F0D",
+            color: "#ffffff",
+          }}
+        >
+          Renouveler cette commande
+
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 8h12l-1 12H7L6 8Z" />
+            <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+            <path d="M19 3v6" />
+            <path d="M16 6h6" />
+          </svg>
+        </button>
       </div>
     </main>
   );
