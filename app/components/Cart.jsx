@@ -1,5 +1,7 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
+
 const euro = (value) =>
   Number(value || 0).toLocaleString("fr-FR", {
     style: "currency",
@@ -7,12 +9,10 @@ const euro = (value) =>
   });
 
 const getProductImage = (product) => {
-  // Si le produit possède sa propre photo, on l'utilise
   if (product.image_url) {
     return product.image_url;
   }
 
-  // Sinon, on cherche une image correspondant à sa catégorie ou son nom
   const text = `${product.category || ""} ${product.name || ""}`
     .toLowerCase()
     .normalize("NFD")
@@ -31,20 +31,23 @@ const getProductImage = (product) => {
   if (text.includes("smoothie")) return "/cat-smoothies.png";
   if (text.includes("formule")) return "/cat-formules.png";
 
-  // Image de secours
   return "/logo-carre.png";
 };
 
 const formatPickupDate = (date) => {
   if (!date) return "";
 
-  const formatted = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  }).format(date);
+  const formatted =
+    new Intl.DateTimeFormat("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).format(date);
 
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  return (
+    formatted.charAt(0).toUpperCase() +
+    formatted.slice(1)
+  );
 };
 
 export default function Cart({
@@ -58,7 +61,6 @@ export default function Cart({
   loadingSettings,
   dates,
   pickupDate,
-  dateLabel,
   iso,
   pickupTime,
   customerName,
@@ -69,22 +71,19 @@ export default function Cart({
   serviceOpen,
   submitOrder,
   message,
+  pageMode = false,
+  onEditPickup,
 }) {
   const selectedDate = dates.find(
     (date) => iso(date) === pickupDate
   );
 
-  return (
+  const cartContent = (
     <>
-      <div
-        className={`overlay ${open ? "open" : ""}`}
-        onClick={onClose}
-      />
+      <div className="panel-head">
+        <h2>Votre commande</h2>
 
-      <aside className={`panel ${open ? "open" : ""}`}>
-        <div className="panel-head">
-          <h2>Votre commande</h2>
-
+        {!pageMode && (
           <button
             type="button"
             className="close"
@@ -93,256 +92,380 @@ export default function Cart({
           >
             ×
           </button>
-        </div>
-
-        {cartCount === 0 && (
-          <div className="empty">
-            Votre panier est vide.
-          </div>
         )}
+      </div>
 
-        {Object.entries(cart).map(([id, quantity]) => {
-          const product = products.find(
-            (currentProduct) =>
-              String(currentProduct.id) === String(id)
-          );
+      {cartCount === 0 && (
+        <div className="empty">
+          Votre panier est vide.
+        </div>
+      )}
 
-          if (!product) {
-            return null;
-          }
+      {Object.entries(cart).map(([id, quantity]) => {
+        const product = products.find(
+          (currentProduct) =>
+            String(currentProduct.id) === String(id)
+        );
 
-          return (
-            <div className="cart-item" key={id}>
-              <div
+        if (!product) {
+          return null;
+        }
+
+        return (
+          <div className="cart-item" key={id}>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                alignItems: "center",
+                minWidth: 0,
+              }}
+            >
+              <img
+                src={getProductImage(product)}
+                alt={product.name}
                 style={{
-                  display: "flex",
-                  gap: "12px",
-                  alignItems: "center",
+                  width: "64px",
+                  height: "64px",
+                  borderRadius: "12px",
+                  objectFit: "cover",
+                  border: "1px solid #ece8d4",
+                  flexShrink: 0,
                 }}
-              >
-                <img
-                  src={getProductImage(product)}
-                  alt={product.name}
-                  style={{
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "12px",
-                    objectFit: "cover",
-                    border: "1px solid #ece8d4",
-                    flexShrink: 0,
-                  }}
-                />
+              />
+
+              <div style={{ minWidth: 0 }}>
+                <strong>{product.name}</strong>
 
                 <div>
-                  <strong>{product.name}</strong>
-
-                  <div>
-                    {quantity} × {euro(product.price)}
-                  </div>
-
-                  <strong
-                    style={{
-                      color: "var(--green-dark)",
-                    }}
-                  >
-                    {euro(
-                      Number(product.price) * quantity
-                    )}
-                  </strong>
+                  {quantity} × {euro(product.price)}
                 </div>
-              </div>
 
-              <div className="cart-item-actions">
-                <button
-                  type="button"
-                  onClick={() =>
-                    changeQuantity(product.id, -1)
-                  }
-                  aria-label={`Retirer un ${product.name}`}
+                <strong
+                  style={{
+                    color: "var(--green-dark)",
+                  }}
                 >
-                  −
-                </button>
-
-                <span>{quantity}</span>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    changeQuantity(product.id, 1)
-                  }
-                  aria-label={`Ajouter un ${product.name}`}
-                >
-                  +
-                </button>
-
-                <button
-                  type="button"
-                  className="remove-cart-item"
-                  onClick={() =>
-                    changeQuantity(
-                      product.id,
-                      -quantity
-                    )
-                  }
-                >
-                  Supprimer
-                </button>
+                  {euro(
+                    Number(product.price) * quantity
+                  )}
+                </strong>
               </div>
             </div>
-          );
-        })}
 
-        {/* CRÉNEAU CHOISI SUR L'ACCUEIL */}
+            <div
+              className="cart-item-actions"
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                gap: "7px",
+                alignSelf: "center",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  changeQuantity(product.id, -1)
+                }
+                aria-label={`Retirer une unité de ${product.name}`}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  padding: 0,
+                  border: "none",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  lineHeight: 1,
+                }}
+              >
+                −
+              </button>
 
-        <div className="cart-pickup-summary">
-          <div className="cart-pickup-summary-text">
-            <span>RETRAIT</span>
+              <span
+                style={{
+                  minWidth: "18px",
+                  textAlign: "center",
+                  fontWeight: "700",
+                  lineHeight: 1,
+                }}
+              >
+                {quantity}
+              </span>
 
-            <strong>
-              {selectedDate && pickupTime
-                ? `${formatPickupDate(selectedDate)} • ${pickupTime}`
-                : "Créneau de retrait non sélectionné"}
-            </strong>
+              <button
+                type="button"
+                onClick={() =>
+                  changeQuantity(product.id, 1)
+                }
+                aria-label={`Ajouter une unité de ${product.name}`}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  padding: 0,
+                  border: "none",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  lineHeight: 1,
+                }}
+              >
+                +
+              </button>
+
+              <button
+                type="button"
+                aria-label={`Supprimer ${product.name}`}
+                title="Supprimer"
+                onClick={() =>
+                  changeQuantity(
+                    product.id,
+                    -quantity
+                  )
+                }
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  marginLeft: "2px",
+                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  alignSelf: "center",
+                  flexShrink: 0,
+                  border: "none",
+                  borderRadius: "10px",
+                  background: "#F2F3EF",
+                  color: "#5A6257",
+                  cursor: "pointer",
+                  lineHeight: 1,
+                }}
+              >
+                <Trash2
+                  size={19}
+                  strokeWidth={1.8}
+                />
+              </button>
+            </div>
           </div>
+        );
+      })}
 
-          <button
-            type="button"
-            className="cart-pickup-edit"
-            onClick={() => {
-              if (selectedDate) {
-                localStorage.setItem(
-                  "sofresh_pickup_date",
-                  iso(selectedDate)
-                );
-              }
+      <div className="cart-pickup-summary">
+        <div className="cart-pickup-summary-text">
+          <span>RETRAIT</span>
 
-              if (pickupTime) {
-                localStorage.setItem(
-                  "sofresh_pickup_time",
-                  pickupTime
-                );
-              }
-
-              onClose();
-
-              window.location.href =
-                "/accueil-v2#retrait";
-            }}
-          >
-            Modifier
-          </button>
+          <strong>
+            {selectedDate && pickupTime
+              ? `${formatPickupDate(selectedDate)} • ${pickupTime}`
+              : "Créneau de retrait non sélectionné"}
+          </strong>
         </div>
 
-        <label htmlFor="customer-name">
-          Nom
-        </label>
+        <button
+          type="button"
+          className="cart-pickup-edit"
+          onClick={() => {
+            if (onEditPickup) {
+              onEditPickup();
+              return;
+            }
 
-        <input
-          id="customer-name"
-          value={customerName}
-          onChange={(event) =>
-            setCustomerName(event.target.value)
-          }
-          placeholder="Votre nom"
-          autoComplete="name"
-        />
+            if (selectedDate) {
+              localStorage.setItem(
+                "sofresh_pickup_date",
+                iso(selectedDate)
+              );
+            }
 
-        <label htmlFor="customer-phone">
-          Téléphone
-        </label>
+            if (pickupTime) {
+              localStorage.setItem(
+                "sofresh_pickup_time",
+                pickupTime
+              );
+            }
 
-        <input
-          id="customer-phone"
-          type="tel"
-          value={customerPhone}
-          onChange={(event) =>
-            setCustomerPhone(event.target.value)
-          }
-          placeholder="06 00 00 00 00"
-          autoComplete="tel"
-        />
+            onClose();
 
-        {/* TOTAL */}
-
-        <div
-          className="cart-summary"
-          style={{
-            marginTop: "18px",
-            marginBottom: "18px",
-            padding: "15px 16px",
-            borderRadius: "14px",
-            background: "#F8FAF1",
-            border: "1px solid #DDE8B5",
-            display: "grid",
-            gridTemplateColumns: "1fr auto",
-            alignItems: "center",
-            gap: "4px 16px",
+            window.location.href =
+              "/accueil-v2#retrait";
           }}
         >
-          <span
-            style={{
-              gridRow: "1 / span 2",
-              color: "#6A6F63",
-              fontSize: "13px",
-            }}
-          >
-            🛒 {cartCount}{" "}
-            {cartCount > 1 ? "articles" : "article"}
-          </span>
+          Modifier
+        </button>
+      </div>
 
-          <span
+      <label htmlFor="customer-name">
+        Nom
+      </label>
+
+      <input
+        id="customer-name"
+        value={customerName}
+        onChange={(event) =>
+          setCustomerName(event.target.value)
+        }
+        placeholder="Votre nom"
+        autoComplete="name"
+      />
+
+      <label htmlFor="customer-phone">
+        Téléphone
+      </label>
+
+      <input
+        id="customer-phone"
+        type="tel"
+        value={customerPhone}
+        onChange={(event) =>
+          setCustomerPhone(event.target.value)
+        }
+        placeholder="06 00 00 00 00"
+        autoComplete="tel"
+      />
+
+      <div
+        style={{
+          marginTop: "18px",
+          marginBottom: "18px",
+          padding: "15px 16px",
+          borderRadius: "14px",
+          background: "#F8FAF1",
+          border: "1px solid #DDE8B5",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            color: "#6A6F63",
+            fontSize: "13px",
+          }}
+        >
+          🛒 {cartCount}{" "}
+          {cartCount > 1 ? "articles" : "article"}
+        </span>
+
+        <div
+          style={{
+            textAlign: "right",
+          }}
+        >
+          <div
             style={{
-              textAlign: "right",
               fontSize: "11px",
               fontWeight: "900",
               color: "#5A7F0D",
-              letterSpacing: ".5px",
             }}
           >
             TOTAL
-          </span>
+          </div>
 
           <strong
             style={{
-              textAlign: "right",
               fontSize: "24px",
-              lineHeight: 1,
               color: "#5A7F0D",
             }}
           >
             {euro(cartTotal)}
           </strong>
         </div>
+      </div>
 
+      <button
+        type="button"
+        className="primary"
+        style={{
+          width: "100%",
+          minHeight: "48px",
+        }}
+        disabled={
+          paymentLoading ||
+          loadingSettings ||
+          !serviceOpen ||
+          cartCount === 0 ||
+          !pickupDate ||
+          !pickupTime
+        }
+        onClick={submitOrder}
+      >
+        {paymentLoading
+          ? "Redirection vers le paiement…"
+          : serviceOpen
+            ? "Payer et valider la commande"
+            : "Commandes actuellement fermées"}
+      </button>
+
+      {message && (
+        <div className="message">
+          {message}
+        </div>
+      )}
+
+      {pageMode && (
         <button
           type="button"
-          className="primary"
+          onClick={onClose}
           style={{
             width: "100%",
-            minHeight: "48px",
+            minHeight: "44px",
+            marginTop: "12px",
+            border: "none",
+            background: "transparent",
+            color: "#5A7F0D",
+            fontWeight: "700",
+            cursor: "pointer",
           }}
-          disabled={
-            paymentLoading ||
-            loadingSettings ||
-            !serviceOpen ||
-            cartCount === 0 ||
-            !pickupDate ||
-            !pickupTime
-          }
-          onClick={submitOrder}
         >
-          {paymentLoading
-            ? "Redirection vers le paiement…"
-            : serviceOpen
-              ? "Payer et valider la commande"
-              : "Commandes actuellement fermées"}
+          ← Continuer mes achats
         </button>
+      )}
+    </>
+  );
 
-        {message && (
-          <div className="message">
-            {message}
-          </div>
-        )}
+  if (pageMode) {
+    return (
+      <main
+        style={{
+          width: "100%",
+          maxWidth: "600px",
+          margin: "0 auto",
+          padding: "92px 14px 40px",
+        }}
+      >
+        <section
+          style={{
+            background: "#ffffff",
+            borderRadius: "22px",
+            padding: "18px",
+            boxShadow:
+              "0 8px 30px rgba(0,0,0,0.08)",
+          }}
+        >
+          {cartContent}
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <>
+      <div
+        className={`overlay ${open ? "open" : ""}`}
+        onClick={onClose}
+      />
+
+      <aside
+        className={`panel ${open ? "open" : ""}`}
+      >
+        {cartContent}
       </aside>
     </>
   );

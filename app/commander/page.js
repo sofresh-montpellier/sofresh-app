@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
+import {
+  ShoppingBag,
+  ArrowRight,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import Cart from "../components/Cart";
 
@@ -1006,8 +1010,7 @@ export default function Home() {
 
     loadProducts();
   }, []);
-
-  /* =========================================
+    /* =========================================
      CATÉGORIES
   ========================================= */
 
@@ -1482,55 +1485,39 @@ export default function Home() {
                             "Préparé avec soin par So Fresh."}
                         </p>
 
-                        {/* =========================
-                            PRIX + PANIER
-                        ========================= */}
-
                         <div
                           style={{
                             position: "absolute",
                             top: "10px",
                             right: "10px",
-
                             width: "68px",
-
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center",
                             gap: "8px",
                           }}
                         >
-                          {/* PRIX */}
-
                           <div
                             style={{
                               width: "68px",
                               height: "34px",
-
                               borderRadius: "10px",
-
                               background: "#98BD12",
                               color: "#ffffff",
-
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-
                               padding: "0 5px",
-
                               fontSize: "15px",
                               fontWeight: "800",
                               lineHeight: "1",
                               whiteSpace: "nowrap",
-
                               boxShadow:
                                 "0 3px 8px rgba(90,127,13,0.15)",
                             }}
                           >
                             {euro(product.price)}
                           </div>
-
-                          {/* PANIER */}
 
                           <button
                             type="button"
@@ -1540,31 +1527,22 @@ export default function Home() {
                             aria-label={`Ajouter ${product.name} au panier`}
                             style={{
                               position: "relative",
-
                               width: "60px",
                               height: "56px",
                               minWidth: "60px",
-
                               border: "none",
                               borderRadius: "13px",
-
                               background: "#5A7F0D",
                               color: "#ffffff",
-
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-
                               cursor: "pointer",
-
                               boxShadow:
                                 "0 5px 12px rgba(90,127,13,0.23)",
-
                               overflow: "visible",
                             }}
                           >
-                            {/* PANIER DÉCALÉ VERS LA GAUCHE */}
-
                             <svg
                               width="29"
                               height="29"
@@ -1595,74 +1573,52 @@ export default function Home() {
                               <path d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 8H6" />
                             </svg>
 
-                            {/* + */}
-
                             <span
                               style={{
                                 position: "absolute",
-
                                 top: "-5px",
                                 right: "-5px",
-
                                 width: "22px",
                                 height: "22px",
-
                                 borderRadius: "50%",
-
                                 background: "#98BD12",
                                 color: "#ffffff",
-
                                 border:
                                   "2px solid #ffffff",
-
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-
                                 fontSize: "17px",
                                 fontWeight: "900",
                                 lineHeight: "1",
-
                                 pointerEvents: "none",
                               }}
                             >
                               +
                             </span>
 
-                            {/* QUANTITÉ */}
-
                             {productQuantity > 0 && (
                               <span
                                 style={{
                                   position: "absolute",
-
                                   right: "2px",
                                   bottom: "2px",
-
                                   minWidth: "23px",
                                   height: "23px",
-
                                   padding: "0 4px",
-
                                   borderRadius: "999px",
-
                                   background: "#ffffff",
                                   color: "#5A7F0D",
-
                                   border:
                                     "2px solid #ffffff",
-
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
-
                                   fontSize: "12px",
                                   fontWeight: "900",
                                   lineHeight: "1",
-
                                   boxShadow:
                                     "0 2px 5px rgba(0,0,0,0.15)",
-
                                   pointerEvents: "none",
                                 }}
                               >
@@ -1686,6 +1642,113 @@ export default function Home() {
                 </div>
               )}
           </>
+        )}
+
+        {/* BOUTON PANIER COMPACT */}
+
+        {cartCount > 0 && (
+          <Link
+            href="/panier"
+            style={{
+              width: "100%",
+              minHeight: "56px",
+              marginTop: "18px",
+              marginBottom: "22px",
+              padding: "9px 15px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+              background: "#5A7F0D",
+              color: "#ffffff",
+              borderRadius: "14px",
+              textDecoration: "none",
+              boxShadow:
+                "0 6px 16px rgba(90, 127, 13, 0.20)",
+              boxSizing: "border-box",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  width: "32px",
+                  height: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <ShoppingBag
+                  size={25}
+                  strokeWidth={1.8}
+                />
+
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "-7px",
+                    right: "-7px",
+                    minWidth: "19px",
+                    height: "19px",
+                    padding: "0 4px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "999px",
+                    background: "#FFD400",
+                    color: "#5A7F0D",
+                    border: "2px solid #ffffff",
+                    fontSize: "10px",
+                    fontWeight: "800",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {cartCount}
+                </span>
+              </div>
+
+              <div>
+                <strong
+                  style={{
+                    display: "block",
+                    fontSize: "14px",
+                    lineHeight: 1.15,
+                  }}
+                >
+                  Voir mon panier
+                </strong>
+
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: "3px",
+                    fontSize: "11px",
+                    lineHeight: 1.15,
+                    opacity: 0.9,
+                  }}
+                >
+                  {cartCount}{" "}
+                  {cartCount > 1
+                    ? "articles"
+                    : "article"}{" "}
+                  · {euro(cartTotal)}
+                </span>
+              </div>
+            </div>
+
+            <ArrowRight
+              size={21}
+              strokeWidth={1.8}
+            />
+          </Link>
         )}
       </main>
 

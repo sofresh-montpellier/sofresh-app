@@ -3,6 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+import {
+  isSupabaseConfigured,
+  supabase,
+} from "../../lib/supabase";
+
+/* =========================
+   FORMAT PRIX
+========================= */
+
+const euro = (value) =>
+  Number(value || 0).toLocaleString("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  });
+
 /* =========================
    ICÔNES MODERNES
 ========================= */
@@ -37,7 +52,13 @@ function CalendarIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <rect
+        x="3"
+        y="5"
+        width="18"
+        height="16"
+        rx="2"
+      />
       <path d="M16 3v4M8 3v4M3 10h18" />
       <path d="M8 14h.01M12 14h.01M16 14h.01" />
       <path d="M8 17h.01M12 17h.01" />
@@ -95,7 +116,13 @@ function OrderIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <rect x="5" y="3" width="14" height="18" rx="2" />
+      <rect
+        x="5"
+        y="3"
+        width="14"
+        height="18"
+        rx="2"
+      />
       <path d="M8 8h8M8 12h8M8 16h5" />
     </svg>
   );
@@ -161,19 +188,31 @@ function ArrowIcon() {
 function formatPickupDate(value) {
   if (!value) return "";
 
-  const [year, month, day] = value.split("-").map(Number);
+  const [year, month, day] = value
+    .split("-")
+    .map(Number);
 
-  if (!year || !month || !day) return value;
+  if (!year || !month || !day) {
+    return value;
+  }
 
-  const date = new Date(year, month - 1, day);
+  const date = new Date(
+    year,
+    month - 1,
+    day
+  );
 
-  const formatted = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  }).format(date);
+  const formatted =
+    new Intl.DateTimeFormat("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).format(date);
 
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  return (
+    formatted.charAt(0).toUpperCase() +
+    formatted.slice(1)
+  );
 }
 
 /* =========================
@@ -181,26 +220,163 @@ function formatPickupDate(value) {
 ========================= */
 
 export default function PaymentSuccessPage() {
-  const [pickupDate, setPickupDate] = useState("");
-  const [pickupTime, setPickupTime] = useState("");
+  const [pickupDate, setPickupDate] =
+    useState("");
+
+  const [pickupTime, setPickupTime] =
+    useState("");
+
+  const [orderItems, setOrderItems] =
+    useState([]);
+
+  const [orderTotal, setOrderTotal] =
+    useState(0);
 
   useEffect(() => {
-    const savedDate =
-      localStorage.getItem("sofresh_pickup_date") || "";
+    async function loadConfirmation() {
+      const savedDate =
+        localStorage.getItem(
+          "sofresh_pickup_date"
+        ) || "";
 
-    const savedTime =
-      localStorage.getItem("sofresh_pickup_time") || "";
+      const savedTime =
+        localStorage.getItem(
+          "sofresh_pickup_time"
+        ) || "";
 
-    setPickupDate(savedDate);
-    setPickupTime(savedTime);
+      setPickupDate(savedDate);
+      setPickupTime(savedTime);
 
-    localStorage.removeItem("sofresh_cart");
+      /*
+       * On récupère le panier AVANT de l'effacer,
+       * afin d'afficher le récapitulatif.
+       */
+      let savedCart = {};
 
-    window.dispatchEvent(
-      new CustomEvent("sofresh-cart-count", {
-        detail: 0,
-      })
-    );
+      try {
+        savedCart = JSON.parse(
+          localStorage.getItem(
+            "sofresh_cart"
+          ) || "{}"
+        );
+      } catch (error) {
+        console.error(
+          "Erreur lecture panier :",
+          error
+        );
+
+        savedCart = {};
+      }
+
+      const cartEntries =
+        Object.entries(savedCart).filter(
+          ([, quantity]) =>
+            Number(quantity) > 0
+        );
+
+      if (
+        cartEntries.length > 0 &&
+        isSupabaseConfigured &&
+        supabase
+      ) {
+        const productIds =
+          cartEntries.map(
+            ([id]) => id
+          );
+
+        const {
+          data,
+          error,
+        } = await supabase
+          .from("products")
+          .select(
+            "id, name, price"
+          )
+          .in(
+            "id",
+            productIds
+          );
+
+        if (error) {
+          console.error(
+            "Erreur chargement récapitulatif :",
+            error
+          );
+        } else {
+          const items =
+            cartEntries
+              .map(
+                ([id, quantity]) => {
+                  const product =
+                    (data || []).find(
+                      (currentProduct) =>
+                        String(
+                          currentProduct.id
+                        ) ===
+                        String(id)
+                    );
+
+                  if (!product) {
+                    return null;
+                  }
+
+                  return {
+                    id:
+                      product.id,
+
+                    name:
+                      product.name,
+
+                    price:
+                      Number(
+                        product.price
+                      ),
+
+                    quantity:
+                      Number(
+                        quantity
+                      ),
+                  };
+                }
+              )
+              .filter(Boolean);
+
+          setOrderItems(items);
+
+          const total =
+            items.reduce(
+              (
+                sum,
+                item
+              ) =>
+                sum +
+                item.price *
+                  item.quantity,
+              0
+            );
+
+          setOrderTotal(total);
+        }
+      }
+
+      /*
+       * Le panier client est maintenant vidé.
+       */
+      localStorage.removeItem(
+        "sofresh_cart"
+      );
+
+      window.dispatchEvent(
+        new CustomEvent(
+          "sofresh-cart-count",
+          {
+            detail: 0,
+          }
+        )
+      );
+    }
+
+    loadConfirmation();
   }, []);
 
   return (
@@ -222,8 +398,10 @@ export default function PaymentSuccessPage() {
             background: "#ffffff",
             borderRadius: "28px",
             padding: "42px 34px 34px",
-            boxShadow: "0 18px 45px rgba(82,104,26,.13)",
-            border: "1px solid #EEF1DE",
+            boxShadow:
+              "0 18px 45px rgba(82,104,26,.13)",
+            border:
+              "1px solid #EEF1DE",
             textAlign: "center",
           }}
         >
@@ -295,13 +473,16 @@ export default function PaymentSuccessPage() {
 
           {/* RETRAIT */}
 
-          {(pickupDate || pickupTime) && (
+          {(pickupDate ||
+            pickupTime) && (
             <div
               className="payment-success-pickup"
               style={{
                 marginTop: "32px",
-                padding: "27px 24px 30px",
-                border: "1px solid #CFE09C",
+                padding:
+                  "27px 24px 30px",
+                border:
+                  "1px solid #CFE09C",
                 borderRadius: "21px",
                 background:
                   "linear-gradient(180deg,#FCFDF7 0%,#F6F9EC 100%)",
@@ -324,26 +505,30 @@ export default function PaymentSuccessPage() {
                 className="payment-success-pickup-grid"
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1px 1fr",
+                  gridTemplateColumns:
+                    "1fr 1px 1fr",
                   gap: "22px",
                   alignItems: "center",
                 }}
               >
-                {/* DATE */}
-
                 <div>
                   <div
                     className="payment-success-icon-box"
                     style={{
                       width: "62px",
                       height: "62px",
-                      margin: "0 auto 12px",
-                      borderRadius: "17px",
-                      background: "#ffffff",
+                      margin:
+                        "0 auto 12px",
+                      borderRadius:
+                        "17px",
+                      background:
+                        "#ffffff",
                       color: "#5A7F0D",
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      alignItems:
+                        "center",
+                      justifyContent:
+                        "center",
                       boxShadow:
                         "0 6px 18px rgba(40,70,20,.08)",
                     }}
@@ -353,10 +538,14 @@ export default function PaymentSuccessPage() {
 
                   <div
                     style={{
-                      fontSize: "12px",
-                      color: "#696E64",
-                      fontWeight: "900",
-                      marginBottom: "7px",
+                      fontSize:
+                        "12px",
+                      color:
+                        "#696E64",
+                      fontWeight:
+                        "900",
+                      marginBottom:
+                        "7px",
                     }}
                   >
                     DATE
@@ -365,30 +554,34 @@ export default function PaymentSuccessPage() {
                   <strong
                     className="payment-success-date"
                     style={{
-                      color: "#17351E",
-                      fontSize: "22px",
-                      lineHeight: 1.25,
-                      display: "block",
+                      color:
+                        "#17351E",
+                      fontSize:
+                        "22px",
+                      lineHeight:
+                        1.25,
+                      display:
+                        "block",
                     }}
                   >
                     {pickupDate
-                      ? formatPickupDate(pickupDate)
+                      ? formatPickupDate(
+                          pickupDate
+                        )
                       : "—"}
                   </strong>
                 </div>
-
-                {/* SEPARATEUR */}
 
                 <div
                   className="payment-success-separator"
                   style={{
                     width: "1px",
-                    height: "125px",
-                    background: "#DCE6BF",
+                    height:
+                      "125px",
+                    background:
+                      "#DCE6BF",
                   }}
                 />
-
-                {/* HEURE */}
 
                 <div>
                   <div
@@ -396,13 +589,18 @@ export default function PaymentSuccessPage() {
                     style={{
                       width: "62px",
                       height: "62px",
-                      margin: "0 auto 12px",
-                      borderRadius: "17px",
-                      background: "#ffffff",
+                      margin:
+                        "0 auto 12px",
+                      borderRadius:
+                        "17px",
+                      background:
+                        "#ffffff",
                       color: "#5A7F0D",
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      alignItems:
+                        "center",
+                      justifyContent:
+                        "center",
                       boxShadow:
                         "0 6px 18px rgba(40,70,20,.08)",
                     }}
@@ -412,10 +610,14 @@ export default function PaymentSuccessPage() {
 
                   <div
                     style={{
-                      fontSize: "12px",
-                      color: "#696E64",
-                      fontWeight: "900",
-                      marginBottom: "7px",
+                      fontSize:
+                        "12px",
+                      color:
+                        "#696E64",
+                      fontWeight:
+                        "900",
+                      marginBottom:
+                        "7px",
                     }}
                   >
                     HEURE
@@ -424,20 +626,163 @@ export default function PaymentSuccessPage() {
                   <strong
                     className="payment-success-time"
                     style={{
-                      color: "#17351E",
-                      fontSize: "26px",
-                      lineHeight: 1.2,
-                      display: "block",
+                      color:
+                        "#17351E",
+                      fontSize:
+                        "26px",
+                      lineHeight:
+                        1.2,
+                      display:
+                        "block",
                     }}
                   >
-                    {pickupTime || "—"}
+                    {pickupTime ||
+                      "—"}
                   </strong>
                 </div>
               </div>
             </div>
           )}
 
-          {/* PREPARATION */}
+          {/* RÉCAPITULATIF COMMANDE */}
+
+          {orderItems.length > 0 && (
+            <div
+              className="payment-success-order-summary"
+              style={{
+                marginTop: "20px",
+                padding:
+                  "20px 18px 17px",
+                borderRadius: "18px",
+                background: "#ffffff",
+                border:
+                  "1px solid #E5EAD7",
+                textAlign: "left",
+              }}
+            >
+              <div
+                className="payment-success-order-title"
+                style={{
+                  color: "#5A7F0D",
+                  fontSize: "15px",
+                  fontWeight: "900",
+                  letterSpacing:
+                    ".5px",
+                  marginBottom:
+                    "13px",
+                }}
+              >
+                VOTRE COMMANDE
+              </div>
+
+              {orderItems.map(
+                (item) => (
+                  <div
+                    key={item.id}
+                    className="payment-success-order-row"
+                    style={{
+                      display: "flex",
+                      justifyContent:
+                        "space-between",
+                      alignItems:
+                        "center",
+                      gap: "14px",
+                      padding:
+                        "9px 0",
+                      borderBottom:
+                        "1px solid #F0F1EA",
+                    }}
+                  >
+                    <div
+                      style={{
+                        minWidth: 0,
+                      }}
+                    >
+                      <strong
+                        style={{
+                          color:
+                            "#17351E",
+                          fontSize:
+                            "14px",
+                        }}
+                      >
+                        {item.name}
+                      </strong>
+
+                      <span
+                        style={{
+                          marginLeft:
+                            "7px",
+                          color:
+                            "#747A70",
+                          fontSize:
+                            "13px",
+                        }}
+                      >
+                        ×{" "}
+                        {
+                          item.quantity
+                        }
+                      </span>
+                    </div>
+
+                    <strong
+                      style={{
+                        color:
+                          "#5A7F0D",
+                        fontSize:
+                          "14px",
+                        whiteSpace:
+                          "nowrap",
+                      }}
+                    >
+                      {euro(
+                        item.price *
+                          item.quantity
+                      )}
+                    </strong>
+                  </div>
+                )
+              )}
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  alignItems:
+                    "center",
+                  paddingTop:
+                    "14px",
+                }}
+              >
+                <strong
+                  style={{
+                    color:
+                      "#17351E",
+                    fontSize:
+                      "15px",
+                  }}
+                >
+                  Total
+                </strong>
+
+                <strong
+                  style={{
+                    color:
+                      "#5A7F0D",
+                    fontSize:
+                      "19px",
+                  }}
+                >
+                  {euro(
+                    orderTotal
+                  )}
+                </strong>
+              </div>
+            </div>
+          )}
+                    {/* PREPARATION */}
 
           <div
             className="payment-success-preparation"
@@ -469,7 +814,11 @@ export default function PaymentSuccessPage() {
               <ServiceIcon />
             </div>
 
-            <span style={{ textAlign: "left" }}>
+            <span
+              style={{
+                textAlign: "left",
+              }}
+            >
               Votre commande sera préparée
               <br />
               pour ce créneau de retrait.
@@ -506,7 +855,8 @@ export default function PaymentSuccessPage() {
                 color: "#ffffff",
                 textDecoration: "none",
                 display: "grid",
-                gridTemplateColumns: "35px 1fr 35px",
+                gridTemplateColumns:
+                  "35px 1fr 35px",
                 alignItems: "center",
                 fontSize: "18px",
                 fontWeight: "900",
@@ -516,7 +866,9 @@ export default function PaymentSuccessPage() {
             >
               <OrderIcon />
 
-              <span>Voir ma commande</span>
+              <span>
+                Voir ma commande
+              </span>
 
               <ArrowIcon />
             </Link>
@@ -528,7 +880,8 @@ export default function PaymentSuccessPage() {
                 minHeight: "60px",
                 padding: "0 20px",
                 borderRadius: "15px",
-                border: "2px solid #98BD12",
+                border:
+                  "2px solid #98BD12",
                 background: "#ffffff",
                 color: "#5A7F0D",
                 textDecoration: "none",
@@ -541,6 +894,7 @@ export default function PaymentSuccessPage() {
               }}
             >
               <HomeIcon />
+
               Retour à l’accueil
             </Link>
           </div>
@@ -573,7 +927,9 @@ export default function PaymentSuccessPage() {
                 fontSize: "15px",
               }}
             >
-              <div>Merci de votre confiance,</div>
+              <div>
+                Merci de votre confiance,
+              </div>
 
               <div
                 className="payment-success-team"
@@ -673,6 +1029,21 @@ export default function PaymentSuccessPage() {
 
           .payment-success-separator {
             height: 95px !important;
+          }
+
+          .payment-success-order-summary {
+            margin-top: 15px !important;
+            padding: 16px 14px 13px !important;
+            border-radius: 16px !important;
+          }
+
+          .payment-success-order-title {
+            font-size: 13px !important;
+            margin-bottom: 8px !important;
+          }
+
+          .payment-success-order-row {
+            padding: 8px 0 !important;
           }
 
           .payment-success-preparation {

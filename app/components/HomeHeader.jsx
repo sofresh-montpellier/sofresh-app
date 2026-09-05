@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 import {
   UserRound,
   ShoppingBag,
@@ -10,12 +12,24 @@ import {
 
 export default function HomeHeader({
   cartCount = 0,
-  onCartClick,
 }) {
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/payment-success")) {
+    return null;
+  }
+
+  const isCompte =
+    pathname.startsWith("/compte");
+
+  const isCommander =
+    pathname.startsWith("/commander");
+
+  const isPanier =
+    pathname.startsWith("/panier");
+
   return (
     <header className="home-header">
-
-      {/* LOGO À GAUCHE */}
       <Link
         href="/accueil-v2"
         className="home-header-logo"
@@ -31,43 +45,105 @@ export default function HomeHeader({
         />
       </Link>
 
-      {/* COMPTE */}
       <Link
         href="/compte"
-        className="home-header-action"
+        className={`home-header-action ${
+          isCompte
+            ? "home-header-action-active"
+            : ""
+        }`}
       >
-        <UserRound size={25} strokeWidth={1.7} />
+        <UserRound
+          size={25}
+          strokeWidth={1.45}
+        />
+
         <span>Compte</span>
       </Link>
 
-      {/* COMMANDER */}
       <Link
         href="/commander"
-        className="home-header-action"
+        className={`home-header-action ${
+          isCommander
+            ? "home-header-action-active"
+            : ""
+        }`}
       >
-        <Utensils size={25} strokeWidth={1.7} />
+        <Utensils
+          size={25}
+          strokeWidth={1.45}
+        />
+
         <span>Commander</span>
       </Link>
 
-      {/* PANIER */}
-      <button
-        type="button"
-        className="home-header-action home-header-cart"
-        onClick={onCartClick}
+      <Link
+        href="/panier"
+        className={`home-header-action home-header-cart ${
+          isPanier
+            ? "home-header-action-active"
+            : ""
+        }`}
+        aria-label="Voir mon panier"
       >
-        <span className="home-header-cart-icon">
-          <ShoppingBag size={25} strokeWidth={1.7} />
+        <span
+          className="home-header-cart-icon"
+          style={{
+            position: "relative",
+            width: "30px",
+            height: "28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "visible",
+          }}
+        >
+          <ShoppingBag
+            size={25}
+            strokeWidth={1.45}
+          />
 
           {cartCount > 0 && (
-            <span className="home-header-cart-count">
+            <span
+              className="home-header-cart-count"
+              style={{
+                position: "absolute",
+
+                top: "-8px",
+                right: "-7px",
+
+                minWidth: "18px",
+                height: "18px",
+
+                padding: "0 4px",
+
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+
+                borderRadius: "999px",
+
+                background: "#FFD400",
+                color: "#5A7F0D",
+
+                border: "2px solid #ffffff",
+
+                fontSize: "9px",
+                fontWeight: "800",
+                lineHeight: "1",
+
+                boxSizing: "border-box",
+
+                zIndex: 2,
+              }}
+            >
               {cartCount}
             </span>
           )}
         </span>
 
         <span>Panier</span>
-      </button>
-
+      </Link>
     </header>
   );
 }

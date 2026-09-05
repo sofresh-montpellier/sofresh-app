@@ -1,88 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Phone,
-  Mail,
   MapPin,
   ShoppingBag,
+  Star,
+  Clock3,
+  Navigation,
+  Phone,
+  RotateCcw,
+  ArrowRight,
 } from "lucide-react";
-
-function parseTimeToMinutes(value) {
-  const normalized = String(value || "")
-    .trim()
-    .replace(/\s*h\s*/i, ":");
-
-  const match = normalized.match(/^(\d{1,2}):(\d{2})$/);
-
-  if (!match) return null;
-
-  return Number(match[1]) * 60 + Number(match[2]);
-}
-
-function generatePickupTimes(settings) {
-  if (!settings) return [];
-
-  const first = parseTimeToMinutes(
-    settings.first_pickup_time
-  );
-
-  const last = parseTimeToMinutes(
-    settings.last_pickup_time
-  );
-
-  const interval = Number(settings.slot_interval);
-
-  if (
-    first === null ||
-    last === null ||
-    !Number.isInteger(interval) ||
-    interval <= 0
-  ) {
-    return [];
-  }
-
-  const times = [];
-
-  for (
-    let current = first;
-    current <= last;
-    current += interval
-  ) {
-    const h = Math.floor(current / 60);
-    const m = current % 60;
-
-    times.push(
-      `${String(h).padStart(2, "0")}h${String(m).padStart(
-        2,
-        "0"
-      )}`
-    );
-  }
-
-  return times;
-}
 
 export default function AccueilV2() {
   const [settings, setSettings] = useState(null);
-
-  const [hour, setHour] = useState(12);
-  const [minutes, setMinutes] = useState(15);
-  const [selectedDay, setSelectedDay] = useState(0);
-  const [showAllSlots, setShowAllSlots] =
-    useState(false);
-    const pickupRestoredRef = useRef(false);
-const skipNextPickupSaveRef = useRef(false);
-
-  const [availability, setAvailability] = useState({
-    capacity: 0,
-    counts: {},
-  });
-
-  /* ===============================
-     CHARGEMENT DES PARAMÈTRES
-  =============================== */
 
   useEffect(() => {
     async function loadSettings() {
@@ -97,10 +29,7 @@ const skipNextPickupSaveRef = useRef(false);
           setSettings(data);
         }
       } catch (error) {
-        console.error(
-          "Erreur chargement horaires :",
-          error
-        );
+        console.error("Erreur chargement paramètres :", error);
       }
     }
 
@@ -121,10 +50,7 @@ const skipNextPickupSaveRef = useRef(false);
   }).formatToParts(now);
 
   const getPart = (type) =>
-    Number(
-      parisParts.find((part) => part.type === type)
-        ?.value
-    );
+    Number(parisParts.find((part) => part.type === type)?.value);
 
   const parisToday = new Date(
     Date.UTC(
@@ -145,334 +71,47 @@ const skipNextPickupSaveRef = useRef(false);
      FERMETURE EXCEPTIONNELLE
   =============================== */
 
-  const closureEnabled = Boolean(
-    settings?.closure_enabled
+  const closureEnabled = Boolean(settings?.closure_enabled);
+  const closureStartDate = settings?.closure_start_date || "";
+  const closureEndDate = settings?.closure_end_date || "";
+
+  const isClosureActiveToday = Boolean(
+    closureEnabled &&
+      closureStartDate &&
+      closureEndDate &&
+      todayIso >= closureStartDate &&
+      todayIso <= closureEndDate
   );
-
-  const closureStartDate =
-    settings?.closure_start_date || "";
-
-  const closureEndDate =
-    settings?.closure_end_date || "";
-
-  function isDateInsideClosure(isoDate) {
-    return Boolean(
-      closureEnabled &&
-        closureStartDate &&
-        closureEndDate &&
-        isoDate >= closureStartDate &&
-        isoDate <= closureEndDate
-    );
-  }
-
-  const isClosureActiveToday =
-    isDateInsideClosure(todayIso);
-
-  /* ===============================
-     DATES DE RETRAIT
-  =============================== */
-
-  const pickupDates = [];
-
-  const openByDay = {
-    0: settings?.open_sunday ?? false,
-    1: settings?.open_monday ?? true,
-    2: settings?.open_tuesday ?? true,
-    3: settings?.open_wednesday ?? true,
-    4: settings?.open_thursday ?? true,
-    5: settings?.open_friday ?? true,
-    6: settings?.open_saturday ?? false,
-  };
-
-  let cursor = new Date(parisToday);
-  let safetyCounter = 0;
-
-  while (
-    pickupDates.length < 3 &&
-    safetyCounter < 90
-  ) {
-    const dayOfWeek = cursor.getUTCDay();
-
-    const cursorIso = `${cursor.getUTCFullYear()}-${String(
-      cursor.getUTCMonth() + 1
-    ).padStart(2, "0")}-${String(
-      cursor.getUTCDate()
-    ).padStart(2, "0")}`;
-
-    if (
-      openByDay[dayOfWeek] &&
-      !isDateInsideClosure(cursorIso)
-    ) {
-      const differenceInDays = Math.round(
-        (cursor.getTime() - parisToday.getTime()) /
-          (1000 * 60 * 60 * 24)
-      );
-
-      let label;
-
-      if (differenceInDays === 0) {
-        label = "Aujourd'hui";
-      } else if (differenceInDays === 1) {
-        label = "Demain";
-      } else {
-        label = new Intl.DateTimeFormat("fr-FR", {
-          weekday: "short",
-          timeZone: "UTC",
-        }).format(cursor);
-      }
-
-      pickupDates.push({
-        label,
-        iso: cursorIso,
-
-        day: String(cursor.getUTCDate()).padStart(
-          2,
-          "0"
-        ),
-
-        month: new Intl.DateTimeFormat("fr-FR", {
-          month: "long",
-          timeZone: "UTC",
-        }).format(cursor),
-      });
-    }
-
-    cursor.setUTCDate(
-      cursor.getUTCDate() + 1
-    );
-
-    safetyCounter += 1;
-  }
-
-  /* ===============================
-     CRÉNEAUX HORAIRES
-  =============================== */
-
-  const formattedHour = String(hour).padStart(
-    2,
-    "0"
-  );
-
-  const formattedMinutes = String(minutes).padStart(
-    2,
-    "0"
-  );
-
-  const allSlots = generatePickupTimes(settings);
-
-  const visibleSlots = showAllSlots
-    ? allSlots
-    : allSlots.slice(0, 6);
-
-  function isPastSlot(time) {
-    const selectedDate =
-      pickupDates[selectedDay]?.iso;
-
-    if (!selectedDate) return false;
-
-    // Les créneaux futurs ne sont jamais considérés passés.
-    if (selectedDate !== todayIso) return false;
-
-    const slotMinutes = parseTimeToMinutes(time);
-
-    if (slotMinutes === null) return false;
-
-    const parts = new Intl.DateTimeFormat("fr-FR", {
-      timeZone: "Europe/Paris",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).formatToParts(new Date());
-
-    const currentHour = Number(
-      parts.find((part) => part.type === "hour")
-        ?.value || 0
-    );
-
-    const currentMinute = Number(
-      parts.find((part) => part.type === "minute")
-        ?.value || 0
-    );
-
-    const currentMinutes =
-      currentHour * 60 + currentMinute;
-
-    return slotMinutes <= currentMinutes;
-  }
-
-  function isSlotFull(time) {
-    const capacity = Number(
-      availability.capacity || 0
-    );
-
-    if (capacity <= 0) return false;
-
-    const commanderFormat = time.replace(
-      /^(\d{2})h(\d{2})$/,
-      "$1 h $2"
-    );
-
-    const count = Number(
-      availability.counts?.[time] ??
-        availability.counts?.[commanderFormat] ??
-        0
-    );
-
-    return count >= capacity;
-  }
-
-  /* ===============================
-     DISPONIBILITÉ DES CRÉNEAUX
-  =============================== */
-
-  useEffect(() => {
-    async function loadAvailability() {
-      try {
-        const selectedDate =
-          pickupDates[selectedDay]?.iso;
-
-        if (!selectedDate) return;
-
-        const response = await fetch(
-          `/api/availability?date=${selectedDate}`,
-          {
-            cache: "no-store",
-          }
-        );
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-
-        setAvailability({
-          capacity: Number(data.capacity || 0),
-          counts: data.counts || {},
-        });
-      } catch (error) {
-        console.error(
-          "Erreur chargement disponibilités :",
-          error
-        );
-      }
-    }
-
-    loadAvailability();
-  }, [selectedDay, settings]);
-
-/* ===============================
-   RESTAURATION DU RETRAIT
-=============================== */
-
-useEffect(() => {
- if (
-  !settings ||
-  pickupDates.length === 0 ||
-  pickupRestoredRef.current
-) {
-  return;
-}
-
-  const savedDate = localStorage.getItem(
-    "sofresh_pickup_date"
-  );
-
-  const savedTime = localStorage.getItem(
-    "sofresh_pickup_time"
-  );
-
-  if (savedDate) {
-    const savedDayIndex = pickupDates.findIndex(
-      (date) => date.iso === savedDate
-    );
-
-    if (savedDayIndex >= 0) {
-      setSelectedDay(savedDayIndex);
-    }
-  }
-
-  if (savedTime) {
-    const savedMinutes =
-      parseTimeToMinutes(savedTime);
-
-    if (savedMinutes !== null) {
-      setHour(Math.floor(savedMinutes / 60));
-      setMinutes(savedMinutes % 60);
-    }
-  }
-
-  pickupRestoredRef.current = true;
-  skipNextPickupSaveRef.current = true;
-}, [settings, pickupDates]);
-
-
-/* ===============================
-   MÉMORISATION DU RETRAIT
-=============================== */
-
-useEffect(() => {
-  if (!pickupRestoredRef.current) {
-    return;
-  }
-
-  if (skipNextPickupSaveRef.current) {
-    skipNextPickupSaveRef.current = false;
-    return;
-  }
-
-  if (isClosureActiveToday) {
-    localStorage.removeItem(
-      "sofresh_pickup_date"
-    );
-
-    localStorage.removeItem(
-      "sofresh_pickup_time"
-    );
-
-    return;
-  }
-
-  const selectedDate =
-    pickupDates[selectedDay]?.iso;
-
-  if (!selectedDate) return;
-
-  localStorage.setItem(
-    "sofresh_pickup_date",
-    selectedDate
-  );
-
-  localStorage.setItem(
-    "sofresh_pickup_time",
-    `${formattedHour} h ${formattedMinutes}`
-  );
-}, [
-  selectedDay,
-  formattedHour,
-  formattedMinutes,
-  isClosureActiveToday,
-  settings,
-]);
 
   return (
     <main className="home-v2">
+
+      {/* FERMETURE */}
+
       {settings?.closure_enabled && (
-  <div className="closure-marquee">
-  <div className="closure-marquee-track">
-    <span>
-      {settings?.closure_message || "So Fresh est fermé pour congés. À très bientôt !"}
-    </span>
+        <div className="closure-marquee">
+          <div className="closure-marquee-track">
+            <span>
+              {settings?.closure_message ||
+                "So Fresh est fermé pour congés. À très bientôt !"}
+            </span>
+            <span>
+              {settings?.closure_message ||
+                "So Fresh est fermé pour congés. À très bientôt !"}
+            </span>
+          </div>
+        </div>
+      )}
 
-    <span>
-      {settings?.closure_message || "So Fresh est fermé pour congés. À très bientôt !"}
-    </span>
-  </div>
-</div>
-)}
-      {/* ===============================
-          HERO SO FRESH
-      =============================== */}
+      {/* HERO */}
 
-      <div className="hero-final">
+      <section className="hero-final">
+        <img
+          src="/hero-sofresh.png"
+          alt="Votre pause déjeuner So Fresh"
+          className="hero-final-image"
+        />
+
         <div className="hero-final-text">
           <h1>
             Votre pause
@@ -485,14 +124,6 @@ useEffect(() => {
           </div>
         </div>
 
-        <img
-          src="/hero-sofresh.png"
-          alt="Salade fraîche So Fresh"
-          className="hero-final-image"
-        />
-
-        {/* BOUTON COMMANDER */}
-
         {isClosureActiveToday ? (
           <div
             className="hero-final-order-btn"
@@ -503,275 +134,237 @@ useEffect(() => {
               pointerEvents: "none",
             }}
           >
-            <span className="hero-final-cart">
-              <ShoppingBag
-                size={21}
-                strokeWidth={2.3}
-              />
-            </span>
-
-            <span className="hero-final-order-text">
-              FERMÉ POUR CONGÉS
-            </span>
-
-            <span className="hero-final-arrow">
-              —
-            </span>
+            <ShoppingBag size={24} />
+            <span>FERMÉ POUR CONGÉS</span>
+            <span>—</span>
           </div>
         ) : (
           <Link
             href="/commander"
             className="hero-final-order-btn"
           >
-            <span className="hero-final-cart">
-              <ShoppingBag
-                size={21}
-                strokeWidth={2.3}
-              />
-            </span>
+            <ShoppingBag size={24} />
 
             <span className="hero-final-order-text">
               COMMANDER MAINTENANT
             </span>
 
-            <span className="hero-final-arrow">
-              →
-            </span>
+            <ArrowRight size={28} />
           </Link>
         )}
-      </div>
+      </section>
 
-      {/* ===============================
-          RETRAIT
-      =============================== */}
+      {/* NOS INCONTOURNABLES */}
 
-      <section
-        className="pickup-card"
-        id="retrait"
-      >
-        <div className="pickup-location">
-          <span className="pickup-location-label">
-            SO FRESH MONTPELLIER MILLÉNAIRE
-          </span>
+      <section className="home-categories">
 
-          <div className="pickup-store-card">
+        <div className="home-section-heading">
+          <div>
+            <h2>Nos incontournables</h2>
+            <span className="home-yellow-line" />
+          </div>
+
+          <Link href="/commander" className="home-full-menu">
+            Voir toute la carte
+            <ArrowRight size={22} />
+          </Link>
+        </div>
+
+        <div className="home-category-grid">
+
+          <Link
+            href="/commander"
+            className="home-category-card"
+          >
             <img
-              src="/facade1-sofresh.jpeg"
-              alt="Façade So Fresh Montpellier Millénaire"
-              className="pickup-store-image"
+              src="/cat-salades.png"
+              alt="Salades So Fresh"
             />
+            <strong className="category-salades">
+              Salades
+            </strong>
+          </Link>
 
-            <div className="pickup-store-info">
+          <Link
+            href="/commander"
+            className="home-category-card"
+          >
+            <img
+              src="/cat-wraps.png"
+              alt="Wraps So Fresh"
+            />
+            <strong className="category-wraps">
+              Wraps
+            </strong>
+          </Link>
+
+          <Link
+            href="/commander"
+            className="home-category-card"
+          >
+            <img
+              src="/cat-burgers.png"
+              alt="Burgers So Fresh"
+            />
+            <strong className="category-burgers">
+              Burgers
+            </strong>
+          </Link>
+
+        </div>
+      </section>
+
+      {/* RESTAURANT */}
+
+      <section className="home-restaurant-card">
+
+        <div className="home-restaurant-top">
+
+          <div className="home-restaurant-title">
+            <MapPin size={30} fill="currentColor" />
+
+            <div>
+              <strong>
+                SO FRESH MONTPELLIER MILLÉNAIRE
+              </strong>
+
               <span>
-                1350 avenue Albert Einstein,
-                Montpellier
+                1350 avenue Albert Einstein, Montpellier
               </span>
             </div>
+          </div>
 
-            <div className="pickup-contact-actions">
-              <a
-                href="tel:+33467859954"
-                className="pickup-contact-btn"
-              >
-                <Phone
-                  size={21}
-                  strokeWidth={1.8}
-                />
-                <small>Appeler</small>
-              </a>
+          <div className="home-opening">
+            <Clock3 size={28} />
 
-              <a
-                href="mailto:sofreshsalade@gmail.com"
-                className="pickup-contact-btn"
-              >
-                <Mail
-                  size={21}
-                  strokeWidth={1.8}
-                />
-                <small>Contact</small>
-              </a>
-
-              <a
-                href="https://www.google.com/maps/search/?api=1&query=So+Fresh+Salade+1350+Avenue+Albert+Einstein+34000+Montpellier"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="pickup-contact-btn"
-              >
-                <MapPin
-                  size={21}
-                  strokeWidth={1.8}
-                />
-                <small>J'y vais</small>
-              </a>
+            <div>
+              <strong>Ouvert le midi</strong>
+              <span>du lundi au vendredi</span>
             </div>
+          </div>
+
+        </div>
+
+        <div className="home-restaurant-content">
+
+          <img
+            src="/facade1-sofresh.jpeg"
+            alt="So Fresh Montpellier Millénaire"
+            className="home-facade"
+          />
+
+          <div className="home-restaurant-actions">
+
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=So+Fresh+Salade+1350+Avenue+Albert+Einstein+34000+Montpellier"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="home-restaurant-action"
+            >
+              <Navigation size={30} fill="currentColor" />
+              <strong>Itinéraire</strong>
+            </a>
+
+            <a
+              href="tel:+33467859954"
+              className="home-restaurant-action"
+            >
+              <Phone size={30} />
+              <strong>Nous contacter</strong>
+            </a>
+
           </div>
         </div>
 
-        {/* ===============================
-            FERMETURE OU RETRAIT
-        =============================== */}
-
-        {isClosureActiveToday ? (
-          <div
-            style={{
-              marginTop: "16px",
-              padding: "18px",
-              borderRadius: "16px",
-              background: "#fff8d8",
-              border: "1px solid #dfd178",
-              textAlign: "center",
-            }}
-          >
-            <strong
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                fontSize: "17px",
-                color: "#1f2f1f",
-              }}
-            >
-              So Fresh est temporairement fermé
-            </strong>
-
-            <p
-              style={{
-                margin: 0,
-                lineHeight: 1.5,
-                color: "#4a5647",
-              }}
-            >
-              {settings?.closure_message ||
-                "So Fresh est fermé pour congés. À très bientôt !"}
-            </p>
+        {isClosureActiveToday && (
+          <div className="home-closure-message">
+            {settings?.closure_message ||
+              "So Fresh est fermé pour congés. À très bientôt !"}
           </div>
-        ) : (
-          <>
-            {/* JOUR DE RETRAIT */}
-
-            <h3>Jour de retrait</h3>
-
-            <div className="pickup-days">
-              {pickupDates.map(
-                (date, index) => (
-                  <button
-                    key={date.iso}
-                    type="button"
-                    className={
-                      selectedDay === index
-                        ? "selected"
-                        : ""
-                    }
-                    onClick={() =>
-                      setSelectedDay(index)
-                    }
-                  >
-                    <span>{date.label}</span>
-
-                    <strong>{date.day}</strong>
-
-                    <small>
-                      {date.month
-                        .charAt(0)
-                        .toUpperCase() +
-                        date.month.slice(1)}
-                    </small>
-                  </button>
-                )
-              )}
-            </div>
-
-            {/* HEURE DE RETRAIT */}
-
-            <h3>Heure de retrait</h3>
-
-            <div className="pickup-slots-wrapper">
-              <div className="pickup-slots">
-                {visibleSlots.map((time) => {
-                  const full =
-                    isSlotFull(time);
-
-                  const past =
-                    isPastSlot(time);
-
-                  const disabled =
-                    full || past;
-
-                  return (
-                    <button
-                      key={time}
-                      type="button"
-                      disabled={disabled}
-                      className={
-                        full
-                          ? "full"
-                          : past
-                          ? "past"
-                          : `${formattedHour}h${formattedMinutes}` ===
-                            time
-                          ? "selected"
-                          : ""
-                      }
-                      onClick={() => {
-                        if (disabled) return;
-
-                        const [h, m] =
-                          time.split("h");
-
-                        setHour(Number(h));
-                        setMinutes(Number(m));
-                      }}
-                    >
-                      {full
-                        ? "Complet"
-                        : time}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                type="button"
-                className="pickup-more-slots"
-                onClick={() =>
-                  setShowAllSlots(
-                    !showAllSlots
-                  )
-                }
-              >
-                {showAllSlots
-                  ? "Réduire ↑"
-                  : "Voir plus de créneaux ↓"}
-              </button>
-            </div>
-          </>
         )}
+
       </section>
 
-      {/* ===============================
-          FIDÉLITÉ
-      =============================== */}
+      {/* FIDÉLITÉ + COMMANDER À NOUVEAU */}
 
-      <section className="home-v2-loyalty">
-        <div className="home-v2-loyalty-icon">
-          ★
-        </div>
+      <section className="home-shortcuts">
 
-        <div className="home-v2-loyalty-content">
-          <strong>FIDÉLITÉ SO FRESH</strong>
+        <Link href="/compte" className="home-shortcut loyalty">
 
-          <span>
-            Cumulez des points à chaque commande
-            et profitez de récompenses.
-          </span>
-        </div>
+          <div className="home-shortcut-icon">
+            <Star size={30} fill="currentColor" />
+          </div>
+
+          <div className="home-shortcut-text">
+            <strong>MA FIDÉLITÉ</strong>
+            <span>
+              Suivre mes avantages
+              <br />
+              et récompenses
+            </span>
+          </div>
+
+          <ArrowRight className="home-shortcut-arrow" />
+
+        </Link>
 
         <Link
-          href="/compte"
-          className="home-v2-loyalty-link"
+          href="/compte/commandes"
+          className="home-shortcut reorder"
         >
-          Découvrir
+
+          <div className="home-shortcut-icon">
+            <RotateCcw size={30} />
+          </div>
+
+          <div className="home-shortcut-text">
+            <strong>
+              COMMANDER
+              <br />
+              À NOUVEAU
+            </strong>
+
+            <span>
+              Retrouver mes
+              <br />
+              dernières commandes
+            </span>
+          </div>
+
+          <ArrowRight className="home-shortcut-arrow" />
+
         </Link>
+
       </section>
+
+      {/* BANDEAU FRAÎCHEUR */}
+
+      <section className="home-fresh-banner">
+
+        <div className="home-fresh-content">
+          <div className="home-fresh-script">
+            Des produits frais,
+            <br />
+            un quotidien plus sain !
+          </div>
+
+          <div className="home-fresh-line" />
+
+          <div className="home-values">
+            <span>🌿 Frais</span>
+            <span>♡ Gourmand</span>
+            <span>♧ Responsable</span>
+          </div>
+        </div>
+
+        <img
+          src="/cat-salades.png"
+          alt=""
+          className="home-fresh-image"
+        />
+
+      </section>
+
     </main>
   );
 }

@@ -2,6 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+
+import {
+  UserRound,
+  Phone,
+  Star,
+  ReceiptText,
+  LogOut,
+  Settings,
+  Utensils,
+} from "lucide-react";
+
 import {
   supabase,
   isSupabaseConfigured,
@@ -54,6 +65,18 @@ export default function ComptePage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(false);
+
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileFirstName, setProfileFirstName] =
+    useState("");
+  const [profileLastName, setProfileLastName] =
+    useState("");
+  const [profilePhone, setProfilePhone] =
+    useState("");
+  const [profileSaving, setProfileSaving] =
+    useState(false);
+  const [profileMessage, setProfileMessage] =
+    useState("");
 
   async function loadOrders(userId) {
     if (!supabase || !userId) {
@@ -149,6 +172,81 @@ export default function ComptePage() {
     setOrders([]);
   }
 
+  function openProfileEditor() {
+    if (!user) return;
+
+    setProfileFirstName(
+      user.user_metadata?.first_name || ""
+    );
+
+    setProfileLastName(
+      user.user_metadata?.last_name || ""
+    );
+
+    setProfilePhone(
+      user.user_metadata?.phone || ""
+    );
+
+    setProfileMessage("");
+    setProfileOpen(true);
+  }
+
+  async function saveProfile() {
+    if (!supabase || !user) return;
+
+    const firstName = profileFirstName.trim();
+    const lastName = profileLastName.trim();
+    const phone = profilePhone.trim();
+
+    if (!firstName || !lastName || !phone) {
+      setProfileMessage(
+        "Merci de renseigner votre prénom, votre nom et votre téléphone."
+      );
+      return;
+    }
+
+    setProfileSaving(true);
+    setProfileMessage("");
+
+    const { data, error } =
+      await supabase.auth.updateUser({
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+        },
+      });
+
+    if (error) {
+      console.error(
+        "Erreur mise à jour du profil :",
+        error
+      );
+
+      setProfileMessage(
+        "Vos informations n’ont pas pu être enregistrées."
+      );
+
+      setProfileSaving(false);
+      return;
+    }
+
+    if (data?.user) {
+      setUser(data.user);
+    }
+
+    setProfileMessage(
+      "Vos informations ont bien été enregistrées."
+    );
+
+    setProfileSaving(false);
+
+    setTimeout(() => {
+      setProfileOpen(false);
+      setProfileMessage("");
+    }, 700);
+  }
+
   if (loading) {
     return (
       <main className="account-page">
@@ -176,13 +274,6 @@ export default function ComptePage() {
     const isAdmin =
       user.app_metadata?.role === "admin";
 
-    /*
-     * Fidélité
-     * Une commande compte si :
-     * - elle appartient au client connecté
-     * - elle est réellement payée
-     * - son total est supérieur ou égal à 10 €
-     */
     const loyaltyEligibleOrders = orders.filter(
       (order) =>
         order.payment_status === "paid" &&
@@ -209,18 +300,51 @@ export default function ComptePage() {
 
           <h1>Mon compte</h1>
 
-          <p className="account-intro">
-            {firstName
-              ? `Bonjour ${firstName} 👋`
-              : "Bienvenue chez So Fresh 👋"}
-          </p>
+         <p className="account-intro">
+  {firstName
+    ? `Bonjour ${firstName}`
+    : "Bienvenue chez So Fresh"}
+</p>
+
+          {/* MES INFORMATIONS */}
 
           <div className="account-benefits">
-            <h2>Mes informations</h2>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+                marginBottom: "10px",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>
+                Mes informations
+              </h2>
+
+              <button
+                type="button"
+                onClick={openProfileEditor}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#5A7F0D",
+                  fontSize: "12px",
+                  fontWeight: "800",
+                  cursor: "pointer",
+                  padding: "6px 0",
+                }}
+              >
+                Modifier
+              </button>
+            </div>
 
             <div className="account-benefit">
               <span className="account-benefit-icon">
-                👤
+                <UserRound
+                  size={21}
+                  strokeWidth={1.8}
+                />
               </span>
 
               <div>
@@ -234,18 +358,19 @@ export default function ComptePage() {
               </div>
             </div>
 
-            {phone && (
-              <div className="account-benefit">
-                <span className="account-benefit-icon">
-                  ☎
-                </span>
+            <div className="account-benefit">
+              <span className="account-benefit-icon">
+                <Phone
+                  size={21}
+                  strokeWidth={1.8}
+                />
+              </span>
 
-                <div>
-                  <strong>Téléphone</strong>
-                  <p>{phone}</p>
-                </div>
+              <div>
+                <strong>Téléphone</strong>
+                <p>{phone || "Non renseigné"}</p>
               </div>
-            )}
+            </div>
           </div>
 
           {/* FIDÉLITÉ */}
@@ -272,26 +397,53 @@ export default function ComptePage() {
                 marginBottom: "12px",
               }}
             >
-              <div>
-                <h2
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                }}
+              >
+                <span
                   style={{
-                    margin: 0,
-                    fontSize: "18px",
-                    color: "#183D1F",
+                    width: "38px",
+                    height: "38px",
+                    borderRadius: "50%",
+                    background: "#F3F7E5",
+                    color: "#5A7F0D",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
                   }}
                 >
-                  Ma fidélité
-                </h2>
+                  <Star
+                    size={21}
+                    strokeWidth={1.8}
+                  />
+                </span>
 
-                <p
-                  style={{
-                    margin: "3px 0 0",
-                    fontSize: "12px",
-                    color: "#6B715F",
-                  }}
-                >
-                  Achats de 10 € minimum
-                </p>
+                <div>
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: "18px",
+                      color: "#183D1F",
+                    }}
+                  >
+                    Ma fidélité
+                  </h2>
+
+                  <p
+                    style={{
+                      margin: "3px 0 0",
+                      fontSize: "12px",
+                      color: "#6B715F",
+                    }}
+                  >
+                    Achats de 10 € minimum
+                  </p>
+                </div>
               </div>
 
               <div
@@ -304,20 +456,13 @@ export default function ComptePage() {
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
+                  color: "#5A7F0D",
                 }}
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  stroke="#5A7F0D"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2l3 6 6.5 1-4.75 4.6 1.1 6.4L12 17l-5.85 3 1.1-6.4L2.5 9 9 8l3-6z" />
-                </svg>
+                <Star
+                  size={24}
+                  strokeWidth={1.8}
+                />
               </div>
             </div>
 
@@ -397,10 +542,28 @@ export default function ComptePage() {
             </p>
           </div>
 
+          {/* COMMANDES */}
+
           <div className="account-orders account-orders-compact">
 
             <div className="account-orders-header">
-              <h2>Mon historique de commandes</h2>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <ReceiptText
+                  size={20}
+                  strokeWidth={1.8}
+                  color="#5A7F0D"
+                />
+
+                <h2>
+                  Mon historique de commandes
+                </h2>
+              </div>
 
               <Link
                 href="/compte/commandes"
@@ -476,12 +639,30 @@ export default function ComptePage() {
 
           </div>
 
-          <div className="account-actions">
+          {/* ACTIONS */}
+
+          <div
+  className="account-actions"
+  style={{
+    marginTop: "14px",
+  }}
+>
 
             <Link
               href="/commander"
               className="account-login-btn"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+              }}
             >
+              <Utensils
+                size={18}
+                strokeWidth={1.8}
+              />
+
               Commander
             </Link>
 
@@ -492,8 +673,17 @@ export default function ComptePage() {
                 style={{
                   background: "#5A7F0D",
                   color: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
                 }}
               >
+                <Settings
+                  size={18}
+                  strokeWidth={1.8}
+                />
+
                 Administration
               </Link>
             )}
@@ -502,7 +692,18 @@ export default function ComptePage() {
               type="button"
               className="account-create-btn"
               onClick={handleLogout}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+              }}
             >
+              <LogOut
+                size={18}
+                strokeWidth={1.8}
+              />
+
               Se déconnecter
             </button>
 
@@ -542,6 +743,242 @@ export default function ComptePage() {
             </Link>
           </div>
         </div>
+
+        {/* MODIFICATION DU PROFIL */}
+
+        {profileOpen && (
+          <div
+            onClick={() => {
+              if (!profileSaving) {
+                setProfileOpen(false);
+                setProfileMessage("");
+              }
+            }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 5000,
+              background: "rgba(0, 0, 0, 0.42)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "18px",
+            }}
+          >
+            <div
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+              style={{
+                width: "100%",
+                maxWidth: "430px",
+                background: "#ffffff",
+                borderRadius: "22px",
+                padding: "20px",
+                boxShadow:
+                  "0 18px 50px rgba(0, 0, 0, 0.20)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                  marginBottom: "18px",
+                }}
+              >
+                <div>
+                  <h2
+                    style={{
+                      margin: 0,
+                      color: "#183D1F",
+                      fontSize: "20px",
+                    }}
+                  >
+                    Modifier mes informations
+                  </h2>
+
+                  <p
+                    style={{
+                      margin: "4px 0 0",
+                      color: "#6B715F",
+                      fontSize: "12px",
+                    }}
+                  >
+                    Votre e-mail reste inchangé.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  aria-label="Fermer"
+                  disabled={profileSaving}
+                  onClick={() => {
+                    setProfileOpen(false);
+                    setProfileMessage("");
+                  }}
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    color: "#183D1F",
+                    fontSize: "28px",
+                    lineHeight: 1,
+                    cursor: profileSaving
+                      ? "not-allowed"
+                      : "pointer",
+                    opacity: profileSaving ? 0.5 : 1,
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              <label
+                htmlFor="profile-first-name"
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  color: "#4F5548",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                }}
+              >
+                Prénom
+              </label>
+
+              <input
+                id="profile-first-name"
+                value={profileFirstName}
+                onChange={(event) =>
+                  setProfileFirstName(event.target.value)
+                }
+                autoComplete="given-name"
+                style={{
+                  width: "100%",
+                  minHeight: "46px",
+                  border: "1px solid #DDE4C7",
+                  borderRadius: "12px",
+                  padding: "0 12px",
+                  marginBottom: "14px",
+                  fontSize: "15px",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+
+              <label
+                htmlFor="profile-last-name"
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  color: "#4F5548",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                }}
+              >
+                Nom
+              </label>
+
+              <input
+                id="profile-last-name"
+                value={profileLastName}
+                onChange={(event) =>
+                  setProfileLastName(event.target.value)
+                }
+                autoComplete="family-name"
+                style={{
+                  width: "100%",
+                  minHeight: "46px",
+                  border: "1px solid #DDE4C7",
+                  borderRadius: "12px",
+                  padding: "0 12px",
+                  marginBottom: "14px",
+                  fontSize: "15px",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+
+              <label
+                htmlFor="profile-phone"
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  color: "#4F5548",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                }}
+              >
+                Téléphone
+              </label>
+
+              <input
+                id="profile-phone"
+                type="tel"
+                value={profilePhone}
+                onChange={(event) =>
+                  setProfilePhone(event.target.value)
+                }
+                autoComplete="tel"
+                style={{
+                  width: "100%",
+                  minHeight: "46px",
+                  border: "1px solid #DDE4C7",
+                  borderRadius: "12px",
+                  padding: "0 12px",
+                  marginBottom: "16px",
+                  fontSize: "15px",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+
+              {profileMessage && (
+                <div
+                  style={{
+                    marginBottom: "14px",
+                    padding: "10px 12px",
+                    borderRadius: "10px",
+                    background:
+                      profileMessage.includes("bien été")
+                        ? "#F4F8DF"
+                        : "#FFF4E5",
+                    color: "#4F5548",
+                    fontSize: "12px",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {profileMessage}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={saveProfile}
+                disabled={profileSaving}
+                style={{
+                  width: "100%",
+                  minHeight: "48px",
+                  border: "none",
+                  borderRadius: "14px",
+                  background: "#98BD12",
+                  color: "#ffffff",
+                  fontSize: "14px",
+                  fontWeight: "800",
+                  cursor: profileSaving
+                    ? "not-allowed"
+                    : "pointer",
+                  opacity: profileSaving ? 0.7 : 1,
+                }}
+              >
+                {profileSaving
+                  ? "Enregistrement…"
+                  : "Enregistrer"}
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     );
   }
@@ -580,18 +1017,10 @@ export default function ComptePage() {
 
           <div className="account-benefit">
             <span className="account-benefit-icon">
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2l3 6 6.5 1-4.75 4.6 1.1 6.4L12 17l-5.85 3 1.1-6.4L2.5 9 9 8l3-6z" />
-              </svg>
+              <Star
+                size={20}
+                strokeWidth={1.8}
+              />
             </span>
 
             <div>
@@ -607,18 +1036,10 @@ export default function ComptePage() {
 
           <div className="account-benefit">
             <span className="account-benefit-icon">
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
-              </svg>
+              <Utensils
+                size={20}
+                strokeWidth={1.8}
+              />
             </span>
 
             <div>
@@ -635,19 +1056,10 @@ export default function ComptePage() {
 
           <div className="account-benefit">
             <span className="account-benefit-icon">
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 11l3 3L22 4" />
-                <path d="M21 12a9 9 0 1 1-5.3-8.2" />
-              </svg>
+              <ReceiptText
+                size={20}
+                strokeWidth={1.8}
+              />
             </span>
 
             <div>

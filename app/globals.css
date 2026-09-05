@@ -7594,3 +7594,744 @@ header.home-header {
     opacity: 1 !important;
   }
 }
+/* =========================================
+   HEADER - STYLE PROCHE DE TON SCREEN
+========================================= */
+
+/* PICTOS + TEXTES */
+header.home-header .home-header-action {
+  color: #5A7F0D !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 5px !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+
+  text-decoration: none !important;
+}
+
+/* TEXTE */
+header.home-header .home-header-action span {
+  color: #5A7F0D !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+}
+
+/* PICTOS */
+header.home-header .home-header-action svg {
+  color: #5A7F0D !important;
+  stroke: #5A7F0D !important;
+
+  width: 25px !important;
+  height: 25px !important;
+
+  stroke-width: 1.45 !important;
+}
+
+/* PAGE ACTIVE */
+header.home-header .home-header-action-active {
+  position: relative !important;
+  background: transparent !important;
+}
+
+/* TRAIT SOUS LE TEXTE */
+header.home-header .home-header-action-active::after {
+  content: "" !important;
+
+  position: absolute !important;
+  left: 18% !important;
+  right: 18% !important;
+  bottom: 4px !important;
+
+  height: 4px !important;
+
+  background: #5A7F0D !important;
+  border-radius: 3px !important;
+}
+/* =========================================================
+   CORRECTION HEADER MOBILE - GRANDS IPHONE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .home-header {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+/* =========================================================
+   CORRECTION LARGEUR APP MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  body > div,
+  #__next,
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+/* =========================================================
+   CORRECTION DEFINITIVE LARGEUR HEADER
+   IPHONE 15 / GRANDS MOBILES
+   ========================================================= */
+
+@media (max-width: 600px) {
+  header.home-header {
+    width: 100% !important;
+    max-width: none !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* =========================================================
+   SO FRESH — ACCUEIL V2 FINAL
+   ========================================================= */
+
+.home-v2 {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #fbfaf5;
+  color: #103b20;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .home-header {
+    display: grid !important;
+    grid-template-columns: 108px 1fr 1fr 1fr !important;
+    align-items: stretch !important;
+    height: 86px !important;
+    min-height: 86px !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    background: #e7e77b !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .home-header-logo {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 6px 4px !important;
+    background: transparent !important;
+  }
+
+  .home-header-logo img {
+    width: 92px !important;
+    max-width: none !important;
+    height: auto !important;
+  }
+
+  .home-header-actions {
+    display: contents !important;
+  }
+
+  .home-header-action,
+  .home-header-order-button {
+    min-width: 0 !important;
+    min-height: 86px !important;
+    padding: 8px 2px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #103c22 !important;
+    text-decoration: none !important;
+  }
+
+  .home-header-action svg,
+  .home-header-order-button svg {
+    width: 27px !important;
+    height: 27px !important;
+    stroke-width: 1.8 !important;
+  }
+
+  .home-header-action span,
+  .home-header-order-button span {
+    display: inline !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+  }
+
+  .home-header-cart-count {
+    top: -9px !important;
+    right: -13px !important;
+    min-width: 23px !important;
+    height: 23px !important;
+    background: #ffd400 !important;
+    border: 0 !important;
+    color: #103c22 !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+  }
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.home-v2 .hero-final {
+  position: relative;
+  width: 100%;
+  height: 285px;
+  overflow: visible;
+  background: #dce580;
+}
+
+.home-v2 .hero-final-image {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.home-v2 .hero-final::after {
+  display: none;
+}
+
+.home-v2 .hero-final-text {
+  position: absolute;
+  z-index: 3;
+  top: 38px;
+  left: 22px;
+  padding: 0;
+  color: #0c4023;
+}
+
+.home-v2 .hero-final-text h1 {
+  margin: 0;
+  font-size: 37px;
+  line-height: 0.94;
+  font-weight: 900;
+  letter-spacing: -1.8px;
+  text-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.55),
+    0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.home-v2 .hero-final-script {
+  position: relative;
+  margin-top: 8px;
+  font-family:
+    "Brush Script MT",
+    "Segoe Script",
+    cursive;
+  font-size: 25px;
+  line-height: 1;
+  font-style: italic;
+  font-weight: 500;
+  color: #1d692c;
+  transform: rotate(-3deg);
+}
+
+.home-v2 .hero-final-script::after {
+  content: "";
+  display: block;
+  width: 82px;
+  height: 5px;
+  margin: 7px 0 0 128px;
+  border-radius: 999px;
+  background: #ffd400;
+  transform: rotate(-4deg);
+}
+
+.home-v2 .hero-final-order-btn {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: -25px;
+  transform: translateX(-50%);
+  width: calc(100% - 38px);
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 34px 1fr 34px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #ffd400;
+  color: #073c22;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(53, 61, 25, 0.18);
+}
+
+.home-v2 .hero-final-order-btn svg {
+  justify-self: center;
+}
+
+.home-v2 .hero-final-order-text {
+  font-size: 15px;
+  font-weight: 900;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   NOS INCONTOURNABLES
+   ========================================================= */
+
+.home-categories {
+  padding: 55px 18px 22px;
+  background: #fbfaf5;
+}
+
+.home-section-heading {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.home-section-heading h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  color: #113d22;
+  white-space: nowrap;
+}
+
+.home-yellow-line {
+  display: block;
+  width: 62px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: #ffd400;
+  transform: rotate(-3deg);
+}
+
+.home-full-menu {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-bottom: 3px;
+  color: #36751e;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.home-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.home-category-card {
+  display: block;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #ffffff;
+  text-decoration: none;
+  box-shadow: 0 5px 14px rgba(20, 43, 20, 0.08);
+}
+
+.home-category-card img {
+  display: block;
+  width: 100%;
+  height: 105px;
+  object-fit: cover;
+}
+
+.home-category-card strong {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.category-salades {
+  background: linear-gradient(135deg, #83b73b, #63a329);
+}
+
+.category-wraps {
+  background: linear-gradient(135deg, #f7dfa0, #efc866);
+  color: #103b20 !important;
+}
+
+.category-burgers {
+  background: linear-gradient(135deg, #e98b68, #dc6b49);
+}
+
+/* =========================================================
+   RESTAURANT
+   ========================================================= */
+
+.home-restaurant-card {
+  margin: 4px 14px 14px;
+  padding: 15px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(25, 48, 26, 0.08);
+}
+
+.home-restaurant-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.home-restaurant-title {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-restaurant-title > svg {
+  flex: 0 0 auto;
+  width: 25px;
+  height: 25px;
+  color: #125526;
+}
+
+.home-restaurant-title div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-restaurant-title strong {
+  font-size: 12px;
+  line-height: 1.08;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  color: #123f23;
+}
+
+.home-restaurant-title span {
+  margin-top: 3px;
+  color: #6a6a67;
+  font-size: 10px;
+  line-height: 1.15;
+}
+
+.home-opening {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 999px;
+  background: #ecf6dc;
+  color: #153d20;
+}
+
+.home-opening svg {
+  width: 23px;
+  height: 23px;
+  flex: 0 0 auto;
+}
+
+.home-opening div {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-opening strong {
+  font-size: 10px;
+  line-height: 1.1;
+}
+
+.home-opening span {
+  margin-top: 2px;
+  font-size: 8px;
+  line-height: 1.1;
+}
+
+.home-restaurant-content {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  gap: 9px;
+}
+
+.home-facade {
+  display: block;
+  width: 100%;
+  height: 105px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.home-restaurant-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.home-restaurant-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid #e1ded5;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0e4926;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 3px 10px rgba(20, 43, 20, 0.05);
+}
+
+.home-restaurant-action svg {
+  width: 25px;
+  height: 25px;
+}
+
+.home-restaurant-action strong {
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+.home-closure-message {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff6c9;
+  color: #38431e;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* =========================================================
+   FIDÉLITÉ + COMMANDER À NOUVEAU
+   ========================================================= */
+
+.home-shortcuts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 14px 16px;
+}
+
+.home-shortcut {
+  min-height: 112px;
+  display: grid;
+  grid-template-columns: 50px 1fr 22px;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 12px;
+  border-radius: 18px;
+  text-decoration: none;
+}
+
+.home-shortcut.loyalty {
+  background: linear-gradient(135deg, #eef7e4 0%, #e5f0d8 100%);
+}
+
+.home-shortcut.reorder {
+  background: linear-gradient(135deg, #fff3ec 0%, #fae7df 100%);
+}
+
+.home-shortcut-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.home-shortcut-icon svg {
+  width: 27px;
+  height: 27px;
+}
+
+.home-shortcut.loyalty .home-shortcut-icon {
+  background: #ffd400;
+  color: #123d22;
+}
+
+.home-shortcut.reorder .home-shortcut-icon {
+  background: #e97852;
+  color: #ffffff;
+}
+
+.home-shortcut-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.home-shortcut-text strong {
+  color: #113d22;
+  font-size: 12px;
+  line-height: 1.08;
+  font-weight: 900;
+}
+
+.home-shortcut-text span {
+  color: #315331;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.home-shortcut-arrow {
+  width: 20px;
+  height: 20px;
+  color: #174825;
+}
+
+/* =========================================================
+   BANDEAU FRAÎCHEUR
+   ========================================================= */
+
+.home-fresh-banner {
+  position: relative;
+  min-height: 142px;
+  margin: 2px 14px 18px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #0d4528;
+}
+
+.home-fresh-image {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: -18px;
+  width: 56%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-fresh-banner::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(10, 61, 34, 1) 0%,
+    rgba(10, 61, 34, 0.98) 42%,
+    rgba(10, 61, 34, 0.72) 62%,
+    rgba(10, 61, 34, 0.08) 100%
+  );
+}
+
+.home-fresh-content {
+  position: relative;
+  z-index: 3;
+  width: 70%;
+  padding: 19px 0 15px 22px;
+  color: #ffffff;
+}
+
+.home-fresh-script {
+  font-family:
+    "Brush Script MT",
+    "Segoe Script",
+    cursive;
+  font-size: 24px;
+  line-height: 1.04;
+  font-style: italic;
+  font-weight: 500;
+  transform: rotate(-2deg);
+}
+
+.home-fresh-line {
+  width: 145px;
+  height: 4px;
+  margin: 9px 0 12px 18px;
+  border-radius: 999px;
+  background: #ffd400;
+  transform: rotate(-3deg);
+}
+
+.home-values {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   PETITS TÉLÉPHONES
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .home-v2 .hero-final {
+    height: 275px;
+  }
+
+  .home-v2 .hero-final-text h1 {
+    font-size: 34px;
+  }
+
+  .home-v2 .hero-final-script {
+    font-size: 23px;
+  }
+
+  .home-category-card img {
+    height: 96px;
+  }
+
+  .home-shortcut {
+    grid-template-columns: 42px 1fr 18px;
+    padding-inline: 9px;
+  }
+
+  .home-shortcut-icon {
+    width: 42px;
+    height: 42px;
+  }
+}
