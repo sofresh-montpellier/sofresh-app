@@ -3,18 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../../lib/supabase";
 
+const DEFAULT_PRODUCT_IMAGE = "/produit-generique.png";
+
 const emptyForm = {
   name: "",
   description: "",
   category: "Salades",
   price: "",
-  image_url: "",
+  image_url: DEFAULT_PRODUCT_IMAGE,
   emoji: "🥗",
   available: true,
   display_order: 0,
 };
 
 const categories = [
+  "Formules",
   "Salades",
   "Burgers",
   "Wraps",
@@ -170,7 +173,8 @@ export default function ProductsPage() {
       description: product.description || "",
       category: product.category || "Salades",
       price: String(product.price ?? ""),
-      image_url: product.image_url || "",
+      image_url:
+        product.image_url || DEFAULT_PRODUCT_IMAGE,
       emoji: product.emoji || "🥗",
       available: Boolean(product.available),
       display_order: Number(product.display_order || 0),
@@ -204,7 +208,9 @@ export default function ProductsPage() {
     }
 
     if (originalFile.size > 25 * 1024 * 1024) {
-      setMessage("La photo d’origine ne doit pas dépasser 25 Mo.");
+      setMessage(
+        "La photo d’origine ne doit pas dépasser 25 Mo."
+      );
       event.target.value = "";
       return;
     }
@@ -212,7 +218,8 @@ export default function ProductsPage() {
     setUploading(true);
 
     try {
-      const compressedBlob = await compressImage(originalFile);
+      const compressedBlob =
+        await compressImage(originalFile);
 
       const cleanName =
         sanitizeFileName(originalFile.name) || "produit";
@@ -236,21 +243,23 @@ export default function ProductsPage() {
         }
       );
 
-      const { error: uploadError } = await supabase.storage
-        .from("product-images")
-        .upload(filePath, compressedFile, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: "image/webp",
-        });
+      const { error: uploadError } =
+        await supabase.storage
+          .from("product-images")
+          .upload(filePath, compressedFile, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: "image/webp",
+          });
 
       if (uploadError) {
         throw uploadError;
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from("product-images")
-        .getPublicUrl(filePath);
+      const { data: publicUrlData } =
+        supabase.storage
+          .from("product-images")
+          .getPublicUrl(filePath);
 
       if (!publicUrlData?.publicUrl) {
         throw new Error(
@@ -313,7 +322,8 @@ export default function ProductsPage() {
       description: form.description.trim(),
       category: form.category.trim(),
       price,
-      image_url: form.image_url.trim() || null,
+      image_url:
+        form.image_url.trim() || DEFAULT_PRODUCT_IMAGE,
       emoji: form.emoji.trim() || "🥗",
       available: Boolean(form.available),
       display_order: Number(form.display_order || 0),
@@ -460,14 +470,19 @@ export default function ProductsPage() {
           onSubmit={saveProduct}
         >
           <div>
-            <label htmlFor="product-name">Nom</label>
+            <label htmlFor="product-name">
+              Nom
+            </label>
 
             <input
               id="product-name"
               required
               value={form.name}
               onChange={(event) =>
-                updateField("name", event.target.value)
+                updateField(
+                  "name",
+                  event.target.value
+                )
               }
               placeholder="Salade César"
             />
@@ -489,7 +504,10 @@ export default function ProductsPage() {
               }
             >
               {categories.map((category) => (
-                <option value={category} key={category}>
+                <option
+                  value={category}
+                  key={category}
+                >
                   {category}
                 </option>
               ))}
@@ -497,7 +515,9 @@ export default function ProductsPage() {
           </div>
 
           <div>
-            <label htmlFor="product-price">Prix</label>
+            <label htmlFor="product-price">
+              Prix
+            </label>
 
             <input
               id="product-price"
@@ -505,13 +525,14 @@ export default function ProductsPage() {
               inputMode="decimal"
               value={form.price}
               onChange={(event) =>
-                updateField("price", event.target.value)
+                updateField(
+                  "price",
+                  event.target.value
+                )
               }
               placeholder="10,90"
             />
           </div>
-
-        
 
           <div className="product-form-wide">
             <label htmlFor="product-description">
@@ -553,8 +574,10 @@ export default function ProductsPage() {
                 color: "var(--muted)",
               }}
             >
-              La photo sera automatiquement redimensionnée et
-              compressée en WebP.
+              Si aucune photo n’est ajoutée,
+              l’image générique So Fresh sera utilisée.
+              Une photo choisie sera automatiquement
+              redimensionnée et compressée en WebP.
             </small>
           </div>
 
@@ -616,7 +639,9 @@ export default function ProductsPage() {
               }
             />
 
-            <span>Produit disponible sur le site</span>
+            <span>
+              Produit disponible sur le site
+            </span>
           </label>
 
           <div className="product-form-actions">
@@ -636,7 +661,9 @@ export default function ProductsPage() {
         </form>
 
         {message && (
-          <div className="message">{message}</div>
+          <div className="message">
+            {message}
+          </div>
         )}
       </section>
 
@@ -647,7 +674,9 @@ export default function ProductsPage() {
               Menu So Fresh
             </span>
 
-            <h2>Produits ({products.length})</h2>
+            <h2>
+              Produits ({products.length})
+            </h2>
           </div>
         </div>
 
@@ -670,22 +699,24 @@ export default function ProductsPage() {
               key={product.id}
             >
               <div className="product-admin-visual">
-                {product.image_url ? (
-                  <img
-                    src={product.image_url}
-                    alt={product.name}
-                  />
-                ) : (
-                  <span>
-                    {product.emoji || "🥗"}
-                  </span>
-                )}
+                <img
+                  src={
+                    product.image_url ||
+                    DEFAULT_PRODUCT_IMAGE
+                  }
+                  alt={product.name}
+                />
               </div>
 
               <div className="product-admin-info">
                 <div className="product-admin-name-row">
-                  <strong>{product.name}</strong>
-                  <b>{euro(product.price)}</b>
+                  <strong>
+                    {product.name}
+                  </strong>
+
+                  <b>
+                    {euro(product.price)}
+                  </b>
                 </div>
 
                 <span className="product-category">
@@ -693,7 +724,9 @@ export default function ProductsPage() {
                 </span>
 
                 {product.description && (
-                  <p>{product.description}</p>
+                  <p>
+                    {product.description}
+                  </p>
                 )}
 
                 <span
@@ -713,7 +746,9 @@ export default function ProductsPage() {
                 <button
                   type="button"
                   className="secondary"
-                  onClick={() => startEdit(product)}
+                  onClick={() =>
+                    startEdit(product)
+                  }
                 >
                   Modifier
                 </button>

@@ -1473,7 +1473,11 @@ export default function Home() {
                           {product.name}
                         </h3>
 
-                        <p>
+                        <p
+                          style={{
+                            whiteSpace: "pre-line",
+                          }}
+                        >
                           {product.description ||
                             "Préparé avec soin par So Fresh."}
                         </p>
@@ -1493,7 +1497,6 @@ export default function Home() {
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center",
-
                             gap: "8px",
                           }}
                         >
@@ -1518,7 +1521,6 @@ export default function Home() {
                               fontSize: "15px",
                               fontWeight: "800",
                               lineHeight: "1",
-
                               whiteSpace: "nowrap",
 
                               boxShadow:
@@ -1544,11 +1546,9 @@ export default function Home() {
                               minWidth: "60px",
 
                               border: "none",
-
                               borderRadius: "13px",
 
                               background: "#5A7F0D",
-
                               color: "#ffffff",
 
                               display: "flex",
@@ -1610,7 +1610,6 @@ export default function Home() {
                                 borderRadius: "50%",
 
                                 background: "#98BD12",
-
                                 color: "#ffffff",
 
                                 border:
