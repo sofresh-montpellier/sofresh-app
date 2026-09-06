@@ -129,8 +129,6 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  const [soundEnabled, setSoundEnabled] =
-    useState(true);
 
   const [pushStatus, setPushStatus] =
     useState("idle");
@@ -194,23 +192,6 @@ export default function OrdersPage() {
     setLoading(false);
   }
 
-  function playNewOrderSound() {
-    const audio = new Audio("/ding.mp3");
-
-    audio.volume = 1;
-
-    audio.play().catch((error) => {
-      console.error(
-        "Le son n’a pas pu être joué :",
-        error
-      );
-    });
-  }
-
-  function enableSound() {
-    setSoundEnabled(true);
-    playNewOrderSound();
-  }
 
   useEffect(() => {
     loadOrders();
@@ -224,14 +205,7 @@ export default function OrdersPage() {
           schema: "public",
           table: "orders",
         },
-        (payload) => {
-          if (
-            payload.eventType === "INSERT" &&
-            soundEnabled
-          ) {
-            playNewOrderSound();
-          }
-
+        () => {
           loadOrders();
         }
       )
@@ -240,7 +214,7 @@ export default function OrdersPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [soundEnabled]);
+  }, []);
 
   useEffect(() => {
     async function checkPushStatus() {
@@ -557,15 +531,6 @@ export default function OrdersPage() {
               flexWrap: "wrap",
             }}
           >
-            <button
-              type="button"
-              className="secondary"
-              onClick={enableSound}
-            >
-              {soundEnabled
-                ? "🔔 Sonnerie activée"
-                : "🔕 Activer la sonnerie"}
-            </button>
 
             <button
               type="button"
