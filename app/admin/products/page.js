@@ -30,6 +30,7 @@ const categories = [
   "Bagels",
   "Boissons",
   "Desserts",
+  "Pause sucrée / salée",
 ];
 
 const euro = (value) =>

@@ -200,15 +200,15 @@ export default function AccueilV2() {
           </Link>
 
           <Link
-            href="/commander?categorie=Burgers"
+            href="/commander?categorie=Tacos"
             className="home-category-card"
           >
             <img
-              src="/cat-burgers.png"
-              alt="Burgers So Fresh"
+              src="/cat-tacos.png"
+              alt="Tacos So Fresh"
             />
-            <strong className="category-burgers">
-              Burgers
+            <strong className="category-tacos">
+              Tacos
             </strong>
           </Link>
 

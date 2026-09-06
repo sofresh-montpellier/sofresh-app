@@ -62,6 +62,11 @@ const categoryAliases = {
 
   dessert: "Desserts",
   desserts: "Desserts",
+
+  "pause sucrée / salée": "Pause sucrée / salée",
+  "pause sucree / salee": "Pause sucrée / salée",
+  "pause sucrée/salée": "Pause sucrée / salée",
+  "pause sucree/salee": "Pause sucrée / salée",
 };
 
 const categoryOrder = [
@@ -78,7 +83,19 @@ const categoryOrder = [
   "Bagels",
   "Boissons",
   "Desserts",
+  "Pause sucrée / salée",
 ];
+
+function getCategoryImage(category) {
+  if (category === "Pause sucrée / salée") {
+    return "/cat-pause-sucree-salee.png";
+  }
+
+  return `/cat-${category
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")}.png`;
+}
 
 const dayLabels = {
   0: "Dimanche",
@@ -1406,13 +1423,7 @@ export default function Home() {
               >
                 <div className="category-family-image">
                   <img
-                    src={`/cat-${currentCategory
-                      .toLowerCase()
-                      .normalize("NFD")
-                      .replace(
-                        /[\u0300-\u036f]/g,
-                        ""
-                      )}.png`}
+                    src={getCategoryImage(currentCategory)}
                     alt={currentCategory}
                   />
                 </div>
@@ -1471,13 +1482,7 @@ export default function Home() {
                           />
                         ) : (
                           <img
-                            src={`/cat-${category
-                              .toLowerCase()
-                              .normalize("NFD")
-                              .replace(
-                                /[\u0300-\u036f]/g,
-                                ""
-                              )}.png`}
+                            src={getCategoryImage(category)}
                             alt={product.name}
                           />
                         )}

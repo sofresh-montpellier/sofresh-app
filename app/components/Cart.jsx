@@ -154,7 +154,7 @@ export default function Cart({
             </div>
 
             <div
-              className="cart-item-actions"
+              className="cart-item-actions-row"
               style={{
                 display: "flex",
                 flexDirection: "row",

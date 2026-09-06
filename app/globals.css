@@ -8280,8 +8280,9 @@ header.home-header .home-header-action-active::after {
   background: linear-gradient(
     90deg,
     rgba(10, 61, 34, 1) 0%,
-    rgba(10, 61, 34, 0.98) 42%,
-    rgba(10, 61, 34, 0.72) 62%,
+    rgba(10, 61, 34, 1) 52%,
+    rgba(10, 61, 34, 0.92) 60%,
+    rgba(10, 61, 34, 0.45) 72%,
     rgba(10, 61, 34, 0.08) 100%
   );
 }
@@ -8358,50 +8359,183 @@ header.home-header .home-header-action-active::after {
 }
 
 /* =========================================================
-   ACCUEIL V2 — 3 ACTIONS RESTAURANT SUR UNE SEULE LIGNE
-========================================================= */
+   ACCUEIL / HEADER — FINITIONS VALIDÉES 06-09-2026
+   ========================================================= */
 
-.home-restaurant-actions {
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 6px !important;
-  width: 100% !important;
+/* Tacos : couleur distincte de Salades et Wraps */
+.category-tacos {
+  background: linear-gradient(135deg, #f6a52b 0%, #ed8b18 100%) !important;
+  color: #ffffff !important;
 }
 
-.home-restaurant-action {
-  min-width: 0 !important;
-  width: 100% !important;
-  padding-left: 3px !important;
-  padding-right: 3px !important;
-  text-align: center !important;
+/* Commander à nouveau : retirer les tons rouges */
+.home-shortcut.reorder {
+  background: linear-gradient(135deg, #fff8df 0%, #f8edc3 100%) !important;
 }
 
-.home-restaurant-action strong {
-  font-size: 10px !important;
-  line-height: 1.1 !important;
-  white-space: normal !important;
+.home-shortcut.reorder .home-shortcut-icon {
+  background: #e89a17 !important;
+  color: #ffffff !important;
+}
+
+/* Header mobile :
+   - logo conservé à gauche
+   - logo centré verticalement
+   - 3 actions réparties régulièrement
+   - bas du header arrondi
+   - pastille panier correctement attachée à l'icône
+*/
+@media (max-width: 600px) {
+  header.home-header {
+    display: grid !important;
+    grid-template-columns: 108px repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    min-height: 86px !important;
+    height: 86px !important;
+    margin: 0 !important;
+    padding: 0 6px 0 0 !important;
+    gap: 0 !important;
+    overflow: visible !important;
+    border-radius: 0 0 22px 22px !important;
+    background: #DFD178 !important;
+  }
+
+  header.home-header .home-header-logo {
+    grid-column: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: stretch !important;
+    justify-self: stretch !important;
+    height: 86px !important;
+    margin: 0 !important;
+    padding: 0 4px !important;
+  }
+
+  header.home-header .home-header-logo img,
+  header.home-header .home-header-logo-img {
+    display: block !important;
+    margin: 0 auto !important;
+    transform: none !important;
+    transform-origin: center center !important;
+  }
+
+  header.home-header .home-header-actions {
+    grid-column: 2 / 5 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    height: 86px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  header.home-header .home-header-action,
+  header.home-header .home-header-order-button {
+    position: relative !important;
+    min-width: 0 !important;
+    min-height: 86px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 8px 2px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+  }
+
+  header.home-header .home-header-cart-count {
+    top: -5px !important;
+    right: -8px !important;
+  }
+}
+
+/* On conserve le dégradé fraîcheur validé :
+   vert plein derrière le texte, transition ensuite vers la photo */
+.home-fresh-banner::after {
+  background: linear-gradient(
+    90deg,
+    rgba(10, 61, 34, 1) 0%,
+    rgba(10, 61, 34, 1) 52%,
+    rgba(10, 61, 34, 0.92) 60%,
+    rgba(10, 61, 34, 0.45) 72%,
+    rgba(10, 61, 34, 0.08) 100%
+  ) !important;
 }
 
 /* =========================================================
-   ACCUEIL V2 — FINITION DES 3 BOUTONS RESTAURANT
-========================================================= */
+   NOS INCONTOURNABLES — RACCORD PHOTO / NOM
+   ========================================================= */
 
-.home-restaurant-actions {
-  gap: 8px !important;
+.home-category-card {
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-.home-restaurant-action {
-  padding-left: 2px !important;
-  padding-right: 2px !important;
+.home-category-card img {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  vertical-align: bottom !important;
+  flex: 0 0 auto !important;
 }
 
-.home-restaurant-action svg {
-  width: 24px !important;
-  height: 24px !important;
+.home-category-card strong {
+  display: flex !important;
+  width: 100% !important;
+  margin: 0 !important;
+  border: 0 !important;
+  flex: 0 0 auto !important;
 }
 
-.home-restaurant-action strong {
-  font-size: 9px !important;
-  line-height: 1.05 !important;
-}
+/* =========================================================
+   HEADER MOBILE — LARGEUR + PASTILLE PANIER (FINAL)
+   ========================================================= */
 
+@media (max-width: 600px) {
+  header.home-header {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+    right: 0 !important;
+  }
+
+  header.home-header .home-header-actions {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+    box-sizing: border-box !important;
+  }
+
+  header.home-header .home-header-action,
+  header.home-header .home-header-order-button {
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  header.home-header .home-header-cart-icon,
+  header.home-header .home-header-cart-wrap {
+    position: relative !important;
+  }
+
+  header.home-header .home-header-cart-count {
+    top: -5px !important;
+    right: -7px !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    padding: 0 5px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    border-radius: 999px !important;
+  }
+}
