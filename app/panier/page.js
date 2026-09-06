@@ -630,8 +630,11 @@ export default function PanierPage() {
 
   const cartCount =
     Object.values(cart).reduce(
-      (sum, qty) =>
-        sum + Number(qty || 0),
+      (sum, entry) =>
+        sum +
+        (typeof entry === "number"
+          ? Number(entry || 0)
+          : Number(entry?.qty || 0)),
       0
     );
 
@@ -639,8 +642,21 @@ export default function PanierPage() {
     Object.entries(cart).reduce(
       (
         total,
-        [id, quantity]
+        [id, entry]
       ) => {
+        if (
+          typeof entry === "object" &&
+          entry?.type === "formula"
+        ) {
+          return (
+            total +
+            Number(entry.price || 0) *
+              Number(entry.qty || 1)
+          );
+        }
+
+        const quantity = Number(entry || 0);
+
         const product =
           products.find(
             (item) =>
@@ -655,7 +671,7 @@ export default function PanierPage() {
         return (
           total +
           Number(product.price) *
-            Number(quantity)
+            quantity
         );
       },
       0
@@ -677,17 +693,40 @@ export default function PanierPage() {
     difference
   ) {
     setCart((current) => {
+      const currentEntry = current[productId];
+
+      if (
+        typeof currentEntry === "object" &&
+        currentEntry?.type === "formula"
+      ) {
+        const nextQty =
+          Number(currentEntry.qty || 1) +
+          difference;
+
+        const next = {
+          ...current,
+        };
+
+        if (nextQty <= 0) {
+          delete next[productId];
+        } else {
+          next[productId] = {
+            ...currentEntry,
+            qty: nextQty,
+          };
+        }
+
+        return next;
+      }
+
       const next = {
         ...current,
-
         [productId]:
-          (current[productId] || 0) +
+          Number(currentEntry || 0) +
           difference,
       };
 
-      if (
-        next[productId] <= 0
-      ) {
+      if (next[productId] <= 0) {
         delete next[productId];
       }
 
@@ -830,10 +869,28 @@ export default function PanierPage() {
 
     const items =
       Object.entries(cart).map(
-        ([id, quantity]) => ({
-          id: Number(id),
-          qty: quantity,
-        })
+        ([id, entry]) => {
+          if (
+            typeof entry === "object" &&
+            entry?.type === "formula"
+          ) {
+            return {
+              id: Number(
+                entry.formula_product_id
+              ),
+              qty: Number(entry.qty || 1),
+              formula: true,
+              formula_name: entry.name,
+              formula_selections:
+                entry.selections || [],
+            };
+          }
+
+          return {
+            id: Number(id),
+            qty: Number(entry || 0),
+          };
+        }
       );
 
     setPaymentLoading(true);

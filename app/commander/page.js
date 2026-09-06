@@ -520,6 +520,16 @@ export default function Home() {
 
   const [message, setMessage] = useState("");
 
+  // =========================================
+  // COMPOSITION DES FORMULES
+  // =========================================
+  const [formulaOpen, setFormulaOpen] = useState(false);
+  const [formulaProduct, setFormulaProduct] = useState(null);
+  const [formulaSteps, setFormulaSteps] = useState([]);
+  const [formulaChoices, setFormulaChoices] = useState({});
+  const [formulaLoading, setFormulaLoading] = useState(false);
+  const [formulaError, setFormulaError] = useState("");
+
   /* =========================================
      CATÉGORIE DEMANDÉE DEPUIS L'ACCUEIL
   ========================================= */
@@ -1085,15 +1095,178 @@ export default function Home() {
     ]);
 
   /* =========================================
+     FORMULES : CHOIX CLIENT
+  ========================================= */
+
+  async function openFormula(product) {
+    setFormulaProduct(product);
+    setFormulaChoices({});
+    setFormulaSteps([]);
+    setFormulaError("");
+    setFormulaLoading(true);
+    setFormulaOpen(true);
+
+    try {
+      const { data: steps, error: stepsError } =
+        await supabase
+          .from("formula_steps")
+          .select("*")
+          .eq("formula_product_id", product.id)
+          .order("display_order", { ascending: true });
+
+      if (stepsError) throw stepsError;
+
+      if (!steps || steps.length === 0) {
+        throw new Error(
+          "Cette formule n’est pas encore configurée."
+        );
+      }
+
+      const stepIds = steps.map((step) => step.id);
+
+      const {
+        data: allowedRows,
+        error: allowedError,
+      } = await supabase
+        .from("formula_step_products")
+        .select("*")
+        .in("formula_step_id", stepIds);
+
+      if (allowedError) throw allowedError;
+
+      const allowedProductIds = [
+        ...new Set(
+          (allowedRows || [])
+            .map((row) => row.product_id)
+            .filter(Boolean)
+        ),
+      ];
+
+      let allowedProducts = [];
+
+      if (allowedProductIds.length > 0) {
+        const {
+          data: productRows,
+          error: productsError,
+        } = await supabase
+          .from("products")
+          .select("*")
+          .in("id", allowedProductIds)
+          .eq("available", true)
+          .order("display_order", { ascending: true })
+          .order("name", { ascending: true });
+
+        if (productsError) throw productsError;
+
+        allowedProducts = productRows || [];
+      }
+
+      const productMap = new Map(
+        allowedProducts.map((item) => [
+          String(item.id),
+          item,
+        ])
+      );
+
+      const enrichedSteps = steps.map((step) => ({
+        ...step,
+        products: (allowedRows || [])
+          .filter(
+            (row) =>
+              String(row.formula_step_id) ===
+              String(step.id)
+          )
+          .map((row) =>
+            productMap.get(String(row.product_id))
+          )
+          .filter(Boolean),
+      }));
+
+      setFormulaSteps(enrichedSteps);
+    } catch (error) {
+      console.error(
+        "Erreur chargement formule :",
+        error
+      );
+
+      setFormulaError(
+        error?.message ||
+          "Impossible de charger cette formule."
+      );
+    } finally {
+      setFormulaLoading(false);
+    }
+  }
+
+  function chooseFormulaProduct(stepId, product) {
+    setFormulaChoices((current) => ({
+      ...current,
+      [stepId]: product,
+    }));
+  }
+
+  function closeFormula() {
+    setFormulaOpen(false);
+    setFormulaProduct(null);
+    setFormulaSteps([]);
+    setFormulaChoices({});
+    setFormulaError("");
+  }
+
+  function addFormulaToCart() {
+    if (!formulaProduct) return;
+
+    const missingStep = formulaSteps.find(
+      (step) =>
+        !formulaChoices[step.id]
+    );
+
+    if (missingStep) {
+      setFormulaError(
+        `Choisissez votre ${String(
+          missingStep.name || "produit"
+        ).toLowerCase()}.`
+      );
+      return;
+    }
+
+    const formulaKey = `formula-${formulaProduct.id}-${Date.now()}`;
+
+    const selections = formulaSteps.map((step) => ({
+      step_id: step.id,
+      step_name: step.name,
+      product_id: formulaChoices[step.id].id,
+      product_name: formulaChoices[step.id].name,
+      image_url: formulaChoices[step.id].image_url || "",
+    }));
+
+    setCart((current) => ({
+      ...current,
+      [formulaKey]: {
+        type: "formula",
+        qty: 1,
+        formula_product_id: formulaProduct.id,
+        name: formulaProduct.name,
+        price: Number(formulaProduct.price || 0),
+        image_url: formulaProduct.image_url || "",
+        selections,
+      },
+    }));
+
+    closeFormula();
+  }
+
+  /* =========================================
      PANIER : TOTAL ET QUANTITÉ
   ========================================= */
 
   const cartCount =
-    Object.values(
-      cart
-    ).reduce(
-      (sum, quantity) =>
-        sum + quantity,
+    Object.values(cart).reduce(
+      (sum, entry) =>
+        sum +
+        (typeof entry === "number"
+          ? entry
+          : Number(entry?.qty || 0)),
       0
     );
 
@@ -1127,21 +1300,25 @@ export default function Home() {
   }, []);
 
   const cartTotal =
-    Object.entries(
-      cart
-    ).reduce(
-      (
-        sum,
-        [id, quantity]
-      ) => {
+    Object.entries(cart).reduce(
+      (sum, [id, entry]) => {
+        if (
+          typeof entry === "object" &&
+          entry?.type === "formula"
+        ) {
+          return (
+            sum +
+            Number(entry.price || 0) *
+              Number(entry.qty || 1)
+          );
+        }
+
+        const quantity = Number(entry || 0);
+
         const product =
           products.find(
-            (
-              currentProduct
-            ) =>
-              String(
-                currentProduct.id
-              ) ===
+            (currentProduct) =>
+              String(currentProduct.id) ===
               String(id)
           );
 
@@ -1151,10 +1328,7 @@ export default function Home() {
 
         return (
           sum +
-          Number(
-            product.price
-          ) *
-            quantity
+          Number(product.price) * quantity
         );
       },
       0
@@ -1183,31 +1357,44 @@ export default function Home() {
     productId,
     difference
   ) {
-    setCart(
-      (current) => {
-        const nextCart = {
-          ...current,
+    setCart((current) => {
+      const currentEntry = current[productId];
 
-          [productId]:
-            (current[
-              productId
-            ] || 0) +
-            difference,
-        };
+      if (
+        typeof currentEntry === "object" &&
+        currentEntry?.type === "formula"
+      ) {
+        const nextQty =
+          Number(currentEntry.qty || 1) +
+          difference;
 
-        if (
-          nextCart[
-            productId
-          ] <= 0
-        ) {
-          delete nextCart[
-            productId
-          ];
+        const nextCart = { ...current };
+
+        if (nextQty <= 0) {
+          delete nextCart[productId];
+        } else {
+          nextCart[productId] = {
+            ...currentEntry,
+            qty: nextQty,
+          };
         }
 
         return nextCart;
       }
-    );
+
+      const nextCart = {
+        ...current,
+        [productId]:
+          Number(currentEntry || 0) +
+          difference,
+      };
+
+      if (nextCart[productId] <= 0) {
+        delete nextCart[productId];
+      }
+
+      return nextCart;
+    });
   }
 
   /* =========================================
@@ -1302,16 +1489,29 @@ export default function Home() {
     );
 
     const items =
-      Object.entries(
-        cart
-      ).map(
-        ([
-          id,
-          quantity,
-        ]) => ({
-          id: Number(id),
-          qty: quantity,
-        })
+      Object.entries(cart).map(
+        ([id, entry]) => {
+          if (
+            typeof entry === "object" &&
+            entry?.type === "formula"
+          ) {
+            return {
+              id: Number(
+                entry.formula_product_id
+              ),
+              qty: Number(entry.qty || 1),
+              formula: true,
+              formula_name: entry.name,
+              formula_selections:
+                entry.selections || [],
+            };
+          }
+
+          return {
+            id: Number(id),
+            qty: Number(entry || 0),
+          };
+        }
       );
 
     setPaymentLoading(true);
@@ -1466,8 +1666,13 @@ export default function Home() {
             {!loadingProducts && (
               <section className="product-list-mobile">
                 {visibleProducts.map((product) => {
+                  const rawProductQuantity =
+                    cart[product.id];
+
                   const productQuantity =
-                    cart[product.id] || 0;
+                    typeof rawProductQuantity === "number"
+                      ? rawProductQuantity
+                      : 0;
 
                   return (
                     <article
@@ -1544,9 +1749,16 @@ export default function Home() {
 
                           <button
                             type="button"
-                            onClick={() =>
-                              addProduct(product.id)
-                            }
+                            onClick={() => {
+                              if (
+                                product.normalized_category ===
+                                "Formules"
+                              ) {
+                                openFormula(product);
+                              } else {
+                                addProduct(product.id);
+                              }
+                            }}
                             aria-label={`Ajouter ${product.name} au panier`}
                             style={{
                               position: "relative",
@@ -1774,6 +1986,373 @@ export default function Home() {
           </Link>
         )}
       </main>
+
+      {formulaOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Composer ma formule"
+          onClick={closeFormula}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 10000,
+            background: "rgba(20, 28, 12, 0.48)",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            padding: "12px",
+          }}
+        >
+          <div
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+            style={{
+              width: "100%",
+              maxWidth: "520px",
+              maxHeight: "88vh",
+              overflowY: "auto",
+              background: "#FBFBF9",
+              borderRadius: "22px 22px 16px 16px",
+              boxShadow:
+                "0 -10px 35px rgba(0,0,0,0.18)",
+            }}
+          >
+            <div
+              style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 2,
+                padding: "18px 18px 14px",
+                background: "#FBFBF9",
+                borderBottom:
+                  "1px solid rgba(90,127,13,0.12)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={closeFormula}
+                aria-label="Fermer"
+                style={{
+                  position: "absolute",
+                  top: "14px",
+                  right: "14px",
+                  width: "34px",
+                  height: "34px",
+                  borderRadius: "50%",
+                  border:
+                    "1px solid rgba(90,127,13,0.22)",
+                  background: "#ffffff",
+                  color: "#5A7F0D",
+                  fontSize: "22px",
+                  lineHeight: 1,
+                  cursor: "pointer",
+                }}
+              >
+                ×
+              </button>
+
+              <div
+                style={{
+                  paddingRight: "44px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "800",
+                    color: "#98BD12",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  Ma formule
+                </div>
+
+                <h2
+                  style={{
+                    margin: "3px 0 0",
+                    fontSize: "22px",
+                    color: "#24300f",
+                  }}
+                >
+                  {formulaProduct?.name}
+                </h2>
+
+                <div
+                  style={{
+                    marginTop: "4px",
+                    fontSize: "16px",
+                    fontWeight: "900",
+                    color: "#5A7F0D",
+                  }}
+                >
+                  {euro(formulaProduct?.price)}
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: "16px 16px 20px",
+              }}
+            >
+              {formulaLoading && (
+                <div
+                  style={{
+                    padding: "28px 8px",
+                    textAlign: "center",
+                    color: "#5A7F0D",
+                  }}
+                >
+                  Chargement de la formule…
+                </div>
+              )}
+
+              {!formulaLoading &&
+                formulaSteps.map(
+                  (step, stepIndex) => (
+                    <section
+                      key={step.id}
+                      style={{
+                        marginBottom: "22px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "28px",
+                            height: "28px",
+                            borderRadius: "50%",
+                            background: "#98BD12",
+                            color: "#ffffff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "13px",
+                            fontWeight: "900",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {stepIndex + 1}
+                        </span>
+
+                        <div>
+                          <strong
+                            style={{
+                              display: "block",
+                              color: "#24300f",
+                              fontSize: "16px",
+                            }}
+                          >
+                            Choisissez votre{" "}
+                            {String(
+                              step.name || "produit"
+                            ).toLowerCase()}
+                          </strong>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              color: "#6f765f",
+                            }}
+                          >
+                            1 choix
+                          </span>
+                        </div>
+                      </div>
+
+                      {step.products.length === 0 ? (
+                        <div
+                          style={{
+                            padding: "12px",
+                            borderRadius: "12px",
+                            background: "#fff4e8",
+                            fontSize: "13px",
+                          }}
+                        >
+                          Aucun produit autorisé pour
+                          cette étape.
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            display: "grid",
+                            gap: "9px",
+                          }}
+                        >
+                          {step.products.map(
+                            (choice) => {
+                              const selected =
+                                String(
+                                  formulaChoices[
+                                    step.id
+                                  ]?.id
+                                ) ===
+                                String(choice.id);
+
+                              return (
+                                <button
+                                  key={choice.id}
+                                  type="button"
+                                  onClick={() =>
+                                    chooseFormulaProduct(
+                                      step.id,
+                                      choice
+                                    )
+                                  }
+                                  style={{
+                                    width: "100%",
+                                    minHeight: "66px",
+                                    padding: "7px 10px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "11px",
+                                    textAlign: "left",
+                                    borderRadius: "13px",
+                                    border: selected
+                                      ? "2px solid #98BD12"
+                                      : "1px solid #dde2d1",
+                                    background: selected
+                                      ? "#f3f8df"
+                                      : "#ffffff",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  <img
+                                    src={
+                                      choice.image_url ||
+                                      getCategoryImage(
+                                        normalizeCategory(
+                                          choice.category
+                                        )
+                                      )
+                                    }
+                                    alt={choice.name}
+                                    style={{
+                                      width: "52px",
+                                      height: "52px",
+                                      objectFit: "cover",
+                                      borderRadius: "10px",
+                                      flexShrink: 0,
+                                    }}
+                                  />
+
+                                  <span
+                                    style={{
+                                      flex: 1,
+                                      minWidth: 0,
+                                    }}
+                                  >
+                                    <strong
+                                      style={{
+                                        display: "block",
+                                        fontSize: "13px",
+                                        color: "#24300f",
+                                      }}
+                                    >
+                                      {choice.name}
+                                    </strong>
+
+                                    {choice.description &&
+                                      choice.description.trim() &&
+                                      choice.description.trim().toUpperCase() !== "EMPTY" && (
+                                        <span
+                                          style={{
+                                            display: "block",
+                                            marginTop: "3px",
+                                            fontSize: "11px",
+                                            lineHeight: "1.3",
+                                            color: "#6f765f",
+                                            whiteSpace: "pre-line",
+                                          }}
+                                        >
+                                          {choice.description}
+                                        </span>
+                                      )}
+                                  </span>
+
+                                  <span
+                                    style={{
+                                      width: "24px",
+                                      height: "24px",
+                                      borderRadius: "50%",
+                                      border: selected
+                                        ? "2px solid #98BD12"
+                                        : "2px solid #cbd2bd",
+                                      background: selected
+                                        ? "#98BD12"
+                                        : "#ffffff",
+                                      color: "#ffffff",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      fontWeight: "900",
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    {selected ? "✓" : ""}
+                                  </span>
+                                </button>
+                              );
+                            }
+                          )}
+                        </div>
+                      )}
+                    </section>
+                  )
+                )}
+
+              {formulaError && (
+                <div
+                  style={{
+                    marginBottom: "12px",
+                    padding: "11px 12px",
+                    borderRadius: "11px",
+                    background: "#fff4e8",
+                    color: "#8a4b00",
+                    fontSize: "13px",
+                    fontWeight: "700",
+                  }}
+                >
+                  {formulaError}
+                </div>
+              )}
+
+              {!formulaLoading &&
+                formulaSteps.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={addFormulaToCart}
+                    style={{
+                      width: "100%",
+                      minHeight: "54px",
+                      border: "none",
+                      borderRadius: "14px",
+                      background: "#5A7F0D",
+                      color: "#ffffff",
+                      fontSize: "15px",
+                      fontWeight: "900",
+                      cursor: "pointer",
+                      boxShadow:
+                        "0 6px 16px rgba(90,127,13,0.20)",
+                    }}
+                  >
+                    Ajouter ma formule au panier ·{" "}
+                    {euro(formulaProduct?.price)}
+                  </button>
+                )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Cart
         open={cartOpen}

@@ -101,7 +101,195 @@ export default function Cart({
         </div>
       )}
 
-      {Object.entries(cart).map(([id, quantity]) => {
+      {Object.entries(cart).map(([id, entry]) => {
+        const isFormula =
+          typeof entry === "object" &&
+          entry?.type === "formula";
+
+        if (isFormula) {
+          const quantity = Number(entry.qty || 1);
+
+          return (
+            <div className="cart-item" key={id}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  alignItems: "flex-start",
+                  minWidth: 0,
+                  flex: 1,
+                }}
+              >
+                <img
+                  src={entry.image_url || "/cat-formules.png"}
+                  alt={entry.name || "Formule"}
+                  style={{
+                    width: "64px",
+                    height: "64px",
+                    borderRadius: "12px",
+                    objectFit: "cover",
+                    border: "1px solid #ece8d4",
+                    flexShrink: 0,
+                  }}
+                />
+
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <strong>
+                    {entry.name || "Formule"}
+                  </strong>
+
+                  <div
+                    style={{
+                      marginTop: "4px",
+                      display: "grid",
+                      gap: "2px",
+                      fontSize: "12px",
+                      lineHeight: 1.3,
+                      color: "#6A6F63",
+                    }}
+                  >
+                    {(entry.selections || []).map(
+                      (selection) => (
+                        <div
+                          key={`${selection.step_id}-${selection.product_id}`}
+                        >
+                          <strong
+                            style={{
+                              color: "#5A7F0D",
+                              fontSize: "11px",
+                            }}
+                          >
+                            {selection.step_name} :
+                          </strong>{" "}
+                          {selection.product_name}
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  <div style={{ marginTop: "5px" }}>
+                    {quantity} × {euro(entry.price)}
+                  </div>
+
+                  <strong
+                    style={{
+                      color: "var(--green-dark)",
+                    }}
+                  >
+                    {euro(
+                      Number(entry.price || 0) *
+                        quantity
+                    )}
+                  </strong>
+                </div>
+              </div>
+
+              <div
+                className="cart-item-actions-row"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: "7px",
+                  alignSelf: "center",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeQuantity(id, -1)
+                  }
+                  aria-label={`Retirer une unité de ${entry.name || "la formule"}`}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    padding: 0,
+                    border: "none",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    lineHeight: 1,
+                  }}
+                >
+                  −
+                </button>
+
+                <span
+                  style={{
+                    minWidth: "18px",
+                    textAlign: "center",
+                    fontWeight: "700",
+                    lineHeight: 1,
+                  }}
+                >
+                  {quantity}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeQuantity(id, 1)
+                  }
+                  aria-label={`Ajouter une unité de ${entry.name || "la formule"}`}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    padding: 0,
+                    border: "none",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    lineHeight: 1,
+                  }}
+                >
+                  +
+                </button>
+
+                <button
+                  type="button"
+                  aria-label={`Supprimer ${entry.name || "la formule"}`}
+                  title="Supprimer"
+                  onClick={() =>
+                    changeQuantity(
+                      id,
+                      -quantity
+                    )
+                  }
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    marginLeft: "2px",
+                    padding: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    alignSelf: "center",
+                    flexShrink: 0,
+                    border: "none",
+                    borderRadius: "10px",
+                    background: "#F2F3EF",
+                    color: "#5A6257",
+                    cursor: "pointer",
+                    lineHeight: 1,
+                  }}
+                >
+                  <Trash2
+                    size={19}
+                    strokeWidth={1.8}
+                  />
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        const quantity = Number(entry || 0);
+
         const product = products.find(
           (currentProduct) =>
             String(currentProduct.id) === String(id)

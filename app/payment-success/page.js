@@ -270,93 +270,168 @@ export default function PaymentSuccessPage() {
 
       const cartEntries =
         Object.entries(savedCart).filter(
-          ([, quantity]) =>
-            Number(quantity) > 0
+          ([, entry]) => {
+            if (
+              typeof entry === "object" &&
+              entry?.type === "formula"
+            ) {
+              return Number(entry.qty || 0) > 0;
+            }
+
+            return Number(entry) > 0;
+          }
         );
 
-      if (
-        cartEntries.length > 0 &&
-        isSupabaseConfigured &&
-        supabase
-      ) {
-        const productIds =
-          cartEntries.map(
-            ([id]) => id
+      if (cartEntries.length > 0) {
+        /*
+         * Les formules contiennent déjà dans le panier
+         * leur nom, leur prix et les choix effectués.
+         *
+         * Les produits classiques continuent d'être
+         * relus dans Supabase afin de conserver
+         * le fonctionnement existant.
+         */
+        const classicEntries =
+          cartEntries.filter(
+            ([, entry]) =>
+              !(
+                typeof entry === "object" &&
+                entry?.type === "formula"
+              )
           );
 
-        const {
-          data,
-          error,
-        } = await supabase
-          .from("products")
-          .select(
-            "id, name, price"
-          )
-          .in(
-            "id",
-            productIds
-          );
+        let classicProducts = [];
 
-        if (error) {
-          console.error(
-            "Erreur chargement récapitulatif :",
-            error
-          );
-        } else {
-          const items =
-            cartEntries
-              .map(
-                ([id, quantity]) => {
-                  const product =
-                    (data || []).find(
-                      (currentProduct) =>
-                        String(
-                          currentProduct.id
-                        ) ===
-                        String(id)
-                    );
+        if (
+          classicEntries.length > 0 &&
+          isSupabaseConfigured &&
+          supabase
+        ) {
+          const productIds =
+            classicEntries.map(
+              ([id]) => id
+            );
 
-                  if (!product) {
-                    return null;
-                  }
+          const {
+            data,
+            error,
+          } = await supabase
+            .from("products")
+            .select(
+              "id, name, price"
+            )
+            .in(
+              "id",
+              productIds
+            );
 
+          if (error) {
+            console.error(
+              "Erreur chargement récapitulatif :",
+              error
+            );
+          } else {
+            classicProducts = data || [];
+          }
+        }
+
+        const items =
+          cartEntries
+            .map(
+              ([id, entry]) => {
+                /*
+                 * FORMULE
+                 */
+                if (
+                  typeof entry === "object" &&
+                  entry?.type === "formula"
+                ) {
                   return {
                     id:
-                      product.id,
+                      entry.formula_product_id ||
+                      id,
 
                     name:
-                      product.name,
+                      entry.name ||
+                      "Formule",
 
                     price:
                       Number(
-                        product.price
+                        entry.price || 0
                       ),
 
                     quantity:
                       Number(
-                        quantity
+                        entry.qty || 1
                       ),
+
+                    formula: true,
+
+                    selections:
+                      Array.isArray(
+                        entry.selections
+                      )
+                        ? entry.selections
+                        : [],
                   };
                 }
-              )
-              .filter(Boolean);
 
-          setOrderItems(items);
+                /*
+                 * PRODUIT CLASSIQUE
+                 */
+                const product =
+                  classicProducts.find(
+                    (currentProduct) =>
+                      String(
+                        currentProduct.id
+                      ) ===
+                      String(id)
+                  );
 
-          const total =
-            items.reduce(
-              (
-                sum,
-                item
-              ) =>
-                sum +
-                item.price *
-                  item.quantity,
-              0
-            );
+                if (!product) {
+                  return null;
+                }
 
-          setOrderTotal(total);
-        }
+                return {
+                  id:
+                    product.id,
+
+                  name:
+                    product.name,
+
+                  price:
+                    Number(
+                      product.price
+                    ),
+
+                  quantity:
+                    Number(
+                      entry
+                    ),
+
+                  formula: false,
+
+                  selections: [],
+                };
+              }
+            )
+            .filter(Boolean);
+
+        setOrderItems(items);
+
+        const total =
+          items.reduce(
+            (
+              sum,
+              item
+            ) =>
+              sum +
+              item.price *
+                item.quantity,
+            0
+          );
+
+        setOrderTotal(total);
       }
 
       /*
@@ -696,34 +771,108 @@ export default function PaymentSuccessPage() {
                     <div
                       style={{
                         minWidth: 0,
+                        flex: 1,
                       }}
                     >
-                      <strong
-                        style={{
-                          color:
-                            "#17351E",
-                          fontSize:
-                            "14px",
-                        }}
-                      >
-                        {item.name}
-                      </strong>
+                      <div>
+                        <strong
+                          style={{
+                            color:
+                              "#17351E",
+                            fontSize:
+                              "14px",
+                          }}
+                        >
+                          {item.name}
+                        </strong>
 
-                      <span
-                        style={{
-                          marginLeft:
-                            "7px",
-                          color:
-                            "#747A70",
-                          fontSize:
-                            "13px",
-                        }}
-                      >
-                        ×{" "}
-                        {
-                          item.quantity
-                        }
-                      </span>
+                        <span
+                          style={{
+                            marginLeft:
+                              "7px",
+                            color:
+                              "#747A70",
+                            fontSize:
+                              "13px",
+                          }}
+                        >
+                          ×{" "}
+                          {
+                            item.quantity
+                          }
+                        </span>
+                      </div>
+
+                      {item.formula &&
+                        item.selections
+                          ?.length > 0 && (
+                          <div
+                            style={{
+                              marginTop:
+                                "5px",
+                              display:
+                                "grid",
+                              gap: "2px",
+                            }}
+                          >
+                            {item.selections.map(
+                              (
+                                selection,
+                                index
+                              ) => {
+                                const stepName =
+                                  selection.step_name ||
+                                  selection.stepName ||
+                                  "";
+
+                                const productName =
+                                  selection.product_name ||
+                                  selection.productName ||
+                                  selection.name ||
+                                  "";
+
+                                if (
+                                  !stepName &&
+                                  !productName
+                                ) {
+                                  return null;
+                                }
+
+                                return (
+                                  <div
+                                    key={`${item.id}-${index}`}
+                                    style={{
+                                      color:
+                                        "#666B62",
+                                      fontSize:
+                                        "12px",
+                                      lineHeight:
+                                        1.35,
+                                    }}
+                                  >
+                                    {stepName ? (
+                                      <strong
+                                        style={{
+                                          color:
+                                            "#5A7F0D",
+                                        }}
+                                      >
+                                        {
+                                          stepName
+                                        }
+                                        {" : "}
+                                      </strong>
+                                    ) : null}
+
+                                    {
+                                      productName
+                                    }
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        )}
                     </div>
 
                     <strong

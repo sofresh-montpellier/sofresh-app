@@ -446,8 +446,22 @@ export async function POST(request) {
 
     /*
      * Validation des produits et des quantités
+     *
+     * IMPORTANT :
+     * - Les produits classiques gardent le fonctionnement existant.
+     * - Une formule conserve maintenant ses choix
+     *   (salade / boisson / dessert, etc.).
+     * - Les choix d'une formule sont revalidés côté serveur
+     *   avant d'être enregistrés.
      */
-    const quantities = new Map();
+
+    const requestedProductIds = [
+      ...new Set(
+        requestedItems
+          .map((item) => Number(item.id))
+          .filter(Number.isInteger)
+      ),
+    ];
 
     for (const item of requestedItems) {
       const productId = Number(item.id);
@@ -467,29 +481,21 @@ export async function POST(request) {
           { status: 400 }
         );
       }
-
-      quantities.set(
-        productId,
-        (quantities.get(productId) || 0) +
-          quantity
-      );
     }
-
-    const productIds = [...quantities.keys()];
 
     const {
       data: products,
       error: productsError,
     } = await supabaseAdmin
       .from("products")
-      .select("id,name,price,available")
-      .in("id", productIds)
+      .select("id,name,price,available,category")
+      .in("id", requestedProductIds)
       .eq("available", true);
 
     if (
       productsError ||
       !products ||
-      products.length !== productIds.length
+      products.length !== requestedProductIds.length
     ) {
       return NextResponse.json(
         {
@@ -500,12 +506,255 @@ export async function POST(request) {
       );
     }
 
-    const items = products.map((product) => ({
-      id: product.id,
-      name: product.name,
-      unit_price: Number(product.price),
-      qty: quantities.get(product.id),
-    }));
+    const productMap = new Map(
+      products.map((product) => [
+        String(product.id),
+        product,
+      ])
+    );
+
+    const items = [];
+
+    /*
+     * Produits classiques :
+     * on continue à regrouper les mêmes produits
+     * pour garder le comportement historique.
+     */
+    const normalQuantities = new Map();
+
+    for (const requestedItem of requestedItems) {
+      const productId = Number(requestedItem.id);
+      const quantity = Number(requestedItem.qty);
+      const product = productMap.get(String(productId));
+
+      const isFormula =
+        requestedItem.formula === true;
+
+      if (!isFormula) {
+        normalQuantities.set(
+          productId,
+          (normalQuantities.get(productId) || 0) +
+            quantity
+        );
+
+        continue;
+      }
+
+      /*
+       * Validation d'une formule.
+       */
+      const formulaSelections = Array.isArray(
+        requestedItem.formula_selections
+      )
+        ? requestedItem.formula_selections
+        : [];
+
+      if (formulaSelections.length === 0) {
+        return NextResponse.json(
+          {
+            error:
+              "La composition d’une formule est incomplète.",
+          },
+          { status: 400 }
+        );
+      }
+
+      const {
+        data: formulaSteps,
+        error: formulaStepsError,
+      } = await supabaseAdmin
+        .from("formula_steps")
+        .select(
+          "id,formula_product_id,name,display_order,required_quantity"
+        )
+        .eq("formula_product_id", productId)
+        .order("display_order", {
+          ascending: true,
+        });
+
+      if (
+        formulaStepsError ||
+        !formulaSteps ||
+        formulaSteps.length === 0
+      ) {
+        console.error(
+          "Erreur étapes formule :",
+          formulaStepsError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "Cette formule n’est plus disponible.",
+          },
+          { status: 409 }
+        );
+      }
+
+      const stepIds = formulaSteps.map(
+        (step) => step.id
+      );
+
+      const {
+        data: allowedRows,
+        error: allowedRowsError,
+      } = await supabaseAdmin
+        .from("formula_step_products")
+        .select("formula_step_id,product_id")
+        .in("formula_step_id", stepIds);
+
+      if (allowedRowsError) {
+        console.error(
+          "Erreur produits autorisés formule :",
+          allowedRowsError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "La composition de cette formule ne peut pas être vérifiée.",
+          },
+          { status: 503 }
+        );
+      }
+
+      const selectedProductIds = [
+        ...new Set(
+          formulaSelections
+            .map((selection) =>
+              Number(selection.product_id)
+            )
+            .filter(Number.isInteger)
+        ),
+      ];
+
+      const {
+        data: selectedProducts,
+        error: selectedProductsError,
+      } = await supabaseAdmin
+        .from("products")
+        .select("id,name,image_url,available")
+        .in("id", selectedProductIds)
+        .eq("available", true);
+
+      if (
+        selectedProductsError ||
+        !selectedProducts ||
+        selectedProducts.length !==
+          selectedProductIds.length
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Un des choix de votre formule n’est plus disponible.",
+          },
+          { status: 409 }
+        );
+      }
+
+      const selectedProductMap = new Map(
+        selectedProducts.map((selectedProduct) => [
+          String(selectedProduct.id),
+          selectedProduct,
+        ])
+      );
+
+      const validatedSelections = [];
+
+      for (const step of formulaSteps) {
+        const submittedSelection =
+          formulaSelections.find(
+            (selection) =>
+              String(selection.step_id) ===
+              String(step.id)
+          );
+
+        if (!submittedSelection) {
+          return NextResponse.json(
+            {
+              error: `Choisissez votre ${String(
+                step.name || "produit"
+              ).toLowerCase()}.`,
+            },
+            { status: 400 }
+          );
+        }
+
+        const selectedProductId = Number(
+          submittedSelection.product_id
+        );
+
+        const isAllowed = (allowedRows || []).some(
+          (row) =>
+            String(row.formula_step_id) ===
+              String(step.id) &&
+            String(row.product_id) ===
+              String(selectedProductId)
+        );
+
+        const selectedProduct =
+          selectedProductMap.get(
+            String(selectedProductId)
+          );
+
+        if (!isAllowed || !selectedProduct) {
+          return NextResponse.json(
+            {
+              error:
+                "Un choix de la formule n’est plus autorisé.",
+            },
+            { status: 409 }
+          );
+        }
+
+        validatedSelections.push({
+          step_id: step.id,
+          step_name: step.name,
+          product_id: selectedProduct.id,
+          product_name: selectedProduct.name,
+          image_url:
+            selectedProduct.image_url || "",
+        });
+      }
+
+      items.push({
+        id: product.id,
+        name: product.name,
+        unit_price: Number(product.price),
+        qty: quantity,
+        formula: true,
+        formula_name:
+          String(
+            requestedItem.formula_name ||
+              product.name
+          ).trim() || product.name,
+        formula_selections:
+          validatedSelections,
+      });
+    }
+
+    /*
+     * Ajout des produits classiques après regroupement.
+     */
+    for (const [
+      productId,
+      quantity,
+    ] of normalQuantities.entries()) {
+      const product = productMap.get(
+        String(productId)
+      );
+
+      if (!product) {
+        continue;
+      }
+
+      items.push({
+        id: product.id,
+        name: product.name,
+        unit_price: Number(product.price),
+        qty: quantity,
+      });
+    }
 
     const total = items.reduce(
       (sum, item) =>
@@ -564,20 +813,42 @@ export async function POST(request) {
         // sur les appareils compatibles.
         payment_method_types: ["card"],
 
-        line_items: items.map((item) => ({
-          quantity: item.qty,
+        line_items: items.map((item) => {
+          const formulaDescription =
+            item.formula &&
+            Array.isArray(item.formula_selections)
+              ? item.formula_selections
+                  .map(
+                    (selection) =>
+                      `${selection.step_name} : ${selection.product_name}`
+                  )
+                  .join(" • ")
+              : "";
 
-          price_data: {
-            currency: "eur",
-            unit_amount: Math.round(
-              item.unit_price * 100
-            ),
+          return {
+            quantity: item.qty,
 
-            product_data: {
-              name: item.name,
+            price_data: {
+              currency: "eur",
+              unit_amount: Math.round(
+                item.unit_price * 100
+              ),
+
+              product_data: {
+                name: item.name,
+                ...(formulaDescription
+                  ? {
+                      description:
+                        formulaDescription.slice(
+                          0,
+                          500
+                        ),
+                    }
+                  : {}),
+              },
             },
-          },
-        })),
+          };
+        }),
 
         metadata: {
           pending_checkout_id: String(

@@ -10,6 +10,7 @@ import Image from "next/image";
 import {
   ShoppingCart,
   ShoppingBasket,
+  ListChecks,
   Settings,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
@@ -220,6 +221,24 @@ export default function AdminLayout({ children }) {
             />
 
             Produits
+          </Link>
+
+          <Link
+            href="/admin/formules"
+            className={
+              pathname.startsWith("/admin/formules")
+                ? "active"
+                : ""
+            }
+          >
+            <ListChecks
+              className="sf-nav-icon"
+              size={21}
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+
+            Formules
           </Link>
 
           <Link
