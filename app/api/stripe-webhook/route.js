@@ -1,20 +1,218 @@
 import Stripe from "stripe";
+import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
-
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/*
+ * Formate la date de retrait.
+ * Exemple :
+ * 2026-09-07 -> Lun. 7 sept.
+ */
+function formatPickupDate(dateString) {
+  if (!dateString) {
+    return "Date à confirmer";
+  }
+
+  try {
+    const [year, month, day] = dateString
+      .split("-")
+      .map(Number);
+
+    const date = new Date(
+      Date.UTC(year, month - 1, day, 12, 0, 0)
+    );
+
+    const formatted = new Intl.DateTimeFormat(
+      "fr-FR",
+      {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        timeZone: "UTC",
+      }
+    ).format(date);
+
+    return (
+      formatted.charAt(0).toUpperCase() +
+      formatted.slice(1)
+    );
+  } catch {
+    return dateString;
+  }
+}
+
+/*
+ * Formate le prix.
+ * Exemple :
+ * 18.9 -> 18,90 €
+ */
+function formatPrice(value) {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return "";
+  }
+
+  return new Intl.NumberFormat(
+    "fr-FR",
+    {
+      style: "currency",
+      currency: "EUR",
+    }
+  ).format(amount);
+}
+
+/*
+ * Envoie la notification "Nouvelle commande"
+ * à tous les téléphones admins inscrits.
+ *
+ * Une erreur de notification ne bloque jamais
+ * la création de la commande.
+ */
+async function sendNewOrderNotification(
+  supabase,
+  order
+) {
+  try {
+    const publicKey =
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
+    const privateKey =
+      process.env.VAPID_PRIVATE_KEY;
+
+    if (!publicKey || !privateKey) {
+      console.error(
+        "Notification commande non envoyée : configuration VAPID incomplète."
+      );
+
+      return;
+    }
+
+    webpush.setVapidDetails(
+      "https://sofresh-app-five.vercel.app",
+      publicKey,
+      privateKey
+    );
+
+    const {
+      data: subscriptions,
+      error: subscriptionsError,
+    } = await supabase
+      .from("admin_push_subscriptions")
+      .select("*");
+
+    if (subscriptionsError) {
+      console.error(
+        "Impossible de récupérer les abonnements push admins :",
+        subscriptionsError
+      );
+
+      return;
+    }
+
+    if (!subscriptions?.length) {
+      console.log(
+        "Aucun téléphone admin inscrit aux notifications."
+      );
+
+      return;
+    }
+
+    const customerName =
+      order.customer_name?.trim() ||
+      "Client So Fresh";
+
+    const pickupDate = formatPickupDate(
+      order.pickup_date
+    );
+
+    const pickupTime =
+      order.pickup_time || "heure à confirmer";
+
+    const total = formatPrice(order.total);
+
+    const bodyParts = [
+      customerName,
+      total,
+      `${pickupDate} à ${pickupTime}`,
+    ].filter(Boolean);
+
+    const payload = JSON.stringify({
+      title: "🛒 Nouvelle commande So Fresh",
+      body: bodyParts.join(" — "),
+      url: "/admin",
+    });
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const subscription of subscriptions) {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: subscription.p256dh,
+              auth: subscription.auth,
+            },
+          },
+          payload
+        );
+
+        sent += 1;
+      } catch (pushError) {
+        failed += 1;
+
+        console.error(
+          "Erreur notification nouvelle commande :",
+          pushError
+        );
+
+        /*
+         * Le téléphone n'est plus inscrit :
+         * on supprime automatiquement
+         * l'ancien abonnement.
+         */
+        if (
+          pushError?.statusCode === 404 ||
+          pushError?.statusCode === 410
+        ) {
+          await supabase
+            .from("admin_push_subscriptions")
+            .delete()
+            .eq(
+              "endpoint",
+              subscription.endpoint
+            );
+        }
+      }
+    }
+
+    console.log(
+      `Notifications nouvelle commande : ${sent} envoyée(s), ${failed} échec(s).`
+    );
+  } catch (error) {
+    /*
+     * Très important :
+     * une panne de notification ne doit jamais
+     * faire échouer le paiement ou créer
+     * une deuxième commande.
+     */
+    console.error(
+      "Erreur générale notification nouvelle commande :",
+      error
+    );
+  }
+}
 
 export async function POST(request) {
   const stripeSecretKey =
     process.env.STRIPE_SECRET_KEY;
 
- const stripeWebhookSecret =
-  process.env.STRIPE_WEBHOOK_SECRET;
-
-
-
-
+  const stripeWebhookSecret =
+    process.env.STRIPE_WEBHOOK_SECRET;
 
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -39,7 +237,9 @@ export async function POST(request) {
     );
   }
 
-  const stripe = new Stripe(stripeSecretKey);
+  const stripe = new Stripe(
+    stripeSecretKey
+  );
 
   const supabase = createClient(
     supabaseUrl,
@@ -53,11 +253,13 @@ export async function POST(request) {
   );
 
   const body = Buffer.from(
-  await request.arrayBuffer()
-);
-  const signature = request.headers.get(
-    "stripe-signature"
+    await request.arrayBuffer()
   );
+
+  const signature =
+    request.headers.get(
+      "stripe-signature"
+    );
 
   if (!signature) {
     return new Response(
@@ -69,11 +271,12 @@ export async function POST(request) {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      stripeWebhookSecret
-    );
+    event =
+      stripe.webhooks.constructEvent(
+        body,
+        signature,
+        stripeWebhookSecret
+      );
   } catch (error) {
     console.error(
       "Signature webhook invalide :",
@@ -97,9 +300,12 @@ export async function POST(request) {
   }
 
   try {
-    const session = event.data.object;
+    const session =
+      event.data.object;
 
-    if (session.payment_status !== "paid") {
+    if (
+      session.payment_status !== "paid"
+    ) {
       return new Response(
         "Paiement non confirmé",
         { status: 200 }
@@ -107,7 +313,8 @@ export async function POST(request) {
     }
 
     const pendingCheckoutId =
-      session.metadata?.pending_checkout_id;
+      session.metadata
+        ?.pending_checkout_id;
 
     if (!pendingCheckoutId) {
       console.error(
@@ -126,7 +333,10 @@ export async function POST(request) {
     } = await supabase
       .from("pending_checkouts")
       .select("*")
-      .eq("id", pendingCheckoutId)
+      .eq(
+        "id",
+        pendingCheckoutId
+      )
       .single();
 
     if (
@@ -144,32 +354,61 @@ export async function POST(request) {
       );
     }
 
-    if (pendingCheckout.status === "paid") {
+    /*
+     * Empêche de traiter deux fois
+     * le même paiement Stripe.
+     */
+    if (
+      pendingCheckout.status === "paid"
+    ) {
       return new Response(
         "Commande déjà traitée",
         { status: 200 }
       );
     }
 
-    const { error: orderError } =
-  await supabase
-    .from("orders")
-    .insert({
-      customer_name:
-        pendingCheckout.customer_name,
-      customer_phone:
-        pendingCheckout.customer_phone,
-      user_id: pendingCheckout.user_id,
-      pickup_date:
-        pendingCheckout.pickup_date,
-      pickup_time:
-        pendingCheckout.pickup_time,
-      items: pendingCheckout.items,
-      total: pendingCheckout.total,
-      status: "Nouvelle",
-      payment_status: "paid",
-      stripe_session_id: session.id,
-    });
+    /*
+     * Création définitive de la commande.
+     *
+     * On récupère la commande créée
+     * grâce à .select().single().
+     */
+    const {
+      data: createdOrder,
+      error: orderError,
+    } = await supabase
+      .from("orders")
+      .insert({
+        customer_name:
+          pendingCheckout.customer_name,
+
+        customer_phone:
+          pendingCheckout.customer_phone,
+
+        user_id:
+          pendingCheckout.user_id,
+
+        pickup_date:
+          pendingCheckout.pickup_date,
+
+        pickup_time:
+          pendingCheckout.pickup_time,
+
+        items:
+          pendingCheckout.items,
+
+        total:
+          pendingCheckout.total,
+
+        status: "Nouvelle",
+
+        payment_status: "paid",
+
+        stripe_session_id:
+          session.id,
+      })
+      .select("*")
+      .single();
 
     if (orderError) {
       console.error(
@@ -183,14 +422,23 @@ export async function POST(request) {
       );
     }
 
-    const { error: updateError } =
-      await supabase
-        .from("pending_checkouts")
-        .update({
-          status: "paid",
-          stripe_session_id: session.id,
-        })
-        .eq("id", pendingCheckoutId);
+    /*
+     * On marque immédiatement
+     * le checkout comme payé.
+     */
+    const {
+      error: updateError,
+    } = await supabase
+      .from("pending_checkouts")
+      .update({
+        status: "paid",
+        stripe_session_id:
+          session.id,
+      })
+      .eq(
+        "id",
+        pendingCheckoutId
+      );
 
     if (updateError) {
       console.error(
@@ -201,6 +449,18 @@ export async function POST(request) {
 
     console.log(
       "Commande payée et enregistrée dans Supabase."
+    );
+
+    /*
+     * Notification aux téléphones admins.
+     *
+     * On utilise le même système
+     * que la notification
+     * "Nouveau client So Fresh".
+     */
+    await sendNewOrderNotification(
+      supabase,
+      createdOrder
     );
 
     return new Response(
