@@ -18,6 +18,9 @@ export default function ConnexionPage() {
   const inscriptionOk =
     searchParams.get("inscription") === "ok";
 
+  const validationOk =
+    searchParams.get("validation") === "ok";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -256,6 +259,36 @@ export default function ConnexionPage() {
         <p className="account-intro">
           Connectez-vous à votre compte So Fresh
         </p>
+
+        {validationOk && (
+          <div
+            style={{
+              marginBottom: "18px",
+              padding: "14px 16px",
+              borderRadius: "14px",
+              background: "#F4F8DF",
+              border: "1px solid #98BD12",
+              color: "#365718",
+              fontSize: "13px",
+              lineHeight: "1.5",
+              textAlign: "center",
+            }}
+          >
+            <strong
+              style={{
+                display: "block",
+                marginBottom: "4px",
+                fontSize: "15px",
+              }}
+            >
+              ✓ Votre compte est validé !
+            </strong>
+
+            Votre adresse e-mail a bien été confirmée.
+            <br />
+            Vous pouvez maintenant vous connecter.
+          </div>
+        )}
 
         {inscriptionOk && (
           <div
