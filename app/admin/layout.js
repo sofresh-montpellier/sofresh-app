@@ -34,6 +34,7 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
 
   const [ready, setReady] = useState(false);
+
   const [futureOrdersCount, setFutureOrdersCount] =
     useState(0);
 
@@ -47,13 +48,18 @@ export default function AdminLayout({ children }) {
         head: true,
       })
       .gte("pickup_date", today)
-      .not("status", "in", '("Terminée","Annulée")');
+      .not(
+        "status",
+        "in",
+        '("Terminée","Annulée")'
+      );
 
     if (error) {
       console.error(
         "Erreur compteur commandes :",
         error
       );
+
       return;
     }
 
@@ -63,6 +69,7 @@ export default function AdminLayout({ children }) {
   async function verifyAdmin(session) {
     if (!session?.user) {
       router.replace("/login");
+
       return false;
     }
 
@@ -85,6 +92,7 @@ export default function AdminLayout({ children }) {
       );
 
       router.replace("/compte");
+
       return false;
     }
 
@@ -105,6 +113,7 @@ export default function AdminLayout({ children }) {
       }
 
       setReady(true);
+
       loadFutureOrdersCount();
     }
 
@@ -119,6 +128,7 @@ export default function AdminLayout({ children }) {
 
         if (!isAdmin) {
           setReady(false);
+
           return;
         }
 
@@ -156,11 +166,6 @@ export default function AdminLayout({ children }) {
     };
   }, [ready]);
 
-  async function logout() {
-    await supabase.auth.signOut();
-    router.replace("/login");
-  }
-
   if (!ready) {
     return (
       <main className="admin-loading">
@@ -192,7 +197,9 @@ export default function AdminLayout({ children }) {
           <Link
             href="/admin"
             className={
-              pathname === "/admin" ? "active" : ""
+              pathname === "/admin"
+                ? "active"
+                : ""
             }
           >
             <ShoppingCart
@@ -208,7 +215,9 @@ export default function AdminLayout({ children }) {
           <Link
             href="/admin/products"
             className={
-              pathname.startsWith("/admin/products")
+              pathname.startsWith(
+                "/admin/products"
+              )
                 ? "active"
                 : ""
             }
@@ -226,7 +235,9 @@ export default function AdminLayout({ children }) {
           <Link
             href="/admin/formules"
             className={
-              pathname.startsWith("/admin/formules")
+              pathname.startsWith(
+                "/admin/formules"
+              )
                 ? "active"
                 : ""
             }
@@ -244,7 +255,9 @@ export default function AdminLayout({ children }) {
           <Link
             href="/admin/settings"
             className={
-              pathname.startsWith("/admin/settings")
+              pathname.startsWith(
+                "/admin/settings"
+              )
                 ? "active"
                 : ""
             }
@@ -259,27 +272,6 @@ export default function AdminLayout({ children }) {
             Paramètres
           </Link>
         </nav>
-
-        <div className="sf-admin-actions">
-          <Link
-            href="/"
-            target="_blank"
-            className="sf-admin-logout"
-            style={{
-              textDecoration: "none",
-            }}
-          >
-            Voir le site
-          </Link>
-
-          <button
-            type="button"
-            className="sf-admin-logout"
-            onClick={logout}
-          >
-            Déconnexion
-          </button>
-        </div>
       </header>
 
       {children}

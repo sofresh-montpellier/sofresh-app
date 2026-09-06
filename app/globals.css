@@ -8539,3 +8539,22 @@ header.home-header .home-header-action-active::after {
     border-radius: 999px !important;
   }
 }
+
+
+/* =========================================================
+   ADMIN MOBILE — LE BANDEAU PRINCIPAL DÉFILE AVEC LA PAGE
+   Ne modifie pas le comportement des pages clientes.
+========================================================= */
+
+@media (max-width: 640px) {
+  body:has(.sf-admin-header) .home-header {
+    position: relative !important;
+    top: auto !important;
+  }
+
+  body:has(.sf-admin-header) .sf-admin-header {
+    position: relative !important;
+    top: auto !important;
+    margin-top: 0 !important;
+  }
+}

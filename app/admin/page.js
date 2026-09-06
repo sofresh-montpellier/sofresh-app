@@ -136,11 +136,6 @@ export default function OrdersPage() {
   const [pushMessage, setPushMessage] =
     useState("");
 
-  const [testLoading, setTestLoading] =
-    useState(false);
-
-  const [pushResults, setPushResults] =
-    useState([]);
 
   async function getAdminAccessToken() {
     const {
@@ -265,7 +260,6 @@ export default function OrdersPage() {
 
   async function enablePushNotifications() {
     setPushMessage("");
-    setPushResults([]);
 
     if (
       typeof window === "undefined" ||
@@ -377,74 +371,6 @@ export default function OrdersPage() {
     }
   }
 
-  async function sendTestNotification() {
-    setPushMessage("");
-    setPushResults([]);
-    setTestLoading(true);
-
-    try {
-      const accessToken =
-        await getAdminAccessToken();
-
-      const response = await fetch(
-        "/api/push/test",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result?.error ||
-            "Impossible d’envoyer la notification test."
-        );
-      }
-
-      if (!result.sent) {
-        throw new Error(
-          "Aucune notification n’a pu être envoyée."
-        );
-      }
-
-      setPushResults(
-        Array.isArray(result.results)
-          ? result.results
-          : []
-      );
-
-      setPushMessage(
-        `Notification test : ${result.sent} envoi${
-          result.sent > 1 ? "s" : ""
-        } réussi${
-          result.sent > 1 ? "s" : ""
-        }${
-          result.failed
-            ? `, ${result.failed} échec${
-                result.failed > 1 ? "s" : ""
-              }`
-            : ""
-        }.`
-      );
-    } catch (error) {
-      console.error(
-        "Erreur notification test :",
-        error
-      );
-
-      setPushMessage(
-        error?.message ||
-          "Impossible d’envoyer la notification test."
-      );
-    } finally {
-      setTestLoading(false);
-    }
-  }
-
   async function markAsFinished(orderId) {
     setMessage("");
 
@@ -532,32 +458,23 @@ export default function OrdersPage() {
             }}
           >
 
-            <button
-              type="button"
-              className="secondary"
-              onClick={enablePushNotifications}
-              disabled={
-                pushStatus === "loading" ||
-                pushStatus === "enabled"
-              }
-            >
-              {pushStatus === "enabled"
-                ? "✅ Notifications téléphone activées"
-                : pushStatus === "loading"
-                ? "Activation..."
-                : "📱 Activer les notifications téléphone"}
-            </button>
-
-            {pushStatus === "enabled" && (
+            {pushStatus === "enabled" ? (
+              <div
+                className="push-active-badge"
+                title="Les notifications sont activées sur cet appareil"
+              >
+                🔔 Notifications actives
+              </div>
+            ) : (
               <button
                 type="button"
                 className="secondary"
-                onClick={sendTestNotification}
-                disabled={testLoading}
+                onClick={enablePushNotifications}
+                disabled={pushStatus === "loading"}
               >
-                {testLoading
-                  ? "Envoi..."
-                  : "🧪 Tester notification"}
+                {pushStatus === "loading"
+                  ? "Activation..."
+                  : "📱 Activer les notifications"}
               </button>
             )}
           </div>
@@ -577,74 +494,6 @@ export default function OrdersPage() {
             }}
           >
             {pushMessage}
-          </div>
-        )}
-
-        {pushResults.length > 0 && (
-          <div
-            style={{
-              marginTop: "10px",
-              background: "#ffffff",
-              border: "1px solid #DCE7B8",
-              borderRadius: "10px",
-              padding: "12px 14px",
-            }}
-          >
-            <strong
-              style={{
-                display: "block",
-                color: "#31410A",
-                fontSize: "14px",
-                marginBottom: "8px",
-              }}
-            >
-              Diagnostic Push
-            </strong>
-
-            {pushResults.map((result, index) => (
-              <div
-                key={result.id || index}
-                style={{
-                  padding:
-                    index === 0
-                      ? "0 0 8px"
-                      : "8px 0",
-                  borderTop:
-                    index === 0
-                      ? "none"
-                      : "1px solid #EEEEEA",
-                  fontSize: "13px",
-                  lineHeight: 1.5,
-                }}
-              >
-                <strong>
-                  {result.service ||
-                    "Service Push"}
-                </strong>
-
-                <div>
-                  {result.success
-                    ? "✅ Accepté"
-                    : "❌ Échec"}
-
-                  {result.statusCode
-                    ? ` — HTTP ${result.statusCode}`
-                    : ""}
-                </div>
-
-                {!result.success &&
-                  result.message && (
-                    <div
-                      style={{
-                        color: "#8A2D2D",
-                        marginTop: "3px",
-                      }}
-                    >
-                      {result.message}
-                    </div>
-                  )}
-              </div>
-            ))}
           </div>
         )}
 
@@ -724,8 +573,10 @@ export default function OrdersPage() {
         {!loading && (
           <div>
             {Object.entries(groupedByDate).map(
-              ([pickupDate, dateOrders]) => (
+              ([pickupDate, dateOrders], dayIndex) => (
                 <section
+                  className="order-day-card"
+                  data-day-color={dayIndex % 4}
                   key={pickupDate}
                   style={{
                     border: "1px solid #E2E2DA",
@@ -736,6 +587,7 @@ export default function OrdersPage() {
                   }}
                 >
                   <div
+                    className="order-day-header"
                     style={{
                       minHeight: "58px",
                       padding: "0 18px",
@@ -761,19 +613,6 @@ export default function OrdersPage() {
                           )}
                     </strong>
 
-                    <span
-                      style={{
-                        color: "#5A7F0D",
-                        fontWeight: "800",
-                        fontSize: "14px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {dateOrders.length} commande
-                      {dateOrders.length > 1
-                        ? "s"
-                        : ""}
-                    </span>
                   </div>
 
                   {dateOrders.map((order) => {
@@ -791,6 +630,8 @@ export default function OrdersPage() {
 
                     return (
                       <article
+                        className="order-row"
+                        data-day-color={dayIndex % 4}
                         key={order.id}
                         style={{
                           minHeight: "92px",
@@ -805,6 +646,7 @@ export default function OrdersPage() {
                         }}
                       >
                         <div
+                          className="order-time"
                           style={{
                             fontWeight: "800",
                             fontSize: "18px",
@@ -817,7 +659,7 @@ export default function OrdersPage() {
                             "Sans heure"}
                         </div>
 
-                        <div>
+                        <div className="order-customer">
                           <strong
                             style={{
                               display: "block",
@@ -840,7 +682,7 @@ export default function OrdersPage() {
                           </span>
                         </div>
 
-                        <div>
+                        <div className="order-phone">
                           {order.customer_phone ? (
                             <a
                               href={`tel:${String(
@@ -869,6 +711,7 @@ export default function OrdersPage() {
                         </div>
 
                         <div
+                          className="order-items"
                           style={{
                             color: "#222222",
                             fontSize: "14px",
@@ -881,19 +724,78 @@ export default function OrdersPage() {
                             </span>
                           ) : (
                             items.map(
-                              (item, index) => (
-                                <div
-                                  key={`${order.id}-${index}`}
-                                >
-                                  <b>{item.qty} ×</b>{" "}
-                                  {item.name}
-                                </div>
-                              )
+                              (item, index) => {
+                                const selections =
+                                  Array.isArray(
+                                    item.formula_selections
+                                  )
+                                    ? item.formula_selections
+                                    : Array.isArray(
+                                        item.selections
+                                      )
+                                    ? item.selections
+                                    : [];
+
+                                return (
+                                  <div
+                                    key={`${order.id}-${index}`}
+                                    className="order-item"
+                                  >
+                                    <div>
+                                      <b>{item.qty} ×</b>{" "}
+                                      {item.name}
+                                    </div>
+
+                                    {selections.length > 0 && (
+                                      <div className="formula-details">
+                                        {selections.map(
+                                          (
+                                            selection,
+                                            selectionIndex
+                                          ) => {
+                                            const stepName =
+                                              selection.step_name ||
+                                              selection.stepName ||
+                                              "";
+
+                                            const productName =
+                                              selection.product_name ||
+                                              selection.productName ||
+                                              selection.name ||
+                                              "";
+
+                                            if (
+                                              !stepName &&
+                                              !productName
+                                            ) {
+                                              return null;
+                                            }
+
+                                            return (
+                                              <div
+                                                key={`${order.id}-${index}-${selectionIndex}`}
+                                              >
+                                                {stepName && (
+                                                  <strong>
+                                                    {stepName} :{" "}
+                                                  </strong>
+                                                )}
+                                                {productName}
+                                              </div>
+                                            );
+                                          }
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              }
                             )
                           )}
                         </div>
 
                         <strong
+                          className="order-total"
                           style={{
                             fontSize: "15px",
                             color: "#111111",
@@ -906,7 +808,7 @@ export default function OrdersPage() {
 
                         <button
                           type="button"
-                          className="primary"
+                          className="primary order-finish"
                           onClick={() =>
                             markAsFinished(order.id)
                           }
@@ -943,6 +845,231 @@ export default function OrdersPage() {
             </div>
           )}
       </section>
+
+      <style jsx>{`
+        .formula-details {
+          margin-top: 4px;
+          padding-left: 18px;
+          color: #62685d;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+
+        .formula-details strong {
+          color: #5a7f0d;
+        }
+
+        .order-item + .order-item {
+          margin-top: 3px;
+        }
+
+        .push-active-badge {
+          display: inline-flex;
+          align-items: center;
+          min-height: 38px;
+          padding: 7px 11px;
+          border: 1px solid #b7cf63;
+          border-radius: 10px;
+          background: #f4f7e9;
+          color: #31410a;
+          font-size: 12px;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
+        @media (max-width: 700px) {
+          .admin-wrap.orders-mobile-page {
+            padding: 12px 10px 28px !important;
+            overflow-x: hidden;
+          }
+
+          .orders-mobile-page .admin-card {
+            padding: 12px 10px !important;
+            border-radius: 14px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
+
+          .orders-mobile-header {
+            align-items: flex-start !important;
+            gap: 10px !important;
+          }
+
+          .orders-mobile-header h1 {
+            font-size: 23px !important;
+            margin: 0 !important;
+          }
+
+          .orders-mobile-header > div {
+            gap: 6px !important;
+            justify-content: flex-end !important;
+          }
+
+          .orders-mobile-header .secondary {
+            min-height: 38px !important;
+            padding: 7px 10px !important;
+            border-radius: 10px !important;
+            font-size: 11px !important;
+            line-height: 1.2 !important;
+            max-width: 180px !important;
+          }
+
+          .push-active-badge {
+            min-height: 34px !important;
+            padding: 6px 9px !important;
+            font-size: 10px !important;
+            border-radius: 9px !important;
+          }
+
+          .order-day-card {
+            border-radius: 12px !important;
+            margin-bottom: 14px !important;
+            overflow: hidden !important;
+          }
+
+          .order-day-card[data-day-color="0"] .order-day-header {
+            background: #e9f5df !important;
+            border-bottom-color: #d7e9c8 !important;
+          }
+
+          .order-day-card[data-day-color="1"] .order-day-header {
+            background: #fff1c7 !important;
+            border-bottom-color: #f2dda0 !important;
+          }
+
+          .order-day-card[data-day-color="2"] .order-day-header {
+            background: #e4f1ff !important;
+            border-bottom-color: #cfe3f8 !important;
+          }
+
+          .order-day-card[data-day-color="3"] .order-day-header {
+            background: #f2e9ff !important;
+            border-bottom-color: #e1d2f5 !important;
+          }
+
+          .order-row {
+            position: relative !important;
+          }
+
+          .order-row::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 9px;
+            bottom: 9px;
+            width: 5px;
+            border-radius: 0 5px 5px 0;
+          }
+
+          .order-row[data-day-color="0"]::before {
+            background: #78ad2f;
+          }
+
+          .order-row[data-day-color="1"]::before {
+            background: #f0b90b;
+          }
+
+          .order-row[data-day-color="2"]::before {
+            background: #3b8eea;
+          }
+
+          .order-row[data-day-color="3"]::before {
+            background: #9a6bc4;
+          }
+
+          .order-day-header {
+            min-height: 0 !important;
+            padding: 11px 12px !important;
+            gap: 8px !important;
+            align-items: flex-start !important;
+          }
+
+          .order-day-header strong {
+            font-size: 14px !important;
+            line-height: 1.25 !important;
+          }
+
+          .order-day-header span {
+            font-size: 11px !important;
+          }
+
+          .order-row {
+            min-height: 0 !important;
+            padding: 13px 12px !important;
+            display: grid !important;
+            grid-template-columns: 82px minmax(0, 1fr) !important;
+            gap: 7px 10px !important;
+            align-items: start !important;
+          }
+
+          .order-time {
+            grid-column: 1 !important;
+            grid-row: 1 !important;
+            font-size: 16px !important;
+          }
+
+          .order-customer {
+            grid-column: 2 !important;
+            grid-row: 1 !important;
+            min-width: 0 !important;
+          }
+
+          .order-customer strong {
+            font-size: 14px !important;
+            margin-bottom: 2px !important;
+          }
+
+          .order-phone {
+            grid-column: 1 / -1 !important;
+            grid-row: 2 !important;
+            padding-left: 92px !important;
+            min-width: 0 !important;
+          }
+
+          .order-phone a {
+            font-size: 12px !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere !important;
+          }
+
+          .order-items {
+            grid-column: 1 / -1 !important;
+            grid-row: 3 !important;
+            margin-top: 4px !important;
+            padding: 9px 10px !important;
+            background: #f8faef !important;
+            border-radius: 9px !important;
+            font-size: 13px !important;
+            line-height: 1.4 !important;
+            min-width: 0 !important;
+          }
+
+          .formula-details {
+            padding-left: 14px !important;
+            font-size: 11px !important;
+          }
+
+          .order-total {
+            grid-column: 1 !important;
+            grid-row: 4 !important;
+            align-self: center !important;
+            text-align: left !important;
+            font-size: 15px !important;
+          }
+
+          .order-finish {
+            grid-column: 2 !important;
+            grid-row: 4 !important;
+            justify-self: end !important;
+            width: auto !important;
+            min-width: 112px !important;
+            min-height: 40px !important;
+            padding: 8px 14px !important;
+            font-size: 13px !important;
+          }
+        }
+      `}</style>
     </main>
   );
 }

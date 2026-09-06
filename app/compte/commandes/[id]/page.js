@@ -33,6 +33,37 @@ function formatPickupTime(value) {
     .trim();
 }
 
+function getFormulaSelections(item) {
+  if (Array.isArray(item?.formula_selections)) {
+    return item.formula_selections;
+  }
+
+  if (Array.isArray(item?.selections)) {
+    return item.selections;
+  }
+
+  return [];
+}
+
+function getSelectionLabel(selection) {
+  return (
+    selection?.step_name ||
+    selection?.stepName ||
+    selection?.label ||
+    selection?.step ||
+    ""
+  );
+}
+
+function getSelectionProductName(selection) {
+  return (
+    selection?.product_name ||
+    selection?.productName ||
+    selection?.name ||
+    ""
+  );
+}
+
 export default function CommandeDetailPage() {
   const params = useParams();
 
@@ -93,12 +124,49 @@ export default function CommandeDetailPage() {
 
     const newCart = {};
 
-    order.items.forEach((item) => {
+    order.items.forEach((item, index) => {
       if (!item.id) return;
 
-      newCart[String(item.id)] = Number(
+      const quantity = Number(
         item.qty || item.quantity || 1
       );
+
+      const formulaSelections =
+        getFormulaSelections(item);
+
+      const isFormula =
+        item.formula === true ||
+        formulaSelections.length > 0;
+
+      if (isFormula) {
+        const formulaKey =
+          `formula-${item.id}-${Date.now()}-${index}`;
+
+        newCart[formulaKey] = {
+          type: "formula",
+          qty: quantity,
+          formula_product_id: Number(item.id),
+          name:
+            item.formula_name ||
+            item.name ||
+            "Formule",
+          price: Number(
+            item.unit_price ||
+            item.price ||
+            0
+          ),
+          image_url: item.image_url || "",
+          selections: formulaSelections,
+        };
+
+        return;
+      }
+
+      const productKey = String(item.id);
+
+      newCart[productKey] =
+        Number(newCart[productKey] || 0) +
+        quantity;
     });
 
     localStorage.setItem(
@@ -106,7 +174,7 @@ export default function CommandeDetailPage() {
       JSON.stringify(newCart)
     );
 
-    window.location.href = "/commander";
+    window.location.href = "/panier";
   }
 
   if (loading) {
@@ -173,34 +241,100 @@ export default function CommandeDetailPage() {
         </p>
 
         <div className="account-orders">
-          {items.map((item, index) => (
-            <div
-              className="order-detail-item"
-              key={index}
-            >
-              <div className="account-order-top">
-                <span className="account-order-title">
-                  {item.name || "Produit"}
-                </span>
+          {items.map((item, index) => {
+            const quantity = Number(
+              item.qty || item.quantity || 1
+            );
 
-                <span className="account-order-total">
-                  {euro(
-                    Number(item.unit_price || 0) *
+            const formulaSelections =
+              getFormulaSelections(item);
+
+            return (
+              <div
+                className="order-detail-item"
+                key={index}
+              >
+                <div className="account-order-top">
+                  <span className="account-order-title">
+                    {item.formula_name ||
+                      item.name ||
+                      "Produit"}
+                  </span>
+
+                  <span className="account-order-total">
+                    {euro(
                       Number(
-                        item.qty ||
-                          item.quantity ||
-                          1
-                      )
-                  )}
-                </span>
-              </div>
+                        item.unit_price ||
+                        item.price ||
+                        0
+                      ) * quantity
+                    )}
+                  </span>
+                </div>
 
-              <div className="account-order-label">
-                {item.qty || item.quantity || 1} ×{" "}
-                {euro(item.unit_price || 0)}
+                {formulaSelections.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: "7px",
+                      marginBottom: "8px",
+                      paddingLeft: "2px",
+                    }}
+                  >
+                    {formulaSelections.map(
+                      (selection, selectionIndex) => {
+                        const label =
+                          getSelectionLabel(selection);
+
+                        const productName =
+                          getSelectionProductName(
+                            selection
+                          );
+
+                        if (
+                          !label &&
+                          !productName
+                        ) {
+                          return null;
+                        }
+
+                        return (
+                          <div
+                            key={selectionIndex}
+                            style={{
+                              fontSize: "12px",
+                              lineHeight: "1.6",
+                              color: "#5f684b",
+                            }}
+                          >
+                            {label && (
+                              <span
+                                style={{
+                                  fontWeight: "600",
+                                  color: "#3f5510",
+                                }}
+                              >
+                                {label} :
+                              </span>
+                            )}{" "}
+                            {productName}
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                )}
+
+                <div className="account-order-label">
+                  {quantity} ×{" "}
+                  {euro(
+                    item.unit_price ||
+                    item.price ||
+                    0
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div
