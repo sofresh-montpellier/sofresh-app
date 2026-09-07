@@ -9904,3 +9904,19 @@ header.home-header .home-header-action-active::after {
   background: #fffdf2 !important;
   border-top: 1px solid rgba(152, 189, 18, 0.18) !important;
 }
+/* =========================================================
+   SO FRESH — COULEUR RÉELLE DE LA BARRE DU BAS
+========================================================= */
+
+.sf-bottom-nav {
+  background-color: #fffdf2 !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.sf-bottom-nav::before,
+.sf-bottom-nav::after {
+  background: transparent !important;
+}
