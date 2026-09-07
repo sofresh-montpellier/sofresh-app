@@ -37,10 +37,6 @@ export default function AccueilV2() {
     loadSettings();
   }, []);
 
-  /* ===============================
-     DATE DU JOUR À PARIS
-  =============================== */
-
   const now = new Date();
 
   const parisParts = new Intl.DateTimeFormat("fr-FR", {
@@ -68,10 +64,6 @@ export default function AccueilV2() {
     parisToday.getUTCDate()
   ).padStart(2, "0")}`;
 
-  /* ===============================
-     FERMETURE EXCEPTIONNELLE
-  =============================== */
-
   const closureEnabled = Boolean(settings?.closure_enabled);
   const closureStartDate = settings?.closure_start_date || "";
   const closureEndDate = settings?.closure_end_date || "";
@@ -86,9 +78,6 @@ export default function AccueilV2() {
 
   return (
     <main className="home-v2">
-
-      {/* FERMETURE */}
-
       {settings?.closure_enabled && (
         <div className="closure-marquee">
           <div className="closure-marquee-track">
@@ -106,24 +95,18 @@ export default function AccueilV2() {
 
       {/* HERO */}
 
-      <section className="hero-final">
+      <section className="hero-final hero-final-home">
         <img
           src="/hero-sofresh.png"
-          alt="Votre pause déjeuner So Fresh"
+          alt="So Fresh"
           className="hero-final-image"
         />
 
-        <div className="hero-final-text">
-          <h1>
-            Votre pause
-            <br />
-            déjeuner
-          </h1>
-
-          <div className="hero-final-script">
-            fraîche & gourmande
-          </div>
-        </div>
+        <img
+          src="/logo-carre.png"
+          alt="So Fresh Salade"
+          className="hero-final-logo"
+        />
 
         {isClosureActiveToday ? (
           <div
@@ -158,7 +141,6 @@ export default function AccueilV2() {
       {/* NOS INCONTOURNABLES */}
 
       <section className="home-categories">
-
         <div className="home-section-heading">
           <div>
             <h2>Nos incontournables</h2>
@@ -172,55 +154,36 @@ export default function AccueilV2() {
         </div>
 
         <div className="home-category-grid">
-
           <Link
             href="/commander?categorie=Salades"
             className="home-category-card"
           >
-            <img
-              src="/cat-salades.png"
-              alt="Salades So Fresh"
-            />
-            <strong className="category-salades">
-              Salades
-            </strong>
+            <img src="/cat-salades.png" alt="Salades So Fresh" />
+            <strong className="category-salades">Salades</strong>
           </Link>
 
           <Link
             href="/commander?categorie=Wraps"
             className="home-category-card"
           >
-            <img
-              src="/cat-wraps.png"
-              alt="Wraps So Fresh"
-            />
-            <strong className="category-wraps">
-              Wraps
-            </strong>
+            <img src="/cat-wraps.png" alt="Wraps So Fresh" />
+            <strong className="category-wraps">Wraps</strong>
           </Link>
 
           <Link
             href="/commander?categorie=Tacos"
             className="home-category-card"
           >
-            <img
-              src="/cat-tacos.png"
-              alt="Tacos So Fresh"
-            />
-            <strong className="category-tacos">
-              Tacos
-            </strong>
+            <img src="/cat-tacos.png" alt="Tacos So Fresh" />
+            <strong className="category-tacos">Tacos</strong>
           </Link>
-
         </div>
       </section>
 
       {/* RESTAURANT */}
 
       <section className="home-restaurant-card">
-
         <div className="home-restaurant-top">
-
           <div className="home-restaurant-title">
             <MapPin size={30} fill="currentColor" />
 
@@ -243,11 +206,9 @@ export default function AccueilV2() {
               <span>du lundi au vendredi</span>
             </div>
           </div>
-
         </div>
 
         <div className="home-restaurant-content">
-
           <img
             src="/facade1-sofresh.jpeg"
             alt="So Fresh Montpellier Millénaire"
@@ -255,7 +216,6 @@ export default function AccueilV2() {
           />
 
           <div className="home-restaurant-actions">
-
             <a
               href="https://www.google.com/maps/search/?api=1&query=So+Fresh+Salade+1350+Avenue+Albert+Einstein+34000+Montpellier"
               target="_blank"
@@ -281,7 +241,6 @@ export default function AccueilV2() {
               <Mail size={30} />
               <strong>E-mail</strong>
             </a>
-
           </div>
         </div>
 
@@ -291,21 +250,19 @@ export default function AccueilV2() {
               "So Fresh est fermé pour congés. À très bientôt !"}
           </div>
         )}
-
       </section>
 
-      {/* FIDÉLITÉ + COMMANDER À NOUVEAU */}
+      {/* RACCOURCIS */}
 
       <section className="home-shortcuts">
-
         <Link href="/compte" className="home-shortcut loyalty">
-
           <div className="home-shortcut-icon">
             <Star size={30} fill="currentColor" />
           </div>
 
           <div className="home-shortcut-text">
             <strong>MA FIDÉLITÉ</strong>
+
             <span>
               Suivre mes avantages
               <br />
@@ -314,14 +271,12 @@ export default function AccueilV2() {
           </div>
 
           <ArrowRight className="home-shortcut-arrow" />
-
         </Link>
 
         <Link
           href="/compte/commandes"
           className="home-shortcut reorder"
         >
-
           <div className="home-shortcut-icon">
             <RotateCcw size={30} />
           </div>
@@ -341,39 +296,8 @@ export default function AccueilV2() {
           </div>
 
           <ArrowRight className="home-shortcut-arrow" />
-
         </Link>
-
       </section>
-
-      {/* BANDEAU FRAÎCHEUR */}
-
-      <section className="home-fresh-banner">
-
-        <div className="home-fresh-content">
-          <div className="home-fresh-script">
-            Des produits frais,
-            <br />
-            un quotidien plus sain !
-          </div>
-
-          <div className="home-fresh-line" />
-
-          <div className="home-values">
-            <span>🌿 Frais</span>
-            <span>♡ Gourmand</span>
-            <span>♧ Responsable</span>
-          </div>
-        </div>
-
-        <img
-          src="/cat-salades.png"
-          alt=""
-          className="home-fresh-image"
-        />
-
-      </section>
-
     </main>
   );
 }

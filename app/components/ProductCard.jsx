@@ -56,25 +56,28 @@ export default function ProductCard({
       <div className="card-body">
         <span
           style={{
-  display: "block",
-  width: "100%",
-  aspectRatio: "1 / 1",
-  objectFit: "cover",
-  background: "#fbfbf9",
-  transform: "scale(1.04)",
-  transition: "transform .25s ease, filter .25s ease",
-  filter: "contrast(1.06) saturate(1.08)",
-}}
+            display: "block",
+            width: "100%",
+            aspectRatio: "1 / 1",
+            objectFit: "cover",
+            background: "#fbfbf9",
+            transform: "scale(1.04)",
+            transition: "transform .25s ease, filter .25s ease",
+            filter: "contrast(1.06) saturate(1.08)",
+          }}
         >
           {product.normalized_category}
         </span>
 
         <h3>{product.name}</h3>
 
-        <p className="desc">
-          {product.description ||
-            "Préparé avec soin par So Fresh."}
-        </p>
+        {product.description &&
+          product.description.trim() !== "" &&
+          product.description !== "EMPTY" && (
+            <p className="desc">
+              {product.description}
+            </p>
+          )}
 
         <div className="row">
           <span className="price">

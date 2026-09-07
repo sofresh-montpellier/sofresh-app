@@ -8558,3 +8558,1349 @@ header.home-header .home-header-action-active::after {
     margin-top: 0 !important;
   }
 }
+
+/* =========================================================
+   NOUVEAU HEADER MOBILE SO FRESH
+   Logo gauche + panier droite
+========================================================= */
+
+@media (max-width: 640px) {
+  .home-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+
+    width: 100%;
+    padding: 8px 14px !important;
+
+    background: #dfd178 !important;
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .home-header-logo {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .home-header-logo img {
+    width: 90px !important;
+    height: auto !important;
+  }
+}/* =========================================================
+   HEADER CLIENT FINAL 2026
+   Logo gauche + panier droite
+========================================================= */
+
+@media (max-width: 640px) {
+
+  header.home-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 72px !important;
+    min-height: 72px !important;
+
+    margin: 0 !important;
+    padding: 6px 14px !important;
+
+    background: #DFD178 !important;
+
+    border: none !important;
+    box-shadow: none !important;
+
+    overflow: visible !important;
+  }
+
+  header.home-header .home-header-logo {
+    position: static !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    width: auto !important;
+    height: 60px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    transform: none !important;
+
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  header.home-header .home-header-logo img,
+  header.home-header .home-header-logo-img {
+    display: block !important;
+
+    width: 82px !important;
+    height: 60px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    object-fit: contain !important;
+
+    transform: none !important;
+  }
+}
+/* =========================================================
+   AJUSTEMENT TOPBAR SO FRESH
+   Header compact + panier complètement à droite
+========================================================= */
+
+.sf-mobile-topbar {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 72px !important;
+  min-height: 72px !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  padding: 5px 14px !important;
+  margin: 0 !important;
+
+  background: #dfd178 !important;
+}
+
+.sf-mobile-topbar-logo {
+  display: flex !important;
+  align-items: center !important;
+
+  width: auto !important;
+  height: 62px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.sf-mobile-topbar-logo-img {
+  display: block !important;
+
+  width: 90px !important;
+  height: 62px !important;
+
+  object-fit: contain !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.sf-mobile-topbar-cart {
+  position: relative !important;
+
+  width: 48px !important;
+  height: 48px !important;
+
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  flex: 0 0 48px !important;
+
+  background: #5a7f0d !important;
+  color: #ffffff !important;
+
+  border-radius: 50% !important;
+  border: none !important;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14) !important;
+}
+
+.sf-mobile-topbar-cart svg {
+  width: 25px !important;
+  height: 25px !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+/* =========================================================
+   SO FRESH - HEADER TRANSPARENT FINAL
+========================================================= */
+
+.sf-mobile-topbar {
+  box-sizing: border-box !important;
+
+  width: 100% !important;
+  height: 72px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  padding: 5px 16px !important;
+}
+
+/* ACCUEIL : header transparent sur la photo */
+.sf-mobile-topbar-home {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+
+  z-index: 1000 !important;
+
+  background: transparent !important;
+
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* AUTRES PAGES : fond clair pour garder la lisibilité */
+.sf-mobile-topbar-page {
+  position: sticky !important;
+  top: 0 !important;
+
+  z-index: 1000 !important;
+
+  background: #dfd178 !important;
+}
+
+/* LOGO */
+
+.sf-mobile-topbar-logo {
+  width: auto !important;
+  height: 62px !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+}
+
+.sf-mobile-topbar-logo-img {
+  display: block !important;
+
+  width: 92px !important;
+  height: 62px !important;
+
+  object-fit: contain !important;
+}
+
+/* PANIER */
+
+.sf-mobile-topbar-cart {
+  position: relative !important;
+
+  width: 46px !important;
+  height: 46px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  margin-left: auto !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+
+  box-shadow: none !important;
+
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+.sf-mobile-topbar-cart svg {
+  width: 31px !important;
+  height: 31px !important;
+
+  stroke: #ffffff !important;
+
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+/* PASTILLE JAUNE */
+
+.sf-mobile-topbar-cart-count {
+  position: absolute !important;
+
+  top: 0 !important;
+  right: -1px !important;
+
+  min-width: 20px !important;
+  height: 20px !important;
+
+  padding: 0 4px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 999px !important;
+
+  background: #ffd400 !important;
+  color: #183d19 !important;
+
+  border: none !important;
+
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+
+/* Sur les pages claires : panier vert */
+
+.sf-mobile-topbar-page .sf-mobile-topbar-cart svg {
+  stroke: #5a7f0d !important;
+  filter: none !important;
+}
+/* ACCUEIL - SUPPRESSION DE L'ANCIEN ESPACE DU HEADER */
+.home-v2 {
+  padding-top: 0 !important;
+}
+/* =========================================================
+   HEADER SO FRESH - TAILLES FINALES
+========================================================= */
+
+/* Logo plus présent */
+.sf-mobile-topbar-logo-img {
+  width: 112px !important;
+  height: 72px !important;
+  object-fit: contain !important;
+}
+
+/* Zone du panier */
+.sf-mobile-topbar-cart {
+  width: 54px !important;
+  height: 54px !important;
+}
+
+/* Caddie blanc plus grand */
+.sf-mobile-topbar-cart svg {
+  width: 36px !important;
+  height: 36px !important;
+  stroke: #ffffff !important;
+  stroke-width: 2.3 !important;
+}
+
+/* Pastille jaune */
+.sf-mobile-topbar-cart-count {
+  top: -1px !important;
+  right: -1px !important;
+
+  min-width: 21px !important;
+  height: 21px !important;
+
+  font-size: 11px !important;
+  font-weight: 800 !important;
+
+  background: #ffd400 !important;
+  color: #183d19 !important;
+}
+/* HEADER - AGRANDISSEMENT VISUEL DU LOGO UNIQUEMENT */
+.sf-mobile-topbar-logo {
+  width: 125px !important;
+  overflow: visible !important;
+}
+
+.sf-mobile-topbar-logo-img {
+  width: 125px !important;
+  height: 78px !important;
+  object-fit: contain !important;
+  transform: scale(1.25) !important;
+  transform-origin: left center !important;
+}
+/* =========================================================
+   SO FRESH - BARRE BAS VERSION FINALE
+========================================================= */
+
+@media (max-width: 640px) {
+  .sf-bottom-nav {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: 0 !important;
+    z-index: 3000 !important;
+
+    width: min(100%, 430px) !important;
+    height: 78px !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+
+    transform: translateX(-50%) !important;
+
+    background: rgba(255, 255, 255, 0.98) !important;
+
+    border-top: 1px solid rgba(90, 127, 13, 0.12) !important;
+    border-radius: 22px 22px 0 0 !important;
+
+    box-shadow: 0 -6px 20px rgba(38, 48, 34, 0.10) !important;
+
+    backdrop-filter: blur(14px) !important;
+  }
+
+  .sf-bottom-nav-item {
+    position: relative !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    gap: 4px !important;
+
+    padding: 8px 4px 10px !important;
+
+    color: #777777 !important;
+
+    text-decoration: none !important;
+
+    font-size: 13px !important;
+    font-weight: 500 !important;
+  }
+
+  .sf-bottom-nav-item svg {
+    width: 27px !important;
+    height: 27px !important;
+
+    stroke: currentColor !important;
+  }
+
+  .sf-bottom-nav-item.active {
+    color: #5a7f0d !important;
+    font-weight: 700 !important;
+  }
+
+  .sf-bottom-nav-item.active::after {
+    content: "" !important;
+
+    position: absolute !important;
+    left: 50% !important;
+    bottom: 4px !important;
+
+    width: 42px !important;
+    height: 4px !important;
+
+    transform: translateX(-50%) !important;
+
+    border-radius: 999px !important;
+
+    background: #98bd12 !important;
+  }
+
+  .sf-app-with-bottom-nav {
+    padding-bottom: 84px !important;
+  }
+}
+/* =========================================================
+   SO FRESH - PANIER FIXE GLOBAL
+========================================================= */
+
+.sf-fixed-cart {
+  position: fixed;
+  top: 14px;
+  right: max(
+    16px,
+    calc((100vw - 430px) / 2 + 16px)
+  );
+  z-index: 4000;
+
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+  text-decoration: none;
+
+  background: transparent;
+  border: none;
+
+  filter: drop-shadow(
+    0 2px 3px rgba(0, 0, 0, 0.38)
+  );
+}
+
+.sf-fixed-cart svg {
+  stroke: #ffffff;
+}
+
+.sf-fixed-cart-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+  background: #ffd400;
+  color: #173f19;
+
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+/* =========================================================
+   SO FRESH - GROS LOGO DANS LA PHOTO D'ACCUEIL
+========================================================= */
+
+@media (max-width: 640px) {
+
+  .home-v2 .hero-final {
+    position: relative !important;
+  }
+
+  .home-v2 .hero-final-brand-logo {
+    position: absolute !important;
+
+    top: 12px !important;
+    left: 14px !important;
+
+    z-index: 6 !important;
+
+    width: 125px !important;
+    height: 105px !important;
+
+    object-fit: contain !important;
+
+    filter:
+      drop-shadow(0 2px 2px rgba(255, 255, 255, 0.65))
+      drop-shadow(0 3px 5px rgba(0, 0, 0, 0.15));
+  }
+
+  .home-v2 .hero-final-text {
+    top: 112px !important;
+    left: 20px !important;
+  }
+
+  .home-v2 .hero-final-text h1 {
+    font-size: 35px !important;
+  }
+
+  .home-v2 .hero-final-script {
+    font-size: 24px !important;
+  }
+}
+/* =========================================================
+   SO FRESH - HERO ACCUEIL FINAL
+   Grand logo sur la photo
+========================================================= */
+
+.hero-final {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-final-brand-logo {
+  position: absolute;
+  z-index: 5;
+
+  top: 10px;
+  left: 16px;
+
+  width: 165px;
+  height: 105px;
+
+  object-fit: contain;
+  object-position: left top;
+
+  pointer-events: none;
+
+  filter:
+    drop-shadow(0 2px 2px rgba(255, 255, 255, 0.75))
+    drop-shadow(0 3px 7px rgba(0, 0, 0, 0.2));
+}
+
+/* MOBILE */
+
+@media (max-width: 640px) {
+  .home-v2 .hero-final-brand-logo {
+    top: 8px !important;
+    left: 12px !important;
+
+    width: 150px !important;
+    height: 105px !important;
+
+    object-fit: contain !important;
+    object-position: left top !important;
+  }
+
+  .home-v2 .hero-final-text {
+    top: 110px !important;
+    left: 18px !important;
+  }
+}
+/* ===== AJUSTEMENT FINAL HERO SO FRESH ===== */
+
+@media (max-width: 640px) {
+
+  .home-v2 .hero-final-brand-logo {
+    position: absolute !important;
+    top: 10px !important;
+    left: 18px !important;
+
+    width: 190px !important;
+    height: 125px !important;
+
+    object-fit: contain !important;
+    object-position: left top !important;
+
+    z-index: 10 !important;
+  }
+
+  .home-v2 .hero-final-text {
+    position: absolute !important;
+
+    top: 145px !important;
+    left: 20px !important;
+
+    z-index: 8 !important;
+  }
+}
+/* =========================================================
+   HERO FINAL SO FRESH - IMAGE COMPLETE
+========================================================= */
+
+@media (max-width: 640px) {
+  .home-v2 .hero-final-image-only {
+    position: relative !important;
+    height: 320px !important;
+    overflow: hidden !important;
+  }
+
+  .home-v2 .hero-final-image-only .hero-final-image {
+    position: absolute !important;
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+
+  .home-v2 .hero-final-image-only .hero-final-order-btn {
+    position: absolute !important;
+
+    left: 50% !important;
+    bottom: 12px !important;
+
+    width: calc(100% - 30px) !important;
+
+    transform: translateX(-50%) !important;
+
+    z-index: 10 !important;
+  }
+}
+/* =========================================================
+   SO FRESH — HERO ACCUEIL / CADRAGE COMPLET
+========================================================= */
+
+.hero-final {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  overflow: hidden;
+  background: #f7f5ee;
+}
+
+.hero-final-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center center;
+
+  display: block;
+}
+
+/* TEXTE */
+.hero-final-text {
+  position: absolute;
+  left: 20px;
+  top: 95px;
+  z-index: 3;
+  color: #003f2d;
+}
+
+.hero-final-text h1 {
+  margin: 0;
+  font-size: 40px;
+  line-height: 0.92;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  color: #003f2d;
+}
+
+.hero-final-script {
+  margin-top: 5px;
+  font-size: 24px;
+  line-height: 1;
+  font-style: italic;
+  font-weight: 600;
+  color: #003f2d;
+  transform: rotate(-3deg);
+}
+
+/* BOUTON COMMANDER */
+.hero-final-order-btn {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+
+  min-height: 52px;
+  padding: 0 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #ffd400;
+  color: #003f2d;
+
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+
+  text-decoration: none;
+  font-weight: 900;
+
+  z-index: 5;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.hero-final-order-text {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+@media (max-width: 600px) {
+  .hero-final {
+    height: 360px;
+  }
+
+  .hero-final-image {
+    object-fit: cover;
+    object-position: center center;
+  }
+
+  .hero-final-text {
+    left: 20px;
+    top: 95px;
+  }
+
+  .hero-final-text h1 {
+    font-size: 40px;
+  }
+
+  .hero-final-script {
+    font-size: 24px;
+  }
+
+  .hero-final-order-btn {
+    left: 16px;
+    right: 16px;
+    bottom: 12px;
+  }
+}
+/* =========================================================
+   SO FRESH — HERO FINAL COMPACT
+========================================================= */
+
+@media (max-width: 640px) {
+  .home-v2 .hero-final {
+    position: relative !important;
+
+    width: 100% !important;
+    height: 300px !important;
+
+    overflow: hidden !important;
+  }
+
+  .home-v2 .hero-final-image {
+    position: absolute !important;
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover !important;
+
+    /* On privilégie le haut et le centre de la photo */
+    object-position: center 42% !important;
+  }
+
+  .home-v2 .hero-final-order-btn {
+    position: absolute !important;
+
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 12px !important;
+
+    width: auto !important;
+
+    transform: none !important;
+
+    z-index: 10 !important;
+  }
+}
+/* =========================================================
+   SO FRESH — HERO ACCUEIL FINAL
+========================================================= */
+
+@media (max-width: 640px) {
+  .home-v2 .hero-final-home {
+    position: relative !important;
+
+    width: 100% !important;
+    height: 300px !important;
+
+    overflow: hidden !important;
+
+    background: #f7f5ee !important;
+  }
+
+  .home-v2 .hero-final-home .hero-final-image {
+    position: absolute !important;
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover !important;
+    object-position: center center !important;
+  }
+
+  .home-v2 .hero-final-logo {
+    position: absolute !important;
+
+    top: 34px !important;
+    left: 50% !important;
+
+    width: 165px !important;
+    height: 120px !important;
+
+    transform: translateX(-50%) !important;
+
+    object-fit: contain !important;
+
+    z-index: 8 !important;
+
+    pointer-events: none !important;
+
+    filter:
+      drop-shadow(0 2px 2px rgba(255, 255, 255, 0.7))
+      drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18)) !important;
+  }
+
+  .home-v2 .hero-final-home .hero-final-order-btn {
+    position: absolute !important;
+
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 12px !important;
+
+    width: auto !important;
+
+    transform: none !important;
+
+    z-index: 10 !important;
+  }
+}/* =========================================================
+   SO FRESH — HERO ACCUEIL FINAL
+========================================================= */
+
+@media (max-width: 640px) {
+  .home-v2 .hero-final-home {
+    position: relative !important;
+
+    width: 100% !important;
+    height: 300px !important;
+
+    overflow: hidden !important;
+
+    background: #f7f5ee !important;
+  }
+
+  .home-v2 .hero-final-home .hero-final-image {
+    position: absolute !important;
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover !important;
+    object-position: center center !important;
+  }
+
+  .home-v2 .hero-final-logo {
+    position: absolute !important;
+
+    top: 34px !important;
+    left: 50% !important;
+
+    width: 165px !important;
+    height: 120px !important;
+
+    transform: translateX(-50%) !important;
+
+    object-fit: contain !important;
+
+    z-index: 8 !important;
+
+    pointer-events: none !important;
+
+    filter:
+      drop-shadow(0 2px 2px rgba(255, 255, 255, 0.7))
+      drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18)) !important;
+  }
+
+  .home-v2 .hero-final-home .hero-final-order-btn {
+    position: absolute !important;
+
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 12px !important;
+
+    width: auto !important;
+
+    transform: none !important;
+
+    z-index: 10 !important;
+  }
+}
+/* =========================================================
+   SO FRESH — CORRECTION HERO + LOGO
+   fonctionne aussi quand l'app mobile est ouverte sur PC
+========================================================= */
+
+.home-v2 .hero-final-home {
+  position: relative !important;
+  width: 100% !important;
+  height: 300px !important;
+  overflow: hidden !important;
+  background: #f7f5ee !important;
+}
+
+.home-v2 .hero-final-home .hero-final-image {
+  position: absolute !important;
+  inset: 0 !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: cover !important;
+  object-position: center center !important;
+
+  display: block !important;
+}
+
+.home-v2 .hero-final-logo {
+  position: absolute !important;
+
+  top: 30px !important;
+  left: 50% !important;
+
+  width: 155px !important;
+  height: 115px !important;
+  max-width: 155px !important;
+  max-height: 115px !important;
+
+  transform: translateX(-50%) !important;
+
+  object-fit: contain !important;
+
+  z-index: 20 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  pointer-events: none !important;
+}
+
+.home-v2 .hero-final-home .hero-final-order-btn {
+  position: absolute !important;
+
+  left: 16px !important;
+  right: 16px !important;
+  bottom: 12px !important;
+
+  width: auto !important;
+
+  transform: none !important;
+
+  z-index: 30 !important;
+}
+/* =========================================================
+   SO FRESH — AJUSTEMENT FINAL HERO
+========================================================= */
+
+.home-v2 .hero-final-logo {
+  top: 38px !important;
+  width: 175px !important;
+  height: 128px !important;
+  max-width: 175px !important;
+  max-height: 128px !important;
+}
+
+.home-v2 .hero-final-home .hero-final-order-btn {
+  bottom: 16px !important;
+}
+/* =========================================================
+   SO FRESH — AJUSTEMENT HERO
+   Logo plus gros + bouton Commander plus compact
+========================================================= */
+
+.home-v2 .hero-final-logo {
+  top: 28px !important;
+  left: 50% !important;
+
+  width: 220px !important;
+  height: 155px !important;
+  max-width: 220px !important;
+  max-height: 155px !important;
+
+  transform: translateX(-50%) !important;
+  object-fit: contain !important;
+
+  z-index: 20 !important;
+}
+
+.home-v2 .hero-final-home .hero-final-order-btn {
+  left: 42px !important;
+  right: 42px !important;
+  bottom: 16px !important;
+
+  width: auto !important;
+  min-height: 48px !important;
+  padding: 0 18px !important;
+
+  border-radius: 999px !important;
+}
+
+.home-v2 .hero-final-home .hero-final-order-text {
+  font-size: 15px !important;
+}
+/* =========================================================
+   SO FRESH — FINITION HERO ACCUEIL
+   À COLLER TOUT EN BAS DE globals.css
+========================================================= */
+
+/* HERO */
+.home-v2 .hero-final-home {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* LOGO */
+.home-v2 .hero-final-logo {
+  position: absolute !important;
+
+  top: 28px !important;
+  left: 50% !important;
+
+  width: 220px !important;
+  height: 155px !important;
+  max-width: 220px !important;
+  max-height: 155px !important;
+
+  transform: translateX(-50%) !important;
+  object-fit: contain !important;
+
+  z-index: 20 !important;
+}
+
+/* BOUTON COMMANDER PLUS COMPACT */
+.home-v2 .hero-final-home .hero-final-order-btn {
+  position: absolute !important;
+
+  left: 42px !important;
+  right: 42px !important;
+  bottom: 19px !important;
+
+  width: auto !important;
+  min-height: 48px !important;
+  padding: 0 18px !important;
+
+  border-radius: 999px !important;
+
+  z-index: 40 !important;
+}
+
+.home-v2 .hero-final-home .hero-final-order-text {
+  font-size: 15px !important;
+}
+
+/* EFFET PAPIER DÉCHIRÉ EN BAS DU HERO */
+.home-v2 .hero-final-home::after {
+  content: "" !important;
+
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: -1px !important;
+
+  height: 17px !important;
+
+  background: #fbfbf9 !important;
+
+  clip-path: polygon(
+    0 70%,
+    6% 50%,
+    12% 68%,
+    18% 46%,
+    24% 65%,
+    30% 48%,
+    36% 67%,
+    42% 45%,
+    48% 64%,
+    54% 47%,
+    60% 68%,
+    66% 46%,
+    72% 64%,
+    78% 48%,
+    84% 67%,
+    90% 46%,
+    96% 64%,
+    100% 52%,
+    100% 100%,
+    0 100%
+  ) !important;
+
+  z-index: 30 !important;
+  pointer-events: none !important;
+}
+
+/* REMONTE NOS INCONTOURNABLES */
+.home-v2 .home-categories {
+  margin-top: -8px !important;
+  padding-top: 20px !important;
+}
+/* =========================================================
+   SO FRESH — SUPPRIME L'ESPACE VIDE EN BAS DE L'ACCUEIL
+   À COLLER TOUT EN BAS DE globals.css
+========================================================= */
+
+.home-v2 {
+  min-height: auto !important;
+  height: auto !important;
+  padding-bottom: 78px !important;
+}
+
+.home-v2 .home-shortcuts {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+/* =========================================================
+   SO FRESH — PASTILLE VERTE DU PANIER
+   À COLLER TOUT EN BAS DE globals.css
+========================================================= */
+
+.home-header-cart {
+  position: relative !important;
+
+  width: 46px !important;
+  height: 46px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: #5A7F0D !important;
+  color: #ffffff !important;
+
+  border-radius: 50% !important;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14) !important;
+}
+
+/* Icône panier blanche */
+.home-header-cart svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Petite pastille jaune avec le nombre d'articles */
+.home-header-cart-count {
+  position: absolute !important;
+
+  top: -5px !important;
+  right: -5px !important;
+
+  min-width: 20px !important;
+  height: 20px !important;
+  padding: 0 5px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: #FFD400 !important;
+  color: #173F19 !important;
+
+  border: 2px solid #ffffff !important;
+  border-radius: 999px !important;
+
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+
+  z-index: 10 !important;
+}
+/* =========================================================
+   SO FRESH — PASTILLE VERTE AUTOUR DU PANIER
+========================================================= */
+
+.home-header-cart {
+  width: 46px !important;
+  height: 46px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 !important;
+
+  background: #5a7f0d !important;
+  color: #ffffff !important;
+
+  border-radius: 50% !important;
+}
+/* SO FRESH — POSITION PANIER EN HAUT À DROITE */
+
+.home-header-cart {
+  position: fixed !important;
+  top: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  bottom: auto !important;
+
+  z-index: 1000 !important;
+}
+/* =========================================================
+   SO FRESH — PANIER MODERNE
+========================================================= */
+
+.sf-fixed-cart {
+  position: fixed !important;
+
+  top: 18px !important;
+  right: 18px !important;
+
+  width: 46px !important;
+  height: 46px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 !important;
+
+  background: #5a7f0d !important;
+  color: #ffffff !important;
+
+  border-radius: 50% !important;
+  text-decoration: none !important;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+
+  z-index: 1000 !important;
+}
+
+.sf-fixed-cart svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Petite pastille jaune du nombre d'articles */
+
+.sf-fixed-cart-count {
+  position: absolute !important;
+
+  top: -5px !important;
+  right: -5px !important;
+
+  min-width: 20px !important;
+  height: 20px !important;
+
+  padding: 0 5px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: #ffd400 !important;
+  color: #173f19 !important;
+
+  border: 2px solid #ffffff !important;
+  border-radius: 999px !important;
+
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+
+  z-index: 2 !important;
+}
+/* =========================================================
+   SO FRESH — REMONTER LES PAGES APRÈS SUPPRESSION DU HEADER
+========================================================= */
+
+/* Pages compte */
+.account-page,
+.compte-page,
+.profile-page {
+  padding-top: 20px !important;
+  margin-top: 0 !important;
+}
+
+/* Conteneur global des pages avec navigation du bas */
+.sf-app-with-bottom-nav {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+/* =========================================================
+   SO FRESH — ESPACE DE SÉCURITÉ AU-DESSUS DE LA BARRE DU BAS
+========================================================= */
+
+.sf-app-with-bottom-nav {
+  padding-bottom: 78px !important;
+}
+/* =========================================================
+   SO FRESH — TEINTE LÉGÈRE BARRE DE NAVIGATION BASSE
+========================================================= */
+
+.sf-bottom-nav {
+  background: #fffdf2 !important;
+  border-top: 1px solid rgba(152, 189, 18, 0.18) !important;
+}

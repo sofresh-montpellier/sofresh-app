@@ -9,7 +9,6 @@ import {
 import { useRouter } from "next/navigation";
 
 import Cart from "../components/Cart";
-import HomeHeader from "../components/HomeHeader";
 
 import {
   isSupabaseConfigured,
@@ -974,13 +973,9 @@ export default function PanierPage() {
     }
   }
 
-  return (
-    <>
-      <HomeHeader
-        cartCount={cartCount}
-      />
-
-      <Cart
+ return (
+  <>
+    <Cart
         pageMode
         open
         onClose={() =>
