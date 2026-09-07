@@ -54,10 +54,8 @@ export default function AppShell({ children }) {
   const isCompte =
     pathname.startsWith("/compte");
 
-  const showCart =
-    pathname === "/" ||
-    pathname.startsWith("/accueil-v2") ||
-    pathname.startsWith("/commander");
+ const showCart =
+  pathname.startsWith("/commander");
 
   return (
     <>
