@@ -395,8 +395,13 @@ export default function OrdersPage() {
     }
 
     setOrders((currentOrders) =>
-      currentOrders.filter(
-        (order) => order.id !== orderId
+      currentOrders.map((order) =>
+        order.id === orderId
+          ? {
+              ...order,
+              status: "Terminée",
+            }
+          : order
       )
     );
   }
@@ -442,6 +447,47 @@ export default function OrdersPage() {
       {}
     );
   }, [waitingOrders]);
+
+  const finishedOrders = useMemo(
+    () =>
+      orders
+        .filter(
+          (order) =>
+            order.status === "Terminée"
+        )
+        .sort((a, b) => {
+          const dateA = a.pickup_date || "";
+          const dateB = b.pickup_date || "";
+
+          if (dateA !== dateB) {
+            return dateB.localeCompare(dateA);
+          }
+
+          const timeA = a.pickup_time || "";
+          const timeB = b.pickup_time || "";
+
+          return timeB.localeCompare(timeA);
+        }),
+    [orders]
+  );
+
+  const groupedFinishedByDate = useMemo(() => {
+    return finishedOrders.reduce(
+      (groups, order) => {
+        const date =
+          order.pickup_date || "Sans date";
+
+        if (!groups[date]) {
+          groups[date] = [];
+        }
+
+        groups[date].push(order);
+
+        return groups;
+      },
+      {}
+    );
+  }, [finishedOrders]);
 
   return (
     <main className="admin-wrap orders-mobile-page">
@@ -573,10 +619,9 @@ export default function OrdersPage() {
         {!loading && (
           <div>
             {Object.entries(groupedByDate).map(
-              ([pickupDate, dateOrders], dayIndex) => (
+              ([pickupDate, dateOrders]) => (
                 <section
                   className="order-day-card"
-                  data-day-color={dayIndex % 4}
                   key={pickupDate}
                   style={{
                     border: "1px solid #E2E2DA",
@@ -613,6 +658,19 @@ export default function OrdersPage() {
                           )}
                     </strong>
 
+                    <span
+                      style={{
+                        color: "#5A7F0D",
+                        fontWeight: "800",
+                        fontSize: "14px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {dateOrders.length} commande
+                      {dateOrders.length > 1
+                        ? "s"
+                        : ""}
+                    </span>
                   </div>
 
                   {dateOrders.map((order) => {
@@ -631,7 +689,6 @@ export default function OrdersPage() {
                     return (
                       <article
                         className="order-row"
-                        data-day-color={dayIndex % 4}
                         key={order.id}
                         style={{
                           minHeight: "92px",
@@ -831,19 +888,195 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {!loading &&
-          waitingOrders.length > 0 && (
-            <div
-              style={{
-                marginTop: "26px",
-                textAlign: "center",
-                color: "#5e6658",
-                fontSize: "13px",
-              }}
-            >
-              🌱 Les commandes terminées disparaissent de cette liste.
-            </div>
-          )}
+        {!loading && (
+          <details className="orders-history">
+            <summary>
+              🕘 Historique des commandes remises
+              <span>{finishedOrders.length}</span>
+            </summary>
+
+            {finishedOrders.length === 0 ? (
+              <div className="orders-history-empty">
+                Aucune commande remise pour le moment.
+              </div>
+            ) : (
+              <div className="orders-history-content">
+                {Object.entries(
+                  groupedFinishedByDate
+                ).map(
+                  ([pickupDate, dateOrders]) => (
+                    <section
+                      className="history-day-card"
+                      key={`history-${pickupDate}`}
+                    >
+                      <div className="history-day-header">
+                        <strong>
+                          📅{" "}
+                          {pickupDate === "Sans date"
+                            ? "Date non renseignée"
+                            : formatDateLabel(
+                                pickupDate
+                              )}
+                        </strong>
+
+                        <span>
+                          {dateOrders.length} commande
+                          {dateOrders.length > 1
+                            ? "s"
+                            : ""}
+                        </span>
+                      </div>
+
+                      {dateOrders.map((order) => {
+                        const items = Array.isArray(
+                          order.items
+                        )
+                          ? order.items
+                          : [];
+
+                        const orderNumber =
+                          order.order_number ||
+                          String(order.id)
+                            .slice(0, 6)
+                            .toUpperCase();
+
+                        return (
+                          <article
+                            className="history-order-row"
+                            key={`history-${order.id}`}
+                          >
+                            <div className="history-order-top">
+                              <div>
+                                <strong>
+                                  🕚{" "}
+                                  {order.pickup_time ||
+                                    "Sans heure"}
+                                </strong>
+
+                                <span>
+                                  {order.customer_name ||
+                                    "Client"}
+                                </span>
+                              </div>
+
+                              <strong className="history-order-total">
+                                {euro(order.total)}
+                              </strong>
+                            </div>
+
+                            <div className="history-order-number">
+                              SF-{orderNumber}
+                            </div>
+
+                            {order.customer_phone && (
+                              <a
+                                className="history-order-phone"
+                                href={`tel:${String(
+                                  order.customer_phone
+                                ).replace(/\s/g, "")}`}
+                              >
+                                ☎ {order.customer_phone}
+                              </a>
+                            )}
+
+                            <div className="history-order-items">
+                              {items.length === 0 ? (
+                                <span>
+                                  Aucun produit renseigné
+                                </span>
+                              ) : (
+                                items.map(
+                                  (item, index) => {
+                                    const selections =
+                                      Array.isArray(
+                                        item.formula_selections
+                                      )
+                                        ? item.formula_selections
+                                        : Array.isArray(
+                                            item.selections
+                                          )
+                                        ? item.selections
+                                        : [];
+
+                                    return (
+                                      <div
+                                        key={`history-${order.id}-${index}`}
+                                        className="order-item"
+                                      >
+                                        <div>
+                                          <b>
+                                            {item.qty} ×
+                                          </b>{" "}
+                                          {item.name}
+                                        </div>
+
+                                        {selections.length >
+                                          0 && (
+                                          <div className="formula-details">
+                                            {selections.map(
+                                              (
+                                                selection,
+                                                selectionIndex
+                                              ) => {
+                                                const stepName =
+                                                  selection.step_name ||
+                                                  selection.stepName ||
+                                                  "";
+
+                                                const productName =
+                                                  selection.product_name ||
+                                                  selection.productName ||
+                                                  selection.name ||
+                                                  "";
+
+                                                if (
+                                                  !stepName &&
+                                                  !productName
+                                                ) {
+                                                  return null;
+                                                }
+
+                                                return (
+                                                  <div
+                                                    key={`history-${order.id}-${index}-${selectionIndex}`}
+                                                  >
+                                                    {stepName && (
+                                                      <strong>
+                                                        {
+                                                          stepName
+                                                        }{" "}
+                                                        :{" "}
+                                                      </strong>
+                                                    )}
+                                                    {
+                                                      productName
+                                                    }
+                                                  </div>
+                                                );
+                                              }
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  }
+                                )
+                              )}
+                            </div>
+
+                            <div className="history-status">
+                              ✓ Remise
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </section>
+                  )
+                )}
+              </div>
+            )}
+          </details>
+        )}
       </section>
 
       <style jsx>{`
@@ -875,6 +1108,174 @@ export default function OrdersPage() {
           font-size: 12px;
           font-weight: 800;
           white-space: nowrap;
+        }
+
+        .orders-history {
+          margin-top: 24px;
+          border: 1px solid #dce7b8;
+          border-radius: 14px;
+          background: #ffffff;
+          overflow: hidden;
+        }
+
+        .orders-history > summary {
+          min-height: 52px;
+          padding: 0 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          cursor: pointer;
+          list-style: none;
+          background: #f4f7e9;
+          color: #31410a;
+          font-size: 14px;
+          font-weight: 800;
+        }
+
+        .orders-history > summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .orders-history > summary span {
+          min-width: 26px;
+          height: 26px;
+          padding: 0 7px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          background: #98bd12;
+          color: #ffffff;
+          font-size: 12px;
+          line-height: 1;
+        }
+
+        .orders-history-empty {
+          padding: 18px 16px;
+          color: #6b7165;
+          font-size: 13px;
+          text-align: center;
+        }
+
+        .orders-history-content {
+          padding: 12px;
+        }
+
+        .history-day-card {
+          margin-bottom: 12px;
+          border: 1px solid #ecece5;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #ffffff;
+        }
+
+        .history-day-card:last-child {
+          margin-bottom: 0;
+        }
+
+        .history-day-header {
+          min-height: 46px;
+          padding: 9px 12px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          background: #fafbf5;
+          border-bottom: 1px solid #ecece5;
+        }
+
+        .history-day-header strong {
+          color: #1f2b16;
+          font-size: 13px;
+        }
+
+        .history-day-header span {
+          color: #5a7f0d;
+          font-size: 11px;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
+        .history-order-row {
+          position: relative;
+          padding: 12px;
+          border-bottom: 1px solid #f0f0eb;
+        }
+
+        .history-order-row:last-child {
+          border-bottom: 0;
+        }
+
+        .history-order-top {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .history-order-top > div {
+          display: flex;
+          align-items: baseline;
+          gap: 10px;
+          min-width: 0;
+        }
+
+        .history-order-top > div > strong {
+          color: #1d2618;
+          font-size: 14px;
+          white-space: nowrap;
+        }
+
+        .history-order-top > div > span {
+          color: #111111;
+          font-size: 13px;
+          font-weight: 800;
+          overflow-wrap: anywhere;
+        }
+
+        .history-order-total {
+          color: #5a7f0d;
+          font-size: 14px;
+          white-space: nowrap;
+        }
+
+        .history-order-number {
+          margin-top: 3px;
+          color: #777b72;
+          font-size: 11px;
+        }
+
+        .history-order-phone {
+          display: inline-block;
+          margin-top: 6px;
+          color: #5a7f0d;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .history-order-items {
+          margin-top: 8px;
+          padding: 9px 10px;
+          border-radius: 9px;
+          background: #f8faef;
+          color: #222222;
+          font-size: 12px;
+          line-height: 1.45;
+        }
+
+        .history-status {
+          margin-top: 8px;
+          display: inline-flex;
+          align-items: center;
+          min-height: 26px;
+          padding: 4px 9px;
+          border-radius: 999px;
+          background: #edf5d2;
+          color: #5a7f0d;
+          font-size: 11px;
+          font-weight: 800;
         }
 
         @media (max-width: 700px) {
@@ -926,56 +1327,6 @@ export default function OrdersPage() {
             border-radius: 12px !important;
             margin-bottom: 14px !important;
             overflow: hidden !important;
-          }
-
-          .order-day-card[data-day-color="0"] .order-day-header {
-            background: #e9f5df !important;
-            border-bottom-color: #d7e9c8 !important;
-          }
-
-          .order-day-card[data-day-color="1"] .order-day-header {
-            background: #fff1c7 !important;
-            border-bottom-color: #f2dda0 !important;
-          }
-
-          .order-day-card[data-day-color="2"] .order-day-header {
-            background: #e4f1ff !important;
-            border-bottom-color: #cfe3f8 !important;
-          }
-
-          .order-day-card[data-day-color="3"] .order-day-header {
-            background: #f2e9ff !important;
-            border-bottom-color: #e1d2f5 !important;
-          }
-
-          .order-row {
-            position: relative !important;
-          }
-
-          .order-row::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 9px;
-            bottom: 9px;
-            width: 5px;
-            border-radius: 0 5px 5px 0;
-          }
-
-          .order-row[data-day-color="0"]::before {
-            background: #78ad2f;
-          }
-
-          .order-row[data-day-color="1"]::before {
-            background: #f0b90b;
-          }
-
-          .order-row[data-day-color="2"]::before {
-            background: #3b8eea;
-          }
-
-          .order-row[data-day-color="3"]::before {
-            background: #9a6bc4;
           }
 
           .order-day-header {
