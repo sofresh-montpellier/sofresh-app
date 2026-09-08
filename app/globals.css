@@ -10080,3 +10080,32 @@ header.home-header .home-header-action-active::after {
 .sf-bottom-nav-item.active::after {
   display: none !important;
 }
+/* =========================================
+   PANIER FLOTTANT — STYLE VERRE SO FRESH
+========================================= */
+
+.sf-fixed-cart {
+  background: rgba(55, 55, 48, 0.48) !important;
+  background-image: none !important;
+
+  backdrop-filter: blur(18px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+
+  color: #ffffff !important;
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.14) !important;
+}
+
+.sf-fixed-cart svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.sf-fixed-cart-count {
+  background: #FFD400 !important;
+  color: #5A7F0D !important;
+  border: 2px solid #ffffff !important;
+}

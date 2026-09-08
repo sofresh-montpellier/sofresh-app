@@ -1610,8 +1610,37 @@ export default function Home() {
             </div>
           )}
 
-        {category === null ? (
-          <section className="category-family-grid">
+        {category !== null && (
+  <button
+    type="button"
+    onClick={() => {
+      setCategory(null);
+      window.history.replaceState(
+        {},
+        "",
+        "/commander"
+      );
+    }}
+    style={{
+      border: "none",
+      background: "transparent",
+      padding: "4px 0",
+      margin: "0 0 14px 2px",
+      color: "#5A7F0D",
+      fontSize: "15px",
+      fontWeight: "700",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "5px",
+    }}
+  >
+    ← Retour
+  </button>
+)}
+
+{category === null ? (
+  <section className="category-family-grid">
             {categoryOrder.map((currentCategory) => (
               <button
                 type="button"

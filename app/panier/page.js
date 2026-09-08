@@ -975,6 +975,7 @@ export default function PanierPage() {
 
  return (
   <>
+   
     <Cart
         pageMode
         open
