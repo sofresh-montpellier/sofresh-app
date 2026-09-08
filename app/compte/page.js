@@ -1074,6 +1074,45 @@ export default function ComptePage() {
           </div>
 
         </div>
+
+        {/* VISUEL SO FRESH — uniquement lorsque le client n'est pas connecté */}
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "230px",
+            marginTop: "18px",
+            overflow: "hidden",
+            borderRadius: "22px",
+            boxShadow: "0 10px 28px rgba(38, 48, 34, 0.10)",
+          }}
+        >
+          <img
+            src="/hero-sofresh.png"
+            alt="So Fresh"
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "block",
+              objectFit: "cover",
+            }}
+          />
+          <img
+            src="/logo-carre.png"
+            alt="Logo So Fresh"
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: "190px",
+              maxWidth: "62%",
+              height: "auto",
+              transform: "translate(-50%, -50%)",
+              objectFit: "contain",
+              filter: "drop-shadow(0 5px 12px rgba(0, 0, 0, 0.18))",
+            }}
+          />
+        </div>
       </div>
 
       <div
