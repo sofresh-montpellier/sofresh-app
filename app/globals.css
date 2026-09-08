@@ -10109,3 +10109,14 @@ header.home-header .home-header-action-active::after {
   color: #5A7F0D !important;
   border: 2px solid #ffffff !important;
 }
+/* =========================================
+   FIN LISERÉ BLANC — BARRE + PANIER
+========================================= */
+
+.sf-bottom-nav {
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+}
+
+.sf-fixed-cart {
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+}
