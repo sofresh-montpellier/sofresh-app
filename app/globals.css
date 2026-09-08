@@ -9920,3 +9920,163 @@ header.home-header .home-header-action-active::after {
 .sf-bottom-nav::after {
   background: transparent !important;
 }
+/* =========================================================
+   SO FRESH — BARRE BAS EFFET VERRE FUMÉ
+========================================================= */
+
+.sf-bottom-nav {
+  position: fixed !important;
+
+  left: 50% !important;
+  right: auto !important;
+  bottom: 12px !important;
+
+  width: calc(100% - 24px) !important;
+  max-width: 406px !important;
+  height: 70px !important;
+
+  transform: translateX(-50%) !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+
+  /* Verre fumé : on distingue ce qui passe derrière */
+  background: rgba(20, 20, 18, 0.72) !important;
+  background-image: none !important;
+
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 24px !important;
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.18) !important;
+
+  overflow: hidden !important;
+  z-index: 3000 !important;
+}
+
+/* Les 3 pictos restent simples */
+.sf-bottom-nav-item {
+  color: rgba(255, 255, 255, 0.82) !important;
+  background: transparent !important;
+}
+
+/* Page active : uniquement une légère différence de couleur */
+.sf-bottom-nav-item.active {
+  color: #ffffff !important;
+  background: transparent !important;
+}
+
+/* AUCUNE capsule, AUCUN trait */
+.sf-bottom-nav-item.active::after {
+  display: none !important;
+}
+
+.sf-bottom-nav::before,
+.sf-bottom-nav::after {
+  background: transparent !important;
+}
+
+/* Espace sous les pages */
+.sf-app-with-bottom-nav {
+  padding-bottom: 96px !important;
+}
+/* AJUSTEMENT FINAL EFFET VERRE */
+.sf-bottom-nav {
+  background: rgba(55, 55, 48, 0.48) !important;
+
+  backdrop-filter: blur(18px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.16) !important;
+}
+.sf-bottom-nav {
+  width: calc(100% - 28px) !important;
+  max-width: 402px !important;
+}
+/* =========================================================
+   SO FRESH — BARRE BAS — ALIGNEMENT FINAL
+   3 pictos centrés + textes dessous
+========================================================= */
+
+.sf-bottom-nav {
+  width: calc(100% - 28px) !important;
+  max-width: 402px !important;
+  height: 72px !important;
+
+  padding: 5px 8px !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  align-items: stretch !important;
+
+  box-sizing: border-box !important;
+}
+
+.sf-bottom-nav-item {
+  width: 100% !important;
+  height: 100% !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 3px !important;
+  padding: 4px 2px !important;
+
+  background: transparent !important;
+  border-radius: 0 !important;
+
+  color: rgba(255, 255, 255, 0.82) !important;
+
+  text-align: center !important;
+  text-decoration: none !important;
+
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+}
+
+.sf-bottom-nav-item svg {
+  display: block !important;
+
+  width: 24px !important;
+  height: 24px !important;
+
+  margin: 0 auto !important;
+
+  flex-shrink: 0 !important;
+  stroke: currentColor !important;
+}
+
+.sf-bottom-nav-item span {
+  display: block !important;
+  width: 100% !important;
+
+  margin: 0 !important;
+
+  text-align: center !important;
+  line-height: 1 !important;
+}
+
+/* ONGLET ACTIF — VERT SO FRESH */
+.sf-bottom-nav-item.active {
+  background: transparent !important;
+  color: #98BD12 !important;
+  font-weight: 700 !important;
+}
+
+.sf-bottom-nav-item.active svg {
+  color: #98BD12 !important;
+  stroke: #98BD12 !important;
+}
+
+.sf-bottom-nav-item.active::after {
+  display: none !important;
+}
