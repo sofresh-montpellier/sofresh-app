@@ -1593,7 +1593,7 @@ export default function Home() {
 
   return (
     <>
-      <main className="container">
+      <main className="container commander-modern">
         {!loadingSettings &&
           settings &&
           !serviceOpen && (
@@ -1611,36 +1611,24 @@ export default function Home() {
           )}
 
         {category !== null && (
-  <button
-    type="button"
-    onClick={() => {
-      setCategory(null);
-      window.history.replaceState(
-        {},
-        "",
-        "/commander"
-      );
-    }}
-    style={{
-      border: "none",
-      background: "transparent",
-      padding: "4px 0",
-      margin: "0 0 14px 2px",
-      color: "#5A7F0D",
-      fontSize: "15px",
-      fontWeight: "700",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: "5px",
-    }}
-  >
-    ← Retour
-  </button>
-)}
+          <button
+            type="button"
+            className="commander-return"
+            onClick={() => {
+              setCategory(null);
+              window.history.replaceState(
+                {},
+                "",
+                "/commander"
+              );
+            }}
+          >
+            ← Retour
+          </button>
+        )}
 
-{category === null ? (
-  <section className="category-family-grid">
+        {category === null ? (
+          <section className="category-family-grid">
             {categoryOrder.map((currentCategory) => (
               <button
                 type="button"
@@ -1664,7 +1652,7 @@ export default function Home() {
             ))}
           </section>
         ) : (
-          <div className="category-nav">
+          <div className="category-nav commander-category-nav">
             {categoryOrder.map((currentCategory) => (
               <button
                 type="button"
@@ -1693,7 +1681,7 @@ export default function Home() {
             )}
 
             {!loadingProducts && (
-              <section className="product-list-mobile">
+              <section className="product-list-mobile commander-product-list">
                 {visibleProducts.map((product) => {
                   const rawProductQuantity =
                     cart[product.id];
@@ -1703,12 +1691,16 @@ export default function Home() {
                       ? rawProductQuantity
                       : 0;
 
+                  const isFormula =
+                    product.normalized_category ===
+                    "Formules";
+
                   return (
                     <article
-                      className="product-row-card"
+                      className="product-row-card commander-product-card"
                       key={product.id}
                     >
-                      <div className="product-row-image">
+                      <div className="product-row-image commander-product-image">
                         {product.image_url ? (
                           <img
                             src={product.image_url}
@@ -1722,174 +1714,79 @@ export default function Home() {
                         )}
                       </div>
 
-                      <div
-                        className="product-row-content"
-                        style={{
-                          position: "relative",
-                          paddingRight: "92px",
-                        }}
-                      >
-                        <h3>
-                          {product.name}
-                        </h3>
+                      <div className="product-row-content commander-product-content">
+                        <div className="commander-product-copy">
+                          <h3>{product.name}</h3>
 
-                        <p
-                          style={{
-                            whiteSpace: "pre-line",
-                          }}
-                        >
-                          {product.description ||
-                            "Préparé avec soin par So Fresh."}
-                        </p>
+                          <p>
+                            {product.description ||
+                              "Préparé avec soin par So Fresh."}
+                          </p>
+                        </div>
 
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: "10px",
-                            right: "10px",
-                            width: "68px",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            gap: "8px",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "68px",
-                              height: "34px",
-                              borderRadius: "10px",
-                              background: "#98BD12",
-                              color: "#ffffff",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              padding: "0 5px",
-                              fontSize: "15px",
-                              fontWeight: "800",
-                              lineHeight: "1",
-                              whiteSpace: "nowrap",
-                              boxShadow:
-                                "0 3px 8px rgba(90,127,13,0.15)",
-                            }}
-                          >
+                        <div className="commander-product-footer">
+                          <div className="commander-product-price">
                             {euro(product.price)}
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (
-                                product.normalized_category ===
-                                "Formules"
-                              ) {
-                                openFormula(product);
-                              } else {
-                                addProduct(product.id);
+                          {isFormula ? (
+                            <button
+                              type="button"
+                              className="commander-add-button"
+                              onClick={() =>
+                                openFormula(product)
                               }
-                            }}
-                            aria-label={`Ajouter ${product.name} au panier`}
-                            style={{
-                              position: "relative",
-                              width: "60px",
-                              height: "56px",
-                              minWidth: "60px",
-                              border: "none",
-                              borderRadius: "13px",
-                              background: "#5A7F0D",
-                              color: "#ffffff",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: "pointer",
-                              boxShadow:
-                                "0 5px 12px rgba(90,127,13,0.23)",
-                              overflow: "visible",
-                            }}
-                          >
-                            <svg
-                              width="29"
-                              height="29"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.9"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              aria-hidden="true"
-                              style={{
-                                transform:
-                                  "translateX(-5px)",
-                              }}
+                              aria-label={`Composer ${product.name}`}
                             >
-                              <circle
-                                cx="9"
-                                cy="20"
-                                r="1"
-                              />
-
-                              <circle
-                                cx="19"
-                                cy="20"
-                                r="1"
-                              />
-
-                              <path d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 8H6" />
-                            </svg>
-
-                            <span
-                              style={{
-                                position: "absolute",
-                                top: "-5px",
-                                right: "-5px",
-                                width: "22px",
-                                height: "22px",
-                                borderRadius: "50%",
-                                background: "#98BD12",
-                                color: "#ffffff",
-                                border:
-                                  "2px solid #ffffff",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "17px",
-                                fontWeight: "900",
-                                lineHeight: "1",
-                                pointerEvents: "none",
-                              }}
+                              + Ajouter
+                            </button>
+                          ) : productQuantity > 0 ? (
+                            <div
+                              className="commander-quantity"
+                              aria-label={`Quantité de ${product.name}`}
                             >
-                              +
-                            </span>
-
-                            {productQuantity > 0 && (
-                              <span
-                                style={{
-                                  position: "absolute",
-                                  right: "2px",
-                                  bottom: "2px",
-                                  minWidth: "23px",
-                                  height: "23px",
-                                  padding: "0 4px",
-                                  borderRadius: "999px",
-                                  background: "#ffffff",
-                                  color: "#5A7F0D",
-                                  border:
-                                    "2px solid #ffffff",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  fontSize: "12px",
-                                  fontWeight: "900",
-                                  lineHeight: "1",
-                                  boxShadow:
-                                    "0 2px 5px rgba(0,0,0,0.15)",
-                                  pointerEvents: "none",
-                                }}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  changeQuantity(
+                                    product.id,
+                                    -1
+                                  )
+                                }
+                                aria-label={`Retirer un ${product.name}`}
                               >
+                                −
+                              </button>
+
+                              <span>
                                 {productQuantity}
                               </span>
-                            )}
-                          </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  changeQuantity(
+                                    product.id,
+                                    1
+                                  )
+                                }
+                                aria-label={`Ajouter un ${product.name}`}
+                              >
+                                +
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              className="commander-add-button"
+                              onClick={() =>
+                                addProduct(product.id)
+                              }
+                              aria-label={`Ajouter ${product.name} au panier`}
+                            >
+                              + Ajouter
+                            </button>
+                          )}
                         </div>
                       </div>
                     </article>
@@ -1908,97 +1805,24 @@ export default function Home() {
           </>
         )}
 
-        {/* BOUTON PANIER COMPACT */}
-
         {cartCount > 0 && (
           <Link
             href="/panier"
-            style={{
-              width: "100%",
-              minHeight: "56px",
-              marginTop: "18px",
-              marginBottom: "22px",
-              padding: "9px 15px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "12px",
-              background: "#5A7F0D",
-              color: "#ffffff",
-              borderRadius: "14px",
-              textDecoration: "none",
-              boxShadow:
-                "0 6px 16px rgba(90, 127, 13, 0.20)",
-              boxSizing: "border-box",
-            }}
+            className="commander-cart-summary"
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-            >
-              <div
-                style={{
-                  position: "relative",
-                  width: "32px",
-                  height: "32px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
+            <div className="commander-cart-summary-left">
+              <div className="commander-cart-summary-icon">
                 <ShoppingBag
-                  size={25}
-                  strokeWidth={1.8}
+                  size={22}
+                  strokeWidth={1.9}
                 />
 
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "-7px",
-                    right: "-7px",
-                    minWidth: "19px",
-                    height: "19px",
-                    padding: "0 4px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: "999px",
-                    background: "#FFD400",
-                    color: "#5A7F0D",
-                    border: "2px solid #ffffff",
-                    fontSize: "10px",
-                    fontWeight: "800",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  {cartCount}
-                </span>
+                <span>{cartCount}</span>
               </div>
 
-              <div>
-                <strong
-                  style={{
-                    display: "block",
-                    fontSize: "14px",
-                    lineHeight: 1.15,
-                  }}
-                >
-                  Voir mon panier
-                </strong>
-
-                <span
-                  style={{
-                    display: "block",
-                    marginTop: "3px",
-                    fontSize: "11px",
-                    lineHeight: 1.15,
-                    opacity: 0.9,
-                  }}
-                >
+              <div className="commander-cart-summary-copy">
+                <strong>Voir mon panier</strong>
+                <span>
                   {cartCount}{" "}
                   {cartCount > 1
                     ? "articles"
@@ -2009,8 +1833,8 @@ export default function Home() {
             </div>
 
             <ArrowRight
-              size={21}
-              strokeWidth={1.8}
+              size={20}
+              strokeWidth={1.9}
             />
           </Link>
         )}
