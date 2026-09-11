@@ -11155,19 +11155,141 @@ header.home-header .home-header-action-active::after {
     font-size: 12px !important;
   }
 }
+
+
 /* =========================================
    BARRE DU BAS — VERRE PLUS FLOU
 ========================================= */
 
 .sf-bottom-nav {
   background: rgba(251, 251, 249, 0.58) !important;
-
   backdrop-filter: blur(28px) saturate(145%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(145%) !important;
-
   border: 1px solid rgba(255, 255, 255, 0.82) !important;
-
   box-shadow:
     0 8px 26px rgba(35, 55, 25, 0.11),
     inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+}
+
+/* =========================================================
+   COMMANDER — FINITIONS VALIDÉES
+   Uniquement : haut, proportion photo/texte, contrôle quantité
+   ========================================================= */
+
+.commander-modern {
+  padding-top: 2px !important;
+  margin-top: 0 !important;
+}
+
+.commander-modern .commander-return {
+  margin: 0 0 3px 2px !important;
+  padding: 0 !important;
+  min-height: 24px !important;
+  line-height: 24px !important;
+}
+
+.commander-modern .commander-category-nav {
+  margin-top: 0 !important;
+  margin-bottom: 8px !important;
+  padding-top: 4px !important;
+  padding-bottom: 5px !important;
+}
+
+.commander-modern .commander-product-card {
+  grid-template-columns: 132px minmax(0, 1fr) !important;
+}
+
+.commander-modern .commander-product-image {
+  width: 132px !important;
+  min-width: 132px !important;
+}
+
+.commander-modern .commander-product-image img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+.commander-modern .commander-product-content {
+  padding-left: 10px !important;
+}
+
+.commander-modern .commander-quantity {
+  min-height: 36px !important;
+  grid-template-columns: 34px 30px 34px !important;
+}
+
+.commander-modern .commander-quantity button {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  font-size: 20px !important;
+}
+
+.commander-modern .commander-quantity span {
+  min-width: 30px !important;
+  font-size: 13px !important;
+  text-align: center !important;
+}
+
+.commander-modern .commander-add-button {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 380px) {
+  .commander-modern {
+    padding-top: 2px !important;
+  }
+
+  .commander-modern .commander-return {
+    margin-bottom: 2px !important;
+  }
+
+  .commander-modern .commander-category-nav {
+    margin-bottom: 7px !important;
+    padding-top: 3px !important;
+    padding-bottom: 4px !important;
+  }
+
+  .commander-modern .commander-product-card {
+    grid-template-columns: 102px minmax(0, 1fr) !important;
+  }
+
+  .commander-modern .commander-product-image {
+    width: 102px !important;
+    min-width: 102px !important;
+  }
+
+  .commander-modern .commander-product-content {
+    padding-left: 7px !important;
+  }
+
+  .commander-modern .commander-quantity {
+    min-height: 34px !important;
+    grid-template-columns: 32px 26px 32px !important;
+  }
+
+  .commander-modern .commander-quantity button {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    font-size: 18px !important;
+  }
+
+  .commander-modern .commander-quantity span {
+    min-width: 26px !important;
+    font-size: 12px !important;
+  }
+}
+/* =========================================
+   COMMANDER — RÉDUCTION ESPACE EN HAUT
+========================================= */
+
+.commander-modern {
+  margin-top: -55px !important;
+  padding-top: 8px !important;
 }

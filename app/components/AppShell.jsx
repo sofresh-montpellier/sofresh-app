@@ -3,92 +3,44 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  Utensils,
-  UserRound,
-} from "lucide-react";
-
-import HomeHeader from "./HomeHeader";
+import { Home, Utensils, UserRound } from "lucide-react";
 
 export default function AppShell({ children }) {
   const [cartCount, setCartCount] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
-
   const pathname = usePathname();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 1400);
-
+    const timer = setTimeout(() => setShowSplash(false), 1400);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    const updateCartCount = (event) => {
-      setCartCount(event.detail || 0);
-    };
-
-    window.addEventListener(
-      "sofresh-cart-count",
-      updateCartCount
-    );
-
-    return () => {
-      window.removeEventListener(
-        "sofresh-cart-count",
-        updateCartCount
-      );
-    };
+    const updateCartCount = (event) => setCartCount(event.detail || 0);
+    window.addEventListener("sofresh-cart-count", updateCartCount);
+    return () => window.removeEventListener("sofresh-cart-count", updateCartCount);
   }, []);
 
-  const isAccueil =
-    pathname === "/" ||
-    pathname.startsWith("/accueil-v2");
-
-  const isCommander =
-    pathname.startsWith("/commander") ||
-    pathname.startsWith("/panier");
-
-  const isCompte =
-    pathname.startsWith("/compte");
-
- const showCart =
-  pathname.startsWith("/commander");
+  const isAccueil = pathname === "/" || pathname.startsWith("/accueil-v2");
+  const isCommander = pathname.startsWith("/commander") || pathname.startsWith("/panier");
+  const isCompte = pathname.startsWith("/compte");
 
   return (
     <>
       {showSplash && (
         <div className="splash-screen">
-          <img
-            src="/logo-carre.png"
-            alt="So Fresh"
-            className="splash-logo"
-          />
-
+          <img src="/logo-carre.png" alt="So Fresh" className="splash-logo" />
           <div className="splash-loader"></div>
         </div>
       )}
 
-      {showCart && (
-        <HomeHeader cartCount={cartCount} />
-      )}
+      <div className="sf-app-with-bottom-nav">{children}</div>
 
-      <div className="sf-app-with-bottom-nav">
-        {children}
-      </div>
-
-      <nav
-        className="sf-bottom-nav"
-        aria-label="Navigation principale"
-      >
+      <nav className="sf-bottom-nav" aria-label="Navigation principale">
         <Link
           href="/accueil-v2"
           className={
-            isAccueil
-              ? "sf-bottom-nav-item active"
-              : "sf-bottom-nav-item"
+            isAccueil ? "sf-bottom-nav-item active" : "sf-bottom-nav-item"
           }
         >
           <Home size={25} strokeWidth={1.9} />
@@ -98,9 +50,7 @@ export default function AppShell({ children }) {
         <Link
           href="/commander"
           className={
-            isCommander
-              ? "sf-bottom-nav-item active"
-              : "sf-bottom-nav-item"
+            isCommander ? "sf-bottom-nav-item active" : "sf-bottom-nav-item"
           }
         >
           <Utensils size={25} strokeWidth={1.9} />
@@ -110,9 +60,7 @@ export default function AppShell({ children }) {
         <Link
           href="/compte"
           className={
-            isCompte
-              ? "sf-bottom-nav-item active"
-              : "sf-bottom-nav-item"
+            isCompte ? "sf-bottom-nav-item active" : "sf-bottom-nav-item"
           }
         >
           <UserRound size={25} strokeWidth={1.9} />
