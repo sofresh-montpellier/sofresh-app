@@ -1,0 +1,230 @@
+.page {
+  width: 100% !important;
+  max-width: 430px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  padding: 28px 14px calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+  background: #fbfbf9 !important;
+  box-sizing: border-box;
+}
+
+:global(.sf-app-with-bottom-nav):has(.page) {
+  min-height: 0 !important;
+  height: auto !important;
+  padding-bottom: 0 !important;
+}
+
+.intro {
+  position: relative;
+  min-height: 104px;
+  margin: 0 0 12px;
+  padding: 0 4px;
+  overflow: visible;
+}
+
+.introText {
+  position: relative;
+  z-index: 2;
+  max-width: calc(100% - 76px);
+}
+
+.basil {
+  position: absolute;
+  z-index: 1;
+  top: -24px;
+  right: -14px;
+  width: 100px;
+  height: auto;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.intro h1 {
+  margin: 0;
+  color: #174825;
+  font-size: clamp(34px, 10.2vw, 42px);
+  line-height: 0.98;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.intro p {
+  margin: 10px 0 0;
+  color: #174825;
+  font-size: clamp(18px, 5.1vw, 22px);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.yellowLine {
+  display: block;
+  width: 62px;
+  height: 5px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: #ffd400;
+  transform: rotate(-3deg);
+  transform-origin: left center;
+}
+
+.categoryGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px 10px !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.categoryCard {
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 17px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(38, 48, 34, 0.07) !important;
+  cursor: pointer;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease, box-shadow 120ms ease !important;
+}
+
+.categoryCard:hover {
+  transform: none !important;
+  box-shadow: 0 4px 14px rgba(38, 48, 34, 0.07) !important;
+}
+
+.categoryCard:active {
+  transform: scale(0.98) !important;
+}
+
+.categoryCard:focus-visible {
+  outline: 2px solid rgba(90, 127, 13, 0.48);
+  outline-offset: 2px;
+}
+
+.categoryImage {
+  width: 100% !important;
+  aspect-ratio: 1 / 1.03 !important;
+  overflow: hidden !important;
+  background: #f8f7f2 !important;
+}
+
+.categoryImage img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+.categoryName {
+  min-height: 38px;
+  padding: 8px 3px 9px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #174825 !important;
+  font-size: 12px !important;
+  line-height: 1.05 !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+  text-align: center !important;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.bandGreen {
+  background: #edf6df !important;
+}
+
+.bandCream {
+  background: #fff3c9 !important;
+}
+
+@media (min-width: 391px) and (max-width: 395px) {
+  .page {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .page {
+    padding: 24px 10px calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .intro {
+    min-height: 100px;
+    margin-bottom: 10px;
+    padding-inline: 3px;
+  }
+
+  .introText {
+    max-width: calc(100% - 68px);
+  }
+
+  .basil {
+    top: -20px;
+    right: -10px;
+    width: 88px;
+  }
+
+  .categoryGrid {
+    gap: 10px 8px !important;
+  }
+
+  .categoryCard {
+    border-radius: 15px !important;
+  }
+
+  .categoryName {
+    min-height: 36px;
+    padding: 7px 2px 8px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+  }
+}
+
+@media (min-width: 641px) {
+  .page {
+    max-width: 1050px !important;
+    padding: 40px 28px 48px !important;
+  }
+
+  .intro {
+    margin-bottom: 30px;
+  }
+
+  .intro h1 {
+    font-size: 44px;
+  }
+
+  .intro p {
+    font-size: 21px;
+  }
+
+  .categoryGrid {
+    gap: 18px !important;
+  }
+
+  .categoryCard {
+    border-radius: 20px !important;
+  }
+
+  .categoryImage {
+    aspect-ratio: 1.18 / 1 !important;
+  }
+
+  .categoryName {
+    min-height: 48px;
+    font-size: 15px !important;
+  }
+}

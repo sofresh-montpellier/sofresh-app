@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Cart from "../components/Cart";
+import styles from "./commander.module.css";
 
 import {
   isSupabaseConfigured,
@@ -33,8 +34,6 @@ const categoryAliases = {
 
   "maxi salade": "Maxi Salades",
   "maxi salades": "Maxi Salades",
-  maxisalade: "Maxi Salades",
-  maxisalades: "Maxi Salades",
 
   wrap: "Wraps",
   wraps: "Wraps",
@@ -1603,7 +1602,7 @@ export default function Home() {
 
   return (
     <>
-      <main className="container commander-modern">
+      <main className={`container commander-modern ${styles.page}`}>
         {!loadingSettings &&
           settings &&
           !serviceOpen && (
@@ -1638,29 +1637,52 @@ export default function Home() {
         )}
 
         {category === null ? (
-          <section className="category-family-grid">
-            {categoryOrder.map((currentCategory) => (
-              <button
-                type="button"
-                key={currentCategory}
-                className="category-family-card"
-                onClick={() =>
-                  setCategory(currentCategory)
-                }
-              >
-                <div className="category-family-image">
-                  <img
-                    src={getCategoryImage(currentCategory)}
-                    alt={currentCategory}
-                  />
-                </div>
+          <>
+            <header className={styles.intro}>
+              <div className={styles.introText}>
+                <h1>Commander</h1>
+                <p>Qu’est-ce qui vous fait envie ?</p>
+                <span className={styles.yellowLine} aria-hidden="true" />
+              </div>
 
-                <div className="category-family-name">
-                  {currentCategory}
-                </div>
-              </button>
-            ))}
-          </section>
+              <img
+                src="/basil-commander.png"
+                alt=""
+                aria-hidden="true"
+                className={styles.basil}
+              />
+            </header>
+
+            <section className={`category-family-grid ${styles.categoryGrid}`}>
+              {categoryOrder.map((currentCategory, index) => (
+                <button
+                  type="button"
+                  key={currentCategory}
+                  className={`category-family-card ${styles.categoryCard}`}
+                  onClick={() =>
+                    setCategory(currentCategory)
+                  }
+                >
+                  <div className={`category-family-image ${styles.categoryImage}`}>
+                    <img
+                      src={getCategoryImage(currentCategory)}
+                      alt={currentCategory}
+                    />
+                  </div>
+
+                  <div
+                    className={`category-family-name ${styles.categoryName} ${
+                      index % 2 === 0
+                        ? styles.bandGreen
+                        : styles.bandCream
+                    }`}
+                  >
+                    {currentCategory}
+                  </div>
+                </button>
+              ))}
+            </section>
+          </>
         ) : (
           <div className="category-nav commander-category-nav">
             {categoryOrder.map((currentCategory) => (
@@ -1728,9 +1750,10 @@ export default function Home() {
                         <div className="commander-product-copy">
                           <h3>{product.name}</h3>
 
-                          {product.description ? (
-                            <p>{product.description}</p>
-                          ) : null}
+                          <p>
+                            {product.description ||
+                              "Préparé avec soin par So Fresh."}
+                          </p>
                         </div>
 
                         <div className="commander-product-footer">
