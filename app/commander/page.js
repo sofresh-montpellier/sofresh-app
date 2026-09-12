@@ -31,6 +31,11 @@ const categoryAliases = {
   salade: "Salades",
   salades: "Salades",
 
+  "maxi salade": "Maxi Salades",
+  "maxi salades": "Maxi Salades",
+  maxisalade: "Maxi Salades",
+  maxisalades: "Maxi Salades",
+
   wrap: "Wraps",
   wraps: "Wraps",
 
@@ -73,6 +78,7 @@ const categoryOrder = [
   "Formules",
   "Burgers",
   "Salades",
+  "Maxi Salades",
   "Wraps",
   "Pâtes",
   "Soupes",
@@ -89,6 +95,10 @@ const categoryOrder = [
 function getCategoryImage(category) {
   if (category === "Pause sucrée / salée") {
     return "/cat-pause-sucree-salee.png";
+  }
+
+  if (category === "Maxi Salades") {
+    return "/cat-maxi-salades.png";
   }
 
   return `/cat-${category
@@ -1718,10 +1728,9 @@ export default function Home() {
                         <div className="commander-product-copy">
                           <h3>{product.name}</h3>
 
-                          <p>
-                            {product.description ||
-                              "Préparé avec soin par So Fresh."}
-                          </p>
+                          {product.description ? (
+                            <p>{product.description}</p>
+                          ) : null}
                         </div>
 
                         <div className="commander-product-footer">

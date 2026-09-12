@@ -210,7 +210,7 @@ export default function AccueilV2() {
 
         <div className="home-restaurant-content">
           <img
-            src="/facade1-sofresh.jpeg"
+            src="/facade-sofresh-new.png"
             alt="So Fresh Montpellier Millénaire"
             className="home-facade"
           />

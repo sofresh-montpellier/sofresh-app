@@ -20,6 +20,7 @@ const categories = [
   "Formules",
   "Burgers",
   "Salades",
+  "Maxi Salades",
   "Wraps",
   "Pâtes",
   "Soupes",
