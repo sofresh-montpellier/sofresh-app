@@ -94,6 +94,7 @@ export default function AccueilV2() {
       )}
 
       {/* HERO */}
+
       <section className="hero-final hero-final-home">
         <img
           src="/hero-sofresh.png"
@@ -122,17 +123,23 @@ export default function AccueilV2() {
             <span>—</span>
           </div>
         ) : (
-          <Link href="/commander" className="hero-final-order-btn">
+          <Link
+            href="/commander"
+            className="hero-final-order-btn"
+          >
             <ShoppingBag size={24} />
+
             <span className="hero-final-order-text">
               COMMANDER MAINTENANT
             </span>
+
             <ArrowRight size={28} />
           </Link>
         )}
       </section>
 
       {/* NOS INCONTOURNABLES */}
+
       <section className="home-categories">
         <div className="home-section-heading">
           <div>
@@ -174,7 +181,33 @@ export default function AccueilV2() {
       </section>
 
       {/* RESTAURANT */}
+
       <section className="home-restaurant-card">
+        <div className="home-restaurant-top">
+          <div className="home-restaurant-title">
+            <MapPin size={30} fill="currentColor" />
+
+            <div>
+              <strong>
+                SO FRESH MONTPELLIER MILLÉNAIRE
+              </strong>
+
+              <span>
+                1350 avenue Albert Einstein, Montpellier
+              </span>
+            </div>
+          </div>
+
+          <div className="home-opening">
+            <Clock3 size={28} />
+
+            <div>
+              <strong>Ouvert le midi</strong>
+              <span>du lundi au vendredi</span>
+            </div>
+          </div>
+        </div>
+
         <div className="home-restaurant-content">
           <img
             src="/facade-sofresh-new.png"
@@ -182,56 +215,32 @@ export default function AccueilV2() {
             className="home-facade"
           />
 
-          <div className="home-restaurant-info">
-            <div className="home-restaurant-title">
-              <MapPin size={30} fill="currentColor" />
+          <div className="home-restaurant-actions">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=So+Fresh+Salade+1350+Avenue+Albert+Einstein+34000+Montpellier"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="home-restaurant-action"
+            >
+              <Navigation size={30} fill="currentColor" />
+              <strong>Itinéraire</strong>
+            </a>
 
-              <div>
-                <strong>SO FRESH MONTPELLIER MILLÉNAIRE</strong>
-                <span>
-                  1350 avenue Albert Einstein,
-                  <br />
-                  Montpellier
-                </span>
-              </div>
-            </div>
+            <a
+              href="tel:+33467859954"
+              className="home-restaurant-action"
+            >
+              <Phone size={30} />
+              <strong>Téléphone</strong>
+            </a>
 
-            <div className="home-opening">
-              <Clock3 size={26} />
-
-              <div>
-                <strong>Ouvert le midi</strong>
-                <span>du lundi au vendredi</span>
-              </div>
-            </div>
-
-            <div className="home-restaurant-actions">
-              <a
-                href="tel:+33467859954"
-                className="home-restaurant-action"
-              >
-                <Phone size={24} />
-                <strong>Téléphone</strong>
-              </a>
-
-              <a
-                href="https://www.google.com/maps/search/?api=1&query=So+Fresh+Salade+1350+Avenue+Albert+Einstein+34000+Montpellier"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="home-restaurant-action"
-              >
-                <Navigation size={24} />
-                <strong>Itinéraire</strong>
-              </a>
-
-              <a
-                href="mailto:sofreshsalade@gmail.com"
-                className="home-restaurant-action"
-              >
-                <Mail size={24} />
-                <strong>E-mail</strong>
-              </a>
-            </div>
+            <a
+              href="mailto:sofreshsalade@gmail.com"
+              className="home-restaurant-action"
+            >
+              <Mail size={30} />
+              <strong>E-mail</strong>
+            </a>
           </div>
         </div>
 
@@ -244,15 +253,21 @@ export default function AccueilV2() {
       </section>
 
       {/* RACCOURCIS */}
+
       <section className="home-shortcuts">
         <Link href="/compte" className="home-shortcut loyalty">
           <div className="home-shortcut-icon">
-            <Star size={28} />
+            <Star size={30} fill="currentColor" />
           </div>
 
           <div className="home-shortcut-text">
-            <strong>Ma fidélité</strong>
-            <span>Suivre mes avantages et récompenses</span>
+            <strong>MA FIDÉLITÉ</strong>
+
+            <span>
+              Suivre mes avantages
+              <br />
+              et récompenses
+            </span>
           </div>
 
           <ArrowRight className="home-shortcut-arrow" />
@@ -263,35 +278,25 @@ export default function AccueilV2() {
           className="home-shortcut reorder"
         >
           <div className="home-shortcut-icon">
-            <RotateCcw size={28} />
+            <RotateCcw size={30} />
           </div>
 
           <div className="home-shortcut-text">
-            <strong>Commander à nouveau</strong>
-            <span>Retrouver mes dernières commandes</span>
+            <strong>
+              COMMANDER
+              <br />
+              À NOUVEAU
+            </strong>
+
+            <span>
+              Retrouver mes
+              <br />
+              dernières commandes
+            </span>
           </div>
 
           <ArrowRight className="home-shortcut-arrow" />
         </Link>
-      </section>
-
-      {/* BANDEAU PRODUITS FRAIS */}
-      <section className="home-fresh-banner">
-        <img
-          src="/cat-salades.png"
-          alt=""
-          className="home-fresh-image"
-          aria-hidden="true"
-        />
-
-        <div className="home-fresh-content">
-          <strong>
-            Des produits frais,
-            <br />
-            une cuisine de saison
-          </strong>
-          <span className="home-fresh-line" />
-        </div>
       </section>
     </main>
   );
