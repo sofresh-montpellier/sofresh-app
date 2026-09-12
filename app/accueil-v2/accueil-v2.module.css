@@ -3,7 +3,7 @@
   width: 100%;
   min-height: 0 !important;
   height: auto !important;
-  padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
   background: #fbfbf9;
 }
 
@@ -248,7 +248,7 @@
 /* CIBLE IPHONE 15 — 393 px */
 @media (min-width: 391px) and (max-width: 395px) {
   .page {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 
@@ -291,4 +291,21 @@
   .shortcutText span {
     font-size: 9.5px;
   }
+}
+
+
+/* =========================================================
+   ACCUEIL UNIQUEMENT — évite le double espace sous le contenu
+   Le conteneur global ajoute déjà un padding-bottom de 90px.
+   Pour /accueil-v2, on le neutralise et on garde un seul espace
+   correspondant à la nav fixe + sa marge + safe-area.
+   ========================================================= */
+:global(.sf-app-with-bottom-nav):has(.page) {
+  min-height: 0 !important;
+  height: auto !important;
+  padding-bottom: 0 !important;
+}
+
+.page {
+  padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
 }
