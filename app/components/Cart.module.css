@@ -4,7 +4,7 @@
   min-height: 0;
   margin: 0 auto;
   padding:
-    max(8px, env(safe-area-inset-top, 0px))
+    max(4px, calc(env(safe-area-inset-top, 0px) - 22px))
     14px
     calc(82px + env(safe-area-inset-bottom, 0px));
   background: #fbfbf9;
@@ -242,16 +242,16 @@
   margin-top: 14px;
   padding: 12px 13px;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
   border: 1px solid rgba(152, 189, 18, 0.18);
   border-radius: 20px;
   background: #f1f8df;
 }
 
 .pickupIcon {
-  width: 42px;
+  width: 38px;
   height: 42px;
   display: grid;
   place-items: center;
@@ -273,8 +273,9 @@
 
 .pickupCopy strong {
   color: #174825;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.15;
+  white-space: nowrap;
 }
 
 .pickupEdit {
@@ -514,15 +515,20 @@
   }
 
   .pickupCard {
-    grid-template-columns: 36px minmax(0, 1fr) auto;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    gap: 6px;
     padding: 10px;
+  }
+
+  .pickupIcon {
+    width: 32px;
+  }
+
+  .pickupCopy strong {
+    font-size: 11px;
   }
 
   .pickupEdit {
     padding-inline: 10px;
-  }
-
-  .pickupEdit span {
-    display: none;
   }
 }
