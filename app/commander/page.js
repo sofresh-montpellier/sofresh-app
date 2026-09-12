@@ -1626,7 +1626,7 @@ export default function Home() {
         {category !== null && (
           <button
             type="button"
-            className="commander-return"
+            className={`commander-return ${styles.productReturn}`}
             onClick={() => {
               setCategory(null);
               window.history.replaceState(
@@ -1688,24 +1688,45 @@ export default function Home() {
             </section>
           </>
         ) : (
-          <div className="category-nav commander-category-nav">
-            {categoryOrder.map((currentCategory) => (
-              <button
-                type="button"
-                key={currentCategory}
-                className={`chip ${
-                  currentCategory === category
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  setCategory(currentCategory)
-                }
-              >
-                {currentCategory}
-              </button>
-            ))}
-          </div>
+          <>
+            <header className={styles.productHeader}>
+              <div className={styles.productHeaderText}>
+                <h1>{category}</h1>
+                <span
+                  className={styles.productAccent}
+                  aria-hidden="true"
+                />
+              </div>
+
+              <img
+                src="/basil-commander.png"
+                alt=""
+                aria-hidden="true"
+                className={styles.productBasil}
+              />
+            </header>
+
+            <div
+              className={`category-nav commander-category-nav ${styles.productCategoryNav}`}
+            >
+              {categoryOrder.map((currentCategory) => (
+                <button
+                  type="button"
+                  key={currentCategory}
+                  className={`chip ${styles.productCategoryChip} ${
+                    currentCategory === category
+                      ? `active ${styles.productCategoryChipActive}`
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setCategory(currentCategory)
+                  }
+                >
+                  {currentCategory}
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         {category !== null && (
@@ -1717,7 +1738,7 @@ export default function Home() {
             )}
 
             {!loadingProducts && (
-              <section className="product-list-mobile commander-product-list">
+              <section className={`product-list-mobile commander-product-list ${styles.productList}`}>
                 {visibleProducts.map((product) => {
                   const rawProductQuantity =
                     cart[product.id];
@@ -1733,10 +1754,10 @@ export default function Home() {
 
                   return (
                     <article
-                      className="product-row-card commander-product-card"
+                      className={`product-row-card commander-product-card ${styles.productCard}`}
                       key={product.id}
                     >
-                      <div className="product-row-image commander-product-image">
+                      <div className={`product-row-image commander-product-image ${styles.productImage}`}>
                         {product.image_url ? (
                           <img
                             src={product.image_url}
@@ -1750,8 +1771,8 @@ export default function Home() {
                         )}
                       </div>
 
-                      <div className="product-row-content commander-product-content">
-                        <div className="commander-product-copy">
+                      <div className={`product-row-content commander-product-content ${styles.productContent}`}>
+                        <div className={`commander-product-copy ${styles.productCopy}`}>
                           <h3>{product.name}</h3>
 
                           <p>
@@ -1760,15 +1781,15 @@ export default function Home() {
                           </p>
                         </div>
 
-                        <div className="commander-product-footer">
-                          <div className="commander-product-price">
+                        <div className={`commander-product-footer ${styles.productFooter}`}>
+                          <div className={`commander-product-price ${styles.productPrice}`}>
                             {euro(product.price)}
                           </div>
 
                           {isFormula ? (
                             <button
                               type="button"
-                              className="commander-add-button"
+                              className={`commander-add-button ${styles.addButton}`}
                               onClick={() =>
                                 openFormula(product)
                               }
@@ -1778,7 +1799,7 @@ export default function Home() {
                             </button>
                           ) : productQuantity > 0 ? (
                             <div
-                              className="commander-quantity"
+                              className={`commander-quantity ${styles.quantity}`}
                               aria-label={`Quantité de ${product.name}`}
                             >
                               <button
@@ -1814,7 +1835,7 @@ export default function Home() {
                           ) : (
                             <button
                               type="button"
-                              className="commander-add-button"
+                              className={`commander-add-button ${styles.addButton}`}
                               onClick={() =>
                                 addProduct(product.id)
                               }

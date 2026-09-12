@@ -294,3 +294,531 @@
     font-size: 15px !important;
   }
 }
+
+/* =========================================================
+   VUE PRODUITS / CATÉGORIE — VERSION NETTOYÉE
+   Une seule source de vérité, sans empilement V8/V9/V10.
+   Les sélecteurs sont volontairement plus spécifiques que
+   les anciennes règles globales .commander-modern ...
+   ========================================================= */
+
+.page:global(.commander-modern) .productReturn {
+  position: relative;
+  z-index: 4;
+  margin: 0 0 6px 2px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #174825 !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+.page:global(.commander-modern) .productHeader {
+  position: relative;
+  min-height: 82px;
+  margin: 0 0 8px;
+  padding: 4px 4px 0;
+}
+
+.page:global(.commander-modern) .productHeaderText {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: calc(100% - 92px);
+}
+
+.page:global(.commander-modern) .productHeader h1 {
+  margin: 0;
+  color: #174825;
+  font-size: clamp(38px, 11.5vw, 48px);
+  line-height: 0.98;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.page:global(.commander-modern) .productAccent {
+  position: relative;
+  width: 38px;
+  height: 40px;
+  flex: 0 0 38px;
+}
+
+.page:global(.commander-modern) .productAccent::before,
+.page:global(.commander-modern) .productAccent::after {
+  content: "";
+  position: absolute;
+  display: block;
+  width: 28px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ffd400;
+}
+
+.page:global(.commander-modern) .productAccent::before {
+  top: 7px;
+  left: 0;
+  transform: rotate(-52deg);
+}
+
+.page:global(.commander-modern) .productAccent::after {
+  top: 23px;
+  left: 12px;
+  transform: rotate(-24deg);
+}
+
+.page:global(.commander-modern) .productBasil {
+  position: absolute;
+  z-index: 1;
+  top: -28px;
+  right: -14px;
+  width: 112px;
+  height: auto;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.page:global(.commander-modern) .productCategoryNav {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 25 !important;
+  display: flex !important;
+  gap: 8px !important;
+  width: calc(100% + 28px) !important;
+  margin: 0 -14px 10px !important;
+  padding: 4px 14px 10px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  background: rgba(251, 251, 249, 0.96) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 0 !important;
+}
+
+.page:global(.commander-modern) .productCategoryNav::-webkit-scrollbar {
+  display: none;
+}
+
+.page:global(.commander-modern) .productCategoryChip {
+  flex: 0 0 auto !important;
+  min-height: 42px !important;
+  padding: 9px 17px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #174825 !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 4px 12px rgba(38, 48, 34, 0.07) !important;
+  scroll-snap-align: start;
+}
+
+.page:global(.commander-modern) .productCategoryChipActive {
+  background: #5a7f0d !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(90, 127, 13, 0.16) !important;
+}
+
+.page:global(.commander-modern) .productList {
+  width: 100% !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 9px !important;
+}
+
+/* Cartes : ces règles prennent réellement le dessus sur globals.css */
+.page:global(.commander-modern) .productCard {
+  width: 100% !important;
+  min-height: 132px !important;
+  margin: 0 !important;
+  display: grid !important;
+  grid-template-columns: 132px minmax(0, 1fr) !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 22px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(38, 48, 34, 0.055) !important;
+}
+
+.page:global(.commander-modern) .productImage {
+  width: 132px !important;
+  min-width: 132px !important;
+  height: 132px !important;
+  min-height: 132px !important;
+  padding: 8px 0 8px 8px !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+}
+
+.page:global(.commander-modern) .productImage img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  border-radius: 16px !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+.page:global(.commander-modern) .productContent {
+  min-width: 0 !important;
+  padding: 12px 12px 11px 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.page:global(.commander-modern) .productCopy {
+  min-width: 0;
+}
+
+.page:global(.commander-modern) .productCopy h3 {
+  margin: 0 0 4px !important;
+  color: #174825 !important;
+  font-size: 17px !important;
+  line-height: 1.08 !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em;
+}
+
+.page:global(.commander-modern) .productCopy p {
+  margin: 0 !important;
+  color: #62645f !important;
+  font-size: 12.5px !important;
+  line-height: 1.3 !important;
+  font-weight: 400 !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.page:global(.commander-modern) .productFooter {
+  width: 100% !important;
+  margin-top: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+}
+
+.page:global(.commander-modern) .productPrice {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 34px !important;
+  padding: 7px 12px !important;
+  border-radius: 999px !important;
+  background: #edf6df !important;
+  color: #174825 !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+}
+
+.page:global(.commander-modern) .addButton {
+  flex: 0 0 auto !important;
+  min-height: 42px !important;
+  padding: 9px 16px !important;
+  border: 0 !important;
+  border-radius: 15px !important;
+  background: #5a7f0d !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  font-weight: 650 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 3px 9px rgba(90, 127, 13, 0.14) !important;
+}
+
+.page:global(.commander-modern) .addButton:active {
+  transform: scale(0.98);
+}
+
+.page:global(.commander-modern) .quantity {
+  flex: 0 0 auto !important;
+  min-height: 42px !important;
+  display: grid !important;
+  grid-template-columns: 40px 38px 40px !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(90, 127, 13, 0.14) !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+}
+
+.page:global(.commander-modern) .quantity button {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #5a7f0d !important;
+  color: #ffffff !important;
+  font-size: 21px !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+}
+
+.page:global(.commander-modern) .quantity span {
+  min-width: 38px !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #174825 !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+}
+
+@media (max-width: 380px) {
+  .page:global(.commander-modern) .productHeader {
+    min-height: 76px;
+  }
+
+  .page:global(.commander-modern) .productHeader h1 {
+    font-size: 37px;
+  }
+
+  .page:global(.commander-modern) .productBasil {
+    top: -22px;
+    right: -10px;
+    width: 96px;
+  }
+
+  .page:global(.commander-modern) .productCategoryNav {
+    width: calc(100% + 20px) !important;
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .page:global(.commander-modern) .productCategoryChip {
+    min-height: 39px !important;
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+  }
+
+  .page:global(.commander-modern) .productCard {
+    min-height: 122px !important;
+    grid-template-columns: 116px minmax(0, 1fr) !important;
+  }
+
+  .page:global(.commander-modern) .productImage {
+    width: 116px !important;
+    min-width: 116px !important;
+    height: 122px !important;
+    min-height: 122px !important;
+    padding: 7px 0 7px 7px !important;
+  }
+
+  .page:global(.commander-modern) .productContent {
+    padding: 10px 9px 9px 10px !important;
+    gap: 6px !important;
+  }
+
+  .page:global(.commander-modern) .productCopy h3 {
+    font-size: 15.5px !important;
+  }
+
+  .page:global(.commander-modern) .productCopy p {
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+  }
+
+  .page:global(.commander-modern) .productPrice {
+    min-height: 31px !important;
+    padding: 6px 9px !important;
+    font-size: 12.5px !important;
+  }
+
+  .page:global(.commander-modern) .addButton {
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .page:global(.commander-modern) .quantity {
+    min-height: 38px !important;
+    grid-template-columns: 34px 30px 34px !important;
+  }
+
+  .page:global(.commander-modern) .quantity button {
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+  }
+
+  .page:global(.commander-modern) .quantity span {
+    min-width: 30px !important;
+    font-size: 12.5px !important;
+  }
+}
+
+@media (min-width: 381px) and (max-width: 430px) {
+  .page:global(.commander-modern) .productCard {
+    min-height: 128px !important;
+    grid-template-columns: 128px minmax(0, 1fr) !important;
+  }
+
+  .page:global(.commander-modern) .productImage {
+    width: 128px !important;
+    min-width: 128px !important;
+    height: 128px !important;
+    min-height: 128px !important;
+  }
+}
+
+@media (min-width: 641px) {
+  .page:global(.commander-modern) .productHeader,
+  .page:global(.commander-modern) .productCategoryNav,
+  .page:global(.commander-modern) .productList {
+    max-width: 900px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .page:global(.commander-modern) .productCategoryNav {
+    width: 100% !important;
+    padding-inline: 0 !important;
+  }
+
+  .page:global(.commander-modern) .productCard {
+    grid-template-columns: 150px minmax(0, 1fr) !important;
+    min-height: 130px !important;
+  }
+
+  .page:global(.commander-modern) .productImage {
+    width: 150px !important;
+    min-width: 150px !important;
+    height: 130px !important;
+    min-height: 130px !important;
+  }
+}
+
+/* =========================================================
+   V12 — MICRO-AJUSTEMENT FINAL CARTES PRODUITS
+   Uniquement : hauteur, lisibilité prix/boutons, séparation photo
+   ========================================================= */
+
+.page:global(.commander-modern) .productCard {
+  min-height: 140px !important;
+}
+
+.page:global(.commander-modern) .productImage {
+  height: 140px !important;
+  min-height: 140px !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+}
+
+.page:global(.commander-modern) .productImage::before,
+.page:global(.commander-modern) .productImage::after {
+  display: none !important;
+  content: none !important;
+}
+
+.page:global(.commander-modern) .productContent {
+  border-left: 0 !important;
+  box-shadow: none !important;
+}
+
+.page:global(.commander-modern) .productPrice {
+  min-height: 36px !important;
+  padding: 8px 13px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.page:global(.commander-modern) .addButton {
+  min-height: 44px !important;
+  padding: 10px 17px !important;
+  font-size: 13.5px !important;
+}
+
+.page:global(.commander-modern) .quantity {
+  min-height: 44px !important;
+  grid-template-columns: 42px 40px 42px !important;
+}
+
+.page:global(.commander-modern) .quantity button {
+  width: 42px !important;
+  min-width: 42px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+}
+
+.page:global(.commander-modern) .quantity span {
+  min-width: 40px !important;
+  font-size: 15px !important;
+}
+
+@media (max-width: 380px) {
+  .page:global(.commander-modern) .productCard {
+    min-height: 128px !important;
+  }
+
+  .page:global(.commander-modern) .productImage {
+    height: 128px !important;
+    min-height: 128px !important;
+  }
+
+  .page:global(.commander-modern) .productPrice {
+    min-height: 33px !important;
+    padding: 7px 10px !important;
+    font-size: 13px !important;
+  }
+
+  .page:global(.commander-modern) .addButton {
+    min-height: 40px !important;
+    padding: 9px 11px !important;
+    font-size: 12px !important;
+  }
+
+  .page:global(.commander-modern) .quantity {
+    min-height: 40px !important;
+    grid-template-columns: 36px 32px 36px !important;
+  }
+
+  .page:global(.commander-modern) .quantity button {
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+  }
+
+  .page:global(.commander-modern) .quantity span {
+    min-width: 32px !important;
+    font-size: 13px !important;
+  }
+}
+
+@media (min-width: 381px) and (max-width: 430px) {
+  .page:global(.commander-modern) .productCard {
+    min-height: 136px !important;
+  }
+
+  .page:global(.commander-modern) .productImage {
+    height: 136px !important;
+    min-height: 136px !important;
+  }
+}
+
