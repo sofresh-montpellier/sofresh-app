@@ -822,3 +822,62 @@
   }
 }
 
+/* =========================================================
+   V13 — HEADER CATÉGORIES PLUS COMPACT
+   Uniquement l'espacement vertical du header des pages catégories.
+   Aucun changement sur les cartes, onglets, basilic, panier ou nav basse.
+   ========================================================= */
+
+/* Seulement quand une page catégorie est ouverte */
+.page:has(.productHeader) {
+  padding-top:
+    max(
+      8px,
+      env(safe-area-inset-top, 0px)
+    ) !important;
+}
+
+/* Retour plus proche du haut et du titre */
+.page:global(.commander-modern) .productReturn {
+  margin-top: 0 !important;
+  margin-bottom: 2px !important;
+}
+
+/* Même titre, mêmes dimensions ; on réduit seulement l'espace réservé */
+.page:global(.commander-modern) .productHeader {
+  min-height: 60px !important;
+  margin-top: 0 !important;
+  margin-bottom: 2px !important;
+  padding-top: 0 !important;
+}
+
+/* Les onglets gardent exactement leur design ; moins d'air autour */
+.page:global(.commander-modern) .productCategoryNav {
+  margin-top: 0 !important;
+  margin-bottom: 8px !important;
+  padding-top: 2px !important;
+  padding-bottom: 6px !important;
+}
+
+/* Petits smartphones : même logique, sans réglage par modèle */
+@media (max-width: 380px) {
+  .page:has(.productHeader) {
+    padding-top:
+      max(
+        6px,
+        env(safe-area-inset-top, 0px)
+      ) !important;
+  }
+
+  .page:global(.commander-modern) .productHeader {
+    min-height: 56px !important;
+    margin-bottom: 1px !important;
+  }
+
+  .page:global(.commander-modern) .productCategoryNav {
+    margin-bottom: 7px !important;
+    padding-top: 1px !important;
+    padding-bottom: 5px !important;
+  }
+}
+
