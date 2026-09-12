@@ -1602,7 +1602,11 @@ export default function Home() {
 
   return (
     <>
-      <main className={`container commander-modern ${styles.page}`}>
+      <main
+        className={`container commander-modern ${styles.page} ${
+          cartCount > 0 ? styles.pageWithCart : ""
+        }`}
+      >
         {!loadingSettings &&
           settings &&
           !serviceOpen && (
@@ -1840,7 +1844,7 @@ export default function Home() {
         {cartCount > 0 && (
           <Link
             href="/panier"
-            className="commander-cart-summary"
+            className={`commander-cart-summary ${styles.cartDock}`}
           >
             <div className="commander-cart-summary-left">
               <div className="commander-cart-summary-icon">
