@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
+import { sendMail } from "../../../lib/mailer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -383,6 +384,203 @@ async function applyLoyalty(
   );
 }
 
+async function sendCustomerOrderEmail(order, session) {
+  const customerEmail =
+    session?.customer_details?.email ||
+    session?.customer_email;
+
+  if (!customerEmail) {
+    console.log(
+      "E-mail client non envoyé : aucune adresse e-mail disponible."
+    );
+    return;
+  }
+
+  const customerName =
+    order.customer_name?.trim() || "Client So Fresh";
+
+  const pickupDate = formatPickupDate(order.pickup_date);
+  const pickupTime =
+    order.pickup_time || "heure à confirmer";
+
+  const total = formatPrice(order.total);
+
+  const orderNumber =
+    order.order_number ||
+    order.order_number_display ||
+    order.id;
+
+  const items = Array.isArray(order.items)
+    ? order.items
+    : [];
+
+  const itemsHtml = items
+    .map((item) => {
+      const name =
+        item.name ||
+        item.title ||
+        item.product_name ||
+        "Article";
+
+      const quantity =
+        Number(item.quantity || item.qty || 1);
+
+      const price =
+        item.price ??
+        item.unit_price ??
+        item.total ??
+        null;
+
+      return `
+        <tr>
+          <td style="padding:8px 0;border-bottom:1px solid #eeeeee;">
+            ${name} × ${quantity}
+          </td>
+          <td style="padding:8px 0;border-bottom:1px solid #eeeeee;text-align:right;">
+            ${price !== null ? formatPrice(price) : ""}
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  await sendMail({
+    to: customerEmail,
+
+    subject: `Confirmation de votre commande So Fresh${
+      orderNumber ? ` - ${orderNumber}` : ""
+    }`,
+
+    text:
+      `Bonjour ${customerName},\n\n` +
+      `Votre commande So Fresh est confirmée.\n` +
+      `Retrait : ${pickupDate} à ${pickupTime}\n` +
+      `Total : ${total}\n\n` +
+      `Merci de votre confiance.\n` +
+      `L'équipe So Fresh`,
+
+    html: `
+      <div style="
+        max-width:600px;
+        margin:0 auto;
+        font-family:Arial,sans-serif;
+        color:#173d24;
+      ">
+
+        <div style="
+          background:#173d24;
+          color:white;
+          padding:28px;
+          text-align:center;
+          border-radius:18px 18px 0 0;
+        ">
+          <h1 style="margin:0;font-size:26px;">
+            So Fresh
+          </h1>
+
+          <p style="
+            margin:8px 0 0;
+            color:#d7ef55;
+            font-weight:bold;
+          ">
+            Commande confirmée
+          </p>
+        </div>
+
+        <div style="
+          background:#ffffff;
+          padding:28px;
+          border:1px solid #eeeeee;
+          border-radius:0 0 18px 18px;
+        ">
+
+          <p>
+            Bonjour <strong>${customerName}</strong>,
+          </p>
+
+          <p>
+            Merci pour votre commande.
+            Votre paiement a bien été confirmé.
+          </p>
+
+          ${
+            orderNumber
+              ? `
+                <p style="
+                  text-align:center;
+                  font-size:18px;
+                  font-weight:bold;
+                  margin:25px 0;
+                ">
+                  Commande ${orderNumber}
+                </p>
+              `
+              : ""
+          }
+
+          <div style="
+            background:#f5f8e8;
+            padding:18px;
+            border-radius:12px;
+            margin:20px 0;
+          ">
+            <strong>Votre retrait</strong>
+
+            <p style="margin:10px 0 0;">
+              ${pickupDate} à ${pickupTime}
+            </p>
+          </div>
+
+          ${
+            itemsHtml
+              ? `
+                <h3>Votre commande</h3>
+
+                <table style="
+                  width:100%;
+                  border-collapse:collapse;
+                ">
+                  ${itemsHtml}
+                </table>
+              `
+              : ""
+          }
+
+          <div style="
+            margin-top:20px;
+            padding-top:15px;
+            border-top:2px solid #173d24;
+            font-size:18px;
+            font-weight:bold;
+          ">
+            Total
+            <span style="float:right;">
+              ${total}
+            </span>
+          </div>
+
+          <p style="
+            margin-top:30px;
+            text-align:center;
+          ">
+            Votre commande sera préparée pour
+            votre créneau de retrait.
+          </p>
+
+          <p style="
+            margin-top:28px;
+            text-align:center;
+            color:#6d6d6d;
+          ">
+            Merci de votre confiance,<br>
+            <strong>L'équipe So Fresh</strong>
+          </p>
+
+        </div>
+      </div>
+    `,
+  });
+}
 export async function POST(request) {
   const stripeSecretKey =
     process.env.STRIPE_SECRET_KEY;
@@ -702,14 +900,30 @@ export async function POST(request) {
      * pas lors d'un retry Stripe.
      */
     if (
-      orderCreatedNow &&
-      createdOrder
-    ) {
-      await sendNewOrderNotification(
-        supabase,
-        createdOrder
-      );
-    }
+  orderCreatedNow &&
+  createdOrder
+) {
+  await sendNewOrderNotification(
+    supabase,
+    createdOrder
+  );
+
+  try {
+    await sendCustomerOrderEmail(
+      createdOrder,
+      session
+    );
+
+    console.log(
+      "E-mail de confirmation client envoyé."
+    );
+  } catch (emailError) {
+    console.error(
+      "Erreur e-mail confirmation client :",
+      emailError
+    );
+  }
+}
 
     return new Response(
       "ok",
