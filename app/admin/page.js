@@ -429,7 +429,27 @@ export default function OrdersPage() {
         }),
     [orders]
   );
+useEffect(() => {
+  async function syncAppBadge() {
+    if (typeof navigator === "undefined") return;
 
+    try {
+      if (waitingOrders.length > 0) {
+        if ("setAppBadge" in navigator) {
+          await navigator.setAppBadge(waitingOrders.length);
+        }
+      } else {
+        if ("clearAppBadge" in navigator) {
+          await navigator.clearAppBadge();
+        }
+      }
+    } catch (error) {
+      console.error("Erreur mise à jour pastille :", error);
+    }
+  }
+
+  syncAppBadge();
+}, [waitingOrders.length]);
   const groupedByDate = useMemo(() => {
     return waitingOrders.reduce(
       (groups, order) => {

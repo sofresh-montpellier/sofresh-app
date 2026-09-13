@@ -756,7 +756,126 @@ export async function POST(request) {
       });
     }
 
-    const total = items.reduce(
+    /*
+     * FIDÉLITÉ SO FRESH
+     * 1 formule réellement payée = 1 point.
+     * La 10e formule bénéficie de -50 %.
+     *
+     * À ce stade on prépare seulement la remise Stripe.
+     * Le compteur ne sera réellement crédité qu'après
+     * confirmation du paiement dans le webhook Stripe.
+     */
+    let loyaltyStartProgress = 0;
+
+    if (userId) {
+      const {
+        data: loyaltyAccount,
+        error: loyaltyError,
+      } = await supabaseAdmin
+        .from("loyalty_accounts")
+        .select("progress")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (loyaltyError) {
+        console.error(
+          "Erreur lecture fidélité :",
+          loyaltyError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "Votre fidélité ne peut pas être vérifiée pour le moment.",
+          },
+          { status: 503 }
+        );
+      }
+
+      loyaltyStartProgress = Math.max(
+        0,
+        Math.min(
+          9,
+          Number(loyaltyAccount?.progress || 0)
+        )
+      );
+    }
+
+    const loyaltyFormulaCount = items.reduce(
+      (sum, item) =>
+        sum +
+        (item.formula === true
+          ? Number(item.qty || 0)
+          : 0),
+      0
+    );
+
+    let simulatedProgress = loyaltyStartProgress;
+    let loyaltyDiscountCount = 0;
+    const stripeItems = [];
+
+    /*
+     * On découpe uniquement les lignes "Formule" si nécessaire.
+     * Cela permet de mettre -50 % uniquement sur chaque formule
+     * correspondant à une 10e formule, sans toucher aux autres articles.
+     */
+    for (const item of items) {
+      if (item.formula !== true) {
+        stripeItems.push({
+          ...item,
+          loyalty_discount: false,
+        });
+        continue;
+      }
+
+      let normalQty = 0;
+      let discountedQty = 0;
+
+      for (
+        let index = 0;
+        index < Number(item.qty || 0);
+        index += 1
+      ) {
+        simulatedProgress += 1;
+
+        if (simulatedProgress === 10) {
+          discountedQty += 1;
+          loyaltyDiscountCount += 1;
+          simulatedProgress = 0;
+        } else {
+          normalQty += 1;
+        }
+      }
+
+      if (normalQty > 0) {
+        stripeItems.push({
+          ...item,
+          qty: normalQty,
+          loyalty_discount: false,
+        });
+      }
+
+      if (discountedQty > 0) {
+        stripeItems.push({
+          ...item,
+          qty: discountedQty,
+          unit_price:
+            Math.round(
+              Number(item.unit_price) * 100 * 0.5
+            ) / 100,
+          base_unit_price:
+            Number(item.unit_price),
+          loyalty_discount: true,
+          loyalty_discount_percent: 50,
+        });
+      }
+    }
+
+    /*
+     * Le total enregistré correspond exactement au montant
+     * qui sera envoyé à Stripe, remise fidélité comprise.
+     */
+    const total = stripeItems.reduce(
       (sum, item) =>
         sum + item.unit_price * item.qty,
       0
@@ -776,9 +895,15 @@ export async function POST(request) {
         user_id: userId,
         pickup_date: pickupDate,
         pickup_time: pickupTime,
-        items,
+        items: stripeItems,
         total,
         status: "pending",
+        loyalty_start_progress:
+          loyaltyStartProgress,
+        loyalty_formula_count:
+          loyaltyFormulaCount,
+        loyalty_discount_count:
+          loyaltyDiscountCount,
       })
       .select("id")
       .single();
@@ -813,7 +938,7 @@ export async function POST(request) {
         // sur les appareils compatibles.
         payment_method_types: ["card"],
 
-        line_items: items.map((item) => {
+        line_items: stripeItems.map((item) => {
           const formulaDescription =
             item.formula &&
             Array.isArray(item.formula_selections)
@@ -835,7 +960,9 @@ export async function POST(request) {
               ),
 
               product_data: {
-                name: item.name,
+                name: item.loyalty_discount
+                  ? `${item.name} — Fidélité -50 %`
+                  : item.name,
                 ...(formulaDescription
                   ? {
                       description:

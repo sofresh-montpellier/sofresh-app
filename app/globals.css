@@ -11293,3 +11293,384 @@ header.home-header .home-header-action-active::after {
   margin-top: -55px !important;
   padding-top: 8px !important;
 }
+
+
+/* =========================================================
+   SO FRESH — ACCUEIL V2 — MAQUETTE VALIDÉE 12/09/2026
+   STRICTEMENT ISOLÉ À .home-v2
+   ========================================================= */
+
+@media (max-width: 430px) {
+  .home-v2 {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    background: #fbfbf9 !important;
+  }
+
+  /* RESTAURANT — photo à gauche / infos à droite */
+  .home-v2 .home-restaurant-card {
+    margin: 12px 14px 12px !important;
+    padding: 11px !important;
+    border-radius: 22px !important;
+    background: #fff !important;
+    box-shadow: 0 7px 20px rgba(38,48,34,.07) !important;
+  }
+
+  .home-v2 .home-restaurant-content {
+    display: grid !important;
+    grid-template-columns: 45% minmax(0,1fr) !important;
+    gap: 11px !important;
+    align-items: stretch !important;
+  }
+
+  .home-v2 .home-facade {
+    width: 100% !important;
+    height: 172px !important;
+    min-height: 172px !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    border-radius: 15px !important;
+  }
+
+  .home-v2 .home-restaurant-info {
+    min-width: 0 !important;
+    height: 172px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+  }
+
+  .home-v2 .home-restaurant-title {
+    display: grid !important;
+    grid-template-columns: 24px minmax(0,1fr) !important;
+    align-items: start !important;
+    gap: 7px !important;
+    margin: 0 !important;
+  }
+
+  .home-v2 .home-restaurant-title > svg {
+    width: 23px !important;
+    height: 23px !important;
+    margin-top: 1px !important;
+    color: #5a7f0d !important;
+  }
+
+  .home-v2 .home-restaurant-title strong {
+    color: #174825 !important;
+    font-size: 12.5px !important;
+    line-height: 1.08 !important;
+    font-weight: 800 !important;
+  }
+
+  .home-v2 .home-restaurant-title span {
+    margin-top: 4px !important;
+    color: #666b63 !important;
+    font-size: 9.8px !important;
+    line-height: 1.16 !important;
+  }
+
+  .home-v2 .home-opening {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 24px minmax(0,1fr) !important;
+    align-items: center !important;
+    gap: 7px !important;
+    padding: 7px 9px !important;
+    border-radius: 999px !important;
+    background: #edf6df !important;
+    color: #174825 !important;
+  }
+
+  .home-v2 .home-opening svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .home-v2 .home-opening strong {
+    font-size: 10.5px !important;
+    line-height: 1.05 !important;
+  }
+
+  .home-v2 .home-opening span {
+    margin-top: 1px !important;
+    font-size: 8.5px !important;
+    line-height: 1.05 !important;
+  }
+
+  .home-v2 .home-restaurant-actions {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+    grid-template-rows: 1fr !important;
+    gap: 5px !important;
+  }
+
+  .home-v2 .home-restaurant-action {
+    height: 50px !important;
+    min-height: 50px !important;
+    padding: 4px 1px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    text-align: center !important;
+    border: 1px solid rgba(90,127,13,.14) !important;
+    border-radius: 11px !important;
+    background: #fff !important;
+    color: #5a7f0d !important;
+    box-shadow: 0 2px 7px rgba(38,48,34,.045) !important;
+  }
+
+  .home-v2 .home-restaurant-action svg {
+    display: block !important;
+    width: 19px !important;
+    height: 19px !important;
+    margin: 0 auto !important;
+    color: #5a7f0d !important;
+    stroke: currentColor !important;
+    fill: none !important;
+  }
+
+  .home-v2 .home-restaurant-action strong {
+    width: 100% !important;
+    margin: 0 !important;
+    color: #174825 !important;
+    font-size: 8px !important;
+    line-height: 1 !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+  }
+
+  /* RACCOURCIS — proportions de la maquette validée */
+  .home-v2 .home-shortcuts {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    padding: 0 14px 10px !important;
+  }
+
+  .home-v2 .home-shortcut {
+    min-height: 92px !important;
+    height: 92px !important;
+    display: grid !important;
+    grid-template-columns: 42px minmax(0,1fr) 14px !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    border-radius: 18px !important;
+  }
+
+  .home-v2 .home-shortcut.loyalty {
+    background: linear-gradient(135deg,#eef7e4 0%,#e5f0d8 100%) !important;
+  }
+
+  .home-v2 .home-shortcut.reorder {
+    background: linear-gradient(135deg,#fff8df 0%,#fff0c7 100%) !important;
+  }
+
+  .home-v2 .home-shortcut-icon {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .home-v2 .home-shortcut-icon svg {
+    width: 23px !important;
+    height: 23px !important;
+  }
+
+  .home-v2 .home-shortcut.reorder .home-shortcut-icon {
+    background: #f2a000 !important;
+    color: #fff !important;
+  }
+
+  .home-v2 .home-shortcut-text {
+    gap: 4px !important;
+  }
+
+  .home-v2 .home-shortcut-text strong {
+    color: #174825 !important;
+    font-size: 12.5px !important;
+    line-height: 1.05 !important;
+    font-weight: 800 !important;
+  }
+
+  .home-v2 .home-shortcut-text span {
+    color: #315331 !important;
+    font-size: 9px !important;
+    line-height: 1.18 !important;
+  }
+
+  .home-v2 .home-shortcut-arrow {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  /* BANDEAU EXACT VALIDÉ */
+  .home-v2 .home-fresh-banner {
+    width: auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    aspect-ratio: 370 / 61 !important;
+    margin: 0 14px 0 !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    background: url("/bandeau-produits-frais.png") center / cover no-repeat !important;
+  }
+
+  .home-v2 .home-fresh-banner::after,
+  .home-v2 .home-fresh-image,
+  .home-v2 .home-fresh-content {
+    display: none !important;
+  }
+}
+
+
+/* =========================================================
+   SO FRESH — ACCUEIL V2 — AJUSTEMENT FINAL PROPORTIONS 393
+   UNIQUEMENT .home-v2 — aucun impact sur Commander/autres pages
+   ========================================================= */
+@media (min-width: 391px) and (max-width: 395px) {
+
+  /* Le contenu se termine juste après le bandeau.
+     La nav reste fixe et inchangée. */
+  .home-v2 {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Restaurant plus proche des proportions de la maquette validée */
+  .home-v2 .home-restaurant-card {
+    margin: 14px 14px 12px !important;
+    padding: 12px !important;
+  }
+
+  .home-v2 .home-restaurant-content {
+    grid-template-columns: 45% minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .home-v2 .home-facade,
+  .home-v2 .home-restaurant-info {
+    height: 196px !important;
+    min-height: 196px !important;
+    max-height: 196px !important;
+  }
+
+  .home-v2 .home-restaurant-title {
+    grid-template-columns: 27px minmax(0,1fr) !important;
+    gap: 8px !important;
+  }
+
+  .home-v2 .home-restaurant-title > svg {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .home-v2 .home-restaurant-title strong {
+    font-size: 14px !important;
+    line-height: 1.08 !important;
+  }
+
+  .home-v2 .home-restaurant-title span {
+    font-size: 10.5px !important;
+    line-height: 1.18 !important;
+  }
+
+  .home-v2 .home-opening {
+    grid-template-columns: 27px minmax(0,1fr) !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+  }
+
+  .home-v2 .home-opening svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .home-v2 .home-opening strong {
+    font-size: 12px !important;
+  }
+
+  .home-v2 .home-opening span {
+    font-size: 9.5px !important;
+  }
+
+  /* Trois boutons strictement identiques et centrés */
+  .home-v2 .home-restaurant-actions {
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+    gap: 6px !important;
+    align-items: stretch !important;
+  }
+
+  .home-v2 .home-restaurant-action {
+    width: 100% !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 5px 1px !important;
+    text-align: center !important;
+  }
+
+  .home-v2 .home-restaurant-action svg {
+    width: 22px !important;
+    height: 22px !important;
+    flex: 0 0 22px !important;
+    margin: 0 auto !important;
+  }
+
+  .home-v2 .home-restaurant-action strong {
+    display: block !important;
+    width: 100% !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
+  /* Raccourcis plus généreux et lisibles */
+  .home-v2 .home-shortcuts {
+    gap: 11px !important;
+    padding: 0 14px 11px !important;
+  }
+
+  .home-v2 .home-shortcut {
+    height: 104px !important;
+    min-height: 104px !important;
+    grid-template-columns: 46px minmax(0,1fr) 15px !important;
+    gap: 9px !important;
+    padding: 11px !important;
+  }
+
+  .home-v2 .home-shortcut-icon {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  .home-v2 .home-shortcut-icon svg {
+    width: 25px !important;
+    height: 25px !important;
+  }
+
+  .home-v2 .home-shortcut-text strong {
+    font-size: 14px !important;
+    line-height: 1.08 !important;
+  }
+
+  .home-v2 .home-shortcut-text span {
+    font-size: 10.5px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Bandeau validé : inchangé */
+  .home-v2 .home-fresh-banner {
+    margin-bottom: 0 !important;
+  }
+}

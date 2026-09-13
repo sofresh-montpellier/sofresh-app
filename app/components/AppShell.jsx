@@ -23,7 +23,8 @@ export default function AppShell({ children }) {
 
   const isAccueil = pathname === "/" || pathname.startsWith("/accueil-v2");
   const isCommander = pathname.startsWith("/commander") || pathname.startsWith("/panier");
-  const isCompte = pathname.startsWith("/compte");
+  const isCompte =
+    pathname.startsWith("/compte") || pathname.startsWith("/acces-commande");
 
   return (
     <>

@@ -164,6 +164,19 @@ function HeartIcon() {
   );
 }
 
+const BASIL_IMAGE = "/basil-commander.png";
+
+function BasilDecoration() {
+  return (
+    <img
+      className="payment-success-basil"
+      src={BASIL_IMAGE}
+      alt=""
+      aria-hidden="true"
+    />
+  );
+}
+
 function ArrowIcon() {
   return (
     <svg
@@ -215,61 +228,246 @@ function formatPickupDate(value) {
   );
 }
 
+function formatPickupTime(value) {
+  if (!value) return "";
+
+  return String(value)
+    .replace(/\s*[Hh:]\s*/, " h ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /* =========================
    PAGE
 ========================= */
 
 export default function PaymentSuccessPage() {
-  const [pickupDate, setPickupDate] =
-    useState("");
-
-  const [pickupTime, setPickupTime] =
-    useState("");
-
-  const [orderItems, setOrderItems] =
-    useState([]);
-
-  const [orderTotal, setOrderTotal] =
-    useState(0);
+  const [pickupDate, setPickupDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
+  const [orderItems, setOrderItems] = useState([]);
+  const [orderTotal, setOrderTotal] = useState(0);
+  const [orderNumber, setOrderNumber] = useState("");
+  const [orderId, setOrderId] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadConfirmation() {
       const savedDate =
-        localStorage.getItem(
-          "sofresh_pickup_date"
-        ) || "";
+        localStorage.getItem("sofresh_pickup_date") || "";
 
       const savedTime =
-        localStorage.getItem(
-          "sofresh_pickup_time"
-        ) || "";
+        localStorage.getItem("sofresh_pickup_time") || "";
 
-      setPickupDate(savedDate);
-      setPickupTime(savedTime);
-
-      /*
-       * On récupère le panier AVANT de l'effacer,
-       * afin d'afficher le récapitulatif.
-       */
-      let savedCart = {};
-
-      try {
-        savedCart = JSON.parse(
-          localStorage.getItem(
-            "sofresh_cart"
-          ) || "{}"
-        );
-      } catch (error) {
-        console.error(
-          "Erreur lecture panier :",
-          error
-        );
-
-        savedCart = {};
+      if (!cancelled) {
+        setPickupDate(savedDate);
+        setPickupTime(savedTime);
       }
 
-      const cartEntries =
-        Object.entries(savedCart).filter(
+      const sessionId = new URLSearchParams(
+        window.location.search
+      ).get("session_id");
+
+      let orderLoadedFromSupabase = false;
+
+      /* =========================================
+         1. PRIORITÉ : LA VRAIE COMMANDE SUPABASE
+         =========================================
+
+         La page de confirmation ne dépend plus du panier local.
+         On recharge la commande enregistrée grâce au session_id Stripe.
+         Le webhook peut avoir un léger délai : on retente quelques fois.
+      */
+
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          if (user) {
+            for (let attempt = 0; attempt < 10; attempt += 1) {
+              let order = null;
+
+              if (sessionId) {
+                const { data: exactOrder, error: exactError } =
+                  await supabase
+                    .from("orders")
+                    .select(`
+                      id,
+                      order_number,
+                      pickup_date,
+                      pickup_time,
+                      total,
+                      items,
+                      payment_status,
+                      stripe_session_id,
+                      created_at
+                    `)
+                    .eq("user_id", user.id)
+                    .eq("stripe_session_id", sessionId)
+                    .maybeSingle();
+
+                if (exactError) {
+                  console.error(
+                    "Erreur chargement commande Stripe :",
+                    exactError
+                  );
+                }
+
+                order = exactOrder || null;
+              }
+
+              /*
+               * Sécurité de secours si la colonne session n'est pas encore
+               * renseignée au moment précis du retour Stripe.
+               */
+              if (!order) {
+                let fallbackQuery = supabase
+                  .from("orders")
+                  .select(`
+                    id,
+                    order_number,
+                    pickup_date,
+                    pickup_time,
+                    total,
+                    items,
+                    payment_status,
+                    stripe_session_id,
+                    created_at
+                  `)
+                  .eq("user_id", user.id)
+                  .order("created_at", { ascending: false })
+                  .limit(1);
+
+                /*
+                 * Ne pas filtrer le secours par date/heure : le format
+                 * local (ex. « 11 h 50 ») peut différer du format stocké
+                 * dans Supabase. On prend simplement la dernière commande
+                 * du client connecté.
+                 */
+
+                const {
+                  data: fallbackOrder,
+                  error: fallbackError,
+                } = await fallbackQuery.maybeSingle();
+
+                if (fallbackError) {
+                  console.error(
+                    "Erreur chargement commande de secours :",
+                    fallbackError
+                  );
+                }
+
+                order = fallbackOrder || null;
+              }
+
+              if (order) {
+                let rawItems = order.items;
+
+                if (typeof rawItems === "string") {
+                  try {
+                    rawItems = JSON.parse(rawItems);
+                  } catch (error) {
+                    console.error(
+                      "Erreur lecture des articles de la commande :",
+                      error
+                    );
+                    rawItems = [];
+                  }
+                }
+
+                const normalizedItems = Array.isArray(rawItems)
+                  ? rawItems.map((item, index) => {
+                      const selections = Array.isArray(
+                        item?.formula_selections
+                      )
+                        ? item.formula_selections
+                        : Array.isArray(item?.selections)
+                        ? item.selections
+                        : [];
+
+                      return {
+                        id:
+                          item?.id ||
+                          `order-item-${index}`,
+                        name:
+                          item?.formula_name ||
+                          item?.name ||
+                          "Produit",
+                        price: Number(
+                          item?.unit_price ||
+                            item?.price ||
+                            0
+                        ),
+                        quantity: Number(
+                          item?.qty ||
+                            item?.quantity ||
+                            1
+                        ),
+                        formula:
+                          item?.formula === true ||
+                          selections.length > 0,
+                        selections,
+                      };
+                    })
+                  : [];
+
+                if (!cancelled) {
+                  setOrderId(order.id || "");
+                  setOrderNumber(order.order_number || "");
+                  setPickupDate(
+                    order.pickup_date || savedDate
+                  );
+                  setPickupTime(
+                    order.pickup_time || savedTime
+                  );
+                  setOrderItems(normalizedItems);
+                  setOrderTotal(
+                    Number(order.total || 0)
+                  );
+                }
+
+                orderLoadedFromSupabase = true;
+                break;
+              }
+
+              if (attempt < 9) {
+                await new Promise((resolve) =>
+                  setTimeout(resolve, 700)
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.error(
+            "Erreur chargement confirmation Supabase :",
+            error
+          );
+        }
+      }
+
+      /* =========================================
+         2. SECOURS : PANIER LOCAL
+         =========================================
+
+         Utile uniquement si le webhook Stripe n'a pas encore créé la
+         commande. Dans le fonctionnement normal, Supabase est la source.
+      */
+
+      if (!orderLoadedFromSupabase) {
+        let savedCart = {};
+
+        try {
+          savedCart = JSON.parse(
+            localStorage.getItem("sofresh_cart") || "{}"
+          );
+        } catch (error) {
+          console.error("Erreur lecture panier :", error);
+          savedCart = {};
+        }
+
+        const cartEntries = Object.entries(savedCart).filter(
           ([, entry]) => {
             if (
               typeof entry === "object" &&
@@ -282,17 +480,8 @@ export default function PaymentSuccessPage() {
           }
         );
 
-      if (cartEntries.length > 0) {
-        /*
-         * Les formules contiennent déjà dans le panier
-         * leur nom, leur prix et les choix effectués.
-         *
-         * Les produits classiques continuent d'être
-         * relus dans Supabase afin de conserver
-         * le fonctionnement existant.
-         */
-        const classicEntries =
-          cartEntries.filter(
+        if (cartEntries.length > 0) {
+          const classicEntries = cartEntries.filter(
             ([, entry]) =>
               !(
                 typeof entry === "object" &&
@@ -300,158 +489,101 @@ export default function PaymentSuccessPage() {
               )
           );
 
-        let classicProducts = [];
+          let classicProducts = [];
 
-        if (
-          classicEntries.length > 0 &&
-          isSupabaseConfigured &&
-          supabase
-        ) {
-          const productIds =
-            classicEntries.map(
+          if (
+            classicEntries.length > 0 &&
+            isSupabaseConfigured &&
+            supabase
+          ) {
+            const productIds = classicEntries.map(
               ([id]) => id
             );
 
-          const {
-            data,
-            error,
-          } = await supabase
-            .from("products")
-            .select(
-              "id, name, price"
-            )
-            .in(
-              "id",
-              productIds
-            );
+            const { data, error } = await supabase
+              .from("products")
+              .select("id, name, price")
+              .in("id", productIds);
 
-          if (error) {
-            console.error(
-              "Erreur chargement récapitulatif :",
-              error
-            );
-          } else {
-            classicProducts = data || [];
+            if (error) {
+              console.error(
+                "Erreur chargement récapitulatif :",
+                error
+              );
+            } else {
+              classicProducts = data || [];
+            }
           }
-        }
 
-        const items =
-          cartEntries
-            .map(
-              ([id, entry]) => {
-                /*
-                 * FORMULE
-                 */
-                if (
-                  typeof entry === "object" &&
-                  entry?.type === "formula"
-                ) {
-                  return {
-                    id:
-                      entry.formula_product_id ||
-                      id,
-
-                    name:
-                      entry.name ||
-                      "Formule",
-
-                    price:
-                      Number(
-                        entry.price || 0
-                      ),
-
-                    quantity:
-                      Number(
-                        entry.qty || 1
-                      ),
-
-                    formula: true,
-
-                    selections:
-                      Array.isArray(
-                        entry.selections
-                      )
-                        ? entry.selections
-                        : [],
-                  };
-                }
-
-                /*
-                 * PRODUIT CLASSIQUE
-                 */
-                const product =
-                  classicProducts.find(
-                    (currentProduct) =>
-                      String(
-                        currentProduct.id
-                      ) ===
-                      String(id)
-                  );
-
-                if (!product) {
-                  return null;
-                }
-
+          const items = cartEntries
+            .map(([id, entry]) => {
+              if (
+                typeof entry === "object" &&
+                entry?.type === "formula"
+              ) {
                 return {
-                  id:
-                    product.id,
-
-                  name:
-                    product.name,
-
-                  price:
-                    Number(
-                      product.price
-                    ),
-
-                  quantity:
-                    Number(
-                      entry
-                    ),
-
-                  formula: false,
-
-                  selections: [],
+                  id: entry.formula_product_id || id,
+                  name: entry.name || "Formule",
+                  price: Number(entry.price || 0),
+                  quantity: Number(entry.qty || 1),
+                  formula: true,
+                  selections: Array.isArray(
+                    entry.selections
+                  )
+                    ? entry.selections
+                    : [],
                 };
               }
-            )
+
+              const product = classicProducts.find(
+                (currentProduct) =>
+                  String(currentProduct.id) === String(id)
+              );
+
+              if (!product) return null;
+
+              return {
+                id: product.id,
+                name: product.name,
+                price: Number(product.price),
+                quantity: Number(entry),
+                formula: false,
+                selections: [],
+              };
+            })
             .filter(Boolean);
 
-        setOrderItems(items);
-
-        const total =
-          items.reduce(
-            (
-              sum,
-              item
-            ) =>
-              sum +
-              item.price *
-                item.quantity,
-            0
-          );
-
-        setOrderTotal(total);
+          if (!cancelled) {
+            setOrderItems(items);
+            setOrderTotal(
+              items.reduce(
+                (sum, item) =>
+                  sum + item.price * item.quantity,
+                0
+              )
+            );
+          }
+        }
       }
 
       /*
-       * Le panier client est maintenant vidé.
+       * Le panier n'est vidé qu'après avoir essayé de charger la vraie
+       * commande et préparé le récapitulatif de secours.
        */
-      localStorage.removeItem(
-        "sofresh_cart"
-      );
+      localStorage.removeItem("sofresh_cart");
 
       window.dispatchEvent(
-        new CustomEvent(
-          "sofresh-cart-count",
-          {
-            detail: 0,
-          }
-        )
+        new CustomEvent("sofresh-cart-count", {
+          detail: 0,
+        })
       );
     }
 
     loadConfirmation();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -459,10 +591,10 @@ export default function PaymentSuccessPage() {
       <main
         className="payment-success-page"
         style={{
-          minHeight: "100vh",
-          padding: "36px 16px 60px",
-          background:
-            "linear-gradient(180deg, #F8F7DC 0%, #FBFAEE 100%)",
+          minHeight: "100dvh",
+          padding:
+            "calc(28px + env(safe-area-inset-top)) 16px calc(132px + env(safe-area-inset-bottom))",
+          background: "#FFFFFF",
         }}
       >
         <div
@@ -470,16 +602,19 @@ export default function PaymentSuccessPage() {
           style={{
             maxWidth: "620px",
             margin: "0 auto",
-            background: "#ffffff",
-            borderRadius: "28px",
-            padding: "42px 34px 34px",
-            boxShadow:
-              "0 18px 45px rgba(82,104,26,.13)",
-            border:
-              "1px solid #EEF1DE",
+            background: "transparent",
+            borderRadius: "0",
+            padding: "28px 28px 30px",
+            boxShadow: "none",
+            border: "none",
             textAlign: "center",
+            position: "relative",
+            overflow: "hidden",
           }}
         >
+          <BasilDecoration />
+
+
           {/* CHECK */}
 
           <div
@@ -487,7 +622,7 @@ export default function PaymentSuccessPage() {
             style={{
               width: "100px",
               height: "100px",
-              margin: "0 auto 22px",
+              margin: "0 auto 16px",
               borderRadius: "50%",
               background: "#F2F6DD",
               color: "#5A7F0D",
@@ -499,29 +634,17 @@ export default function PaymentSuccessPage() {
             <CheckIcon />
           </div>
 
-          <div
-            className="payment-success-kicker"
-            style={{
-              color: "#5A7F0D",
-              fontSize: "13px",
-              fontWeight: "900",
-              letterSpacing: "1.4px",
-            }}
-          >
-            COMMANDE VALIDÉE
-          </div>
-
           <h1
             className="payment-success-title"
             style={{
-              margin: "12px 0 0",
+              margin: "0",
               color: "#17351E",
               fontSize: "38px",
               lineHeight: 1.1,
               fontWeight: "900",
             }}
           >
-            Paiement confirmé
+            Commande confirmée
           </h1>
 
           <div
@@ -530,7 +653,7 @@ export default function PaymentSuccessPage() {
               width: "110px",
               height: "4px",
               borderRadius: "99px",
-              margin: "18px auto 26px",
+              margin: "15px auto 20px",
               background: "#F2C94C",
             }}
           />
@@ -546,6 +669,24 @@ export default function PaymentSuccessPage() {
             Votre commande a bien été enregistrée.
           </p>
 
+          {orderNumber && (
+            <div
+              className="payment-success-order-number"
+              style={{
+                width: "fit-content",
+                margin: "14px auto 0",
+                padding: "7px 18px",
+                borderRadius: "999px",
+                background: "#F2F6DD",
+                color: "#17351E",
+                fontSize: "14px",
+                fontWeight: "800",
+              }}
+            >
+              Commande n° SF-{orderNumber}
+            </div>
+          )}
+
           {/* RETRAIT */}
 
           {(pickupDate ||
@@ -553,7 +694,7 @@ export default function PaymentSuccessPage() {
             <div
               className="payment-success-pickup"
               style={{
-                marginTop: "32px",
+                marginTop: "24px",
                 padding:
                   "27px 24px 30px",
                 border:
@@ -567,10 +708,10 @@ export default function PaymentSuccessPage() {
                 className="payment-success-pickup-title"
                 style={{
                   color: "#5A7F0D",
-                  fontSize: "19px",
+                  fontSize: "18px",
                   fontWeight: "900",
                   letterSpacing: ".5px",
-                  marginBottom: "25px",
+                  marginBottom: "20px",
                 }}
               >
                 VOTRE RETRAIT
@@ -711,8 +852,9 @@ export default function PaymentSuccessPage() {
                         "block",
                     }}
                   >
-                    {pickupTime ||
-                      "—"}
+                    {pickupTime
+                      ? formatPickupTime(pickupTime)
+                      : "—"}
                   </strong>
                 </div>
               </div>
@@ -725,7 +867,7 @@ export default function PaymentSuccessPage() {
             <div
               className="payment-success-order-summary"
               style={{
-                marginTop: "20px",
+                marginTop: "16px",
                 padding:
                   "20px 18px 17px",
                 borderRadius: "18px",
@@ -936,7 +1078,7 @@ export default function PaymentSuccessPage() {
           <div
             className="payment-success-preparation"
             style={{
-              margin: "28px auto",
+              margin: "22px auto",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
@@ -977,9 +1119,9 @@ export default function PaymentSuccessPage() {
           <div
             className="payment-success-divider"
             style={{
-              height: "1px",
-              background: "#E5EAD7",
-              marginBottom: "24px",
+              height: "0",
+              background: "transparent",
+              marginBottom: "8px",
             }}
           />
 
@@ -993,7 +1135,11 @@ export default function PaymentSuccessPage() {
             }}
           >
             <Link
-              href="/compte/commandes"
+              href={
+                orderId
+                  ? `/compte/commandes/${orderId}`
+                  : "/compte/commandes"
+              }
               className="payment-success-orders-btn"
               style={{
                 minHeight: "60px",
@@ -1053,7 +1199,7 @@ export default function PaymentSuccessPage() {
           <div
             className="payment-success-signature"
             style={{
-              marginTop: "31px",
+              marginTop: "25px",
               display: "flex",
               justifyContent: "center",
               alignItems: "flex-start",
@@ -1098,20 +1244,74 @@ export default function PaymentSuccessPage() {
       </main>
 
       <style jsx global>{`
+        
+        .payment-success-basil {
+          position: absolute;
+          top: -6px;
+          right: -16px;
+          width: 148px;
+          height: auto;
+          object-fit: contain;
+          pointer-events: none;
+          z-index: 0;
+          user-select: none;
+        }
+
+
+
+        .payment-success-card > *:not(.payment-success-basil) {
+          position: relative;
+          z-index: 1;
+        }
+
+        .payment-success-time {
+          text-transform: none !important;
+        }
+
         @media (max-width: 640px) {
           .payment-success-page {
-            padding: 12px 10px 30px !important;
+            /*
+             * La navigation de l'application est fixe.
+             * On réserve sa hauteur + une vraie zone de respiration pour que
+             * les derniers boutons puissent défiler entièrement AU-DESSUS.
+             * Ne pas réduire les cartes/boutons pour les faire rentrer à l'écran.
+             */
+            --sofresh-bottom-nav-height: 64px;
+            --sofresh-bottom-nav-gap: 34px;
+            min-height: 100dvh !important;
+            box-sizing: border-box !important;
+            padding:
+              calc(12px + env(safe-area-inset-top))
+              0
+              calc(
+                var(--sofresh-bottom-nav-height) +
+                var(--sofresh-bottom-nav-gap) +
+                env(safe-area-inset-bottom)
+              )
+              !important;
+            background: #ffffff !important;
+            overflow: visible !important;
           }
 
           .payment-success-card {
-            border-radius: 22px !important;
-            padding: 22px 18px 24px !important;
+            max-width: 430px !important;
+            border-radius: 0 !important;
+            padding: 20px 24px 26px !important;
+            background: #ffffff !important;
           }
 
+          .payment-success-basil {
+            top: -4px !important;
+            right: -14px !important;
+            width: 118px !important;
+            height: auto !important;
+          }
+
+
           .payment-success-check {
-            width: 72px !important;
-            height: 72px !important;
-            margin-bottom: 12px !important;
+            width: 76px !important;
+            height: 76px !important;
+            margin-bottom: 18px !important;
           }
 
           .payment-success-check svg {
@@ -1119,30 +1319,32 @@ export default function PaymentSuccessPage() {
             height: 42px !important;
           }
 
-          .payment-success-kicker {
-            font-size: 11px !important;
-            letter-spacing: 1px !important;
-          }
-
           .payment-success-title {
-            margin-top: 7px !important;
-            font-size: 30px !important;
-            line-height: 1.05 !important;
+            margin-top: 0 !important;
+            font-size: 31px !important;
+            line-height: 1.08 !important;
+            letter-spacing: -0.6px !important;
           }
 
           .payment-success-yellow-line {
             width: 82px !important;
             height: 3px !important;
-            margin: 12px auto 14px !important;
+            margin: 12px auto 16px !important;
           }
 
           .payment-success-intro {
-            font-size: 15px !important;
+            font-size: 16px !important;
+          }
+
+          .payment-success-order-number {
+            margin-top: 10px !important;
+            padding: 6px 14px !important;
+            font-size: 13px !important;
           }
 
           .payment-success-pickup {
-            margin-top: 18px !important;
-            padding: 18px 14px 20px !important;
+            margin-top: 20px !important;
+            padding: 18px 18px 20px !important;
             border-radius: 18px !important;
           }
 
@@ -1181,8 +1383,8 @@ export default function PaymentSuccessPage() {
           }
 
           .payment-success-order-summary {
-            margin-top: 15px !important;
-            padding: 16px 14px 13px !important;
+            margin-top: 16px !important;
+            padding: 17px 16px 14px !important;
             border-radius: 16px !important;
           }
 
@@ -1196,7 +1398,7 @@ export default function PaymentSuccessPage() {
           }
 
           .payment-success-preparation {
-            margin: 17px auto !important;
+            margin: 14px auto !important;
             gap: 10px !important;
             font-size: 14px !important;
             line-height: 1.35 !important;
@@ -1229,7 +1431,7 @@ export default function PaymentSuccessPage() {
           }
 
           .payment-success-signature {
-            margin-top: 20px !important;
+            margin-top: 16px !important;
             gap: 8px !important;
           }
 
@@ -1237,6 +1439,24 @@ export default function PaymentSuccessPage() {
             font-size: 18px !important;
           }
         }
+
+          @media (max-width: 370px) {
+            .payment-success-card {
+              padding-left: 17px !important;
+              padding-right: 17px !important;
+            }
+
+
+            .payment-success-basil {
+              right: -12px !important;
+              width: 104px !important;
+              height: auto !important;
+            }
+
+            .payment-success-title {
+              font-size: 28px !important;
+            }
+          }
       `}</style>
     </>
   );

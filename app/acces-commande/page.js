@@ -30,7 +30,15 @@ export default function AccesCommandePage() {
   }, [router]);
 
   return (
-    <main className="access-gate-page">
+    <main
+      className="access-gate-page"
+      style={{
+        minHeight: "100dvh",
+        boxSizing: "border-box",
+        paddingBottom:
+          "calc(128px + env(safe-area-inset-bottom, 0px))",
+      }}
+    >
       <section className="access-gate-photo">
         <img
           src="/facade1-sofresh.jpeg"
@@ -42,6 +50,10 @@ export default function AccesCommandePage() {
           src="/logo-carre.png"
           alt="So Fresh Salade"
           className="access-gate-logo"
+          style={{
+            transform: "translate(-50%, -50%) scale(0.88)",
+            transformOrigin: "center center",
+          }}
         />
       </section>
 
@@ -78,7 +90,6 @@ export default function AccesCommandePage() {
             <circle cx="12" cy="8" r="4" />
             <path d="M4 21a8 8 0 0 1 16 0" />
           </svg>
-
           <span>Se connecter</span>
         </Link>
 
@@ -102,7 +113,6 @@ export default function AccesCommandePage() {
             <path d="M19 8v6" />
             <path d="M16 11h6" />
           </svg>
-
           <span>Créer mon compte</span>
         </Link>
 
@@ -122,7 +132,6 @@ export default function AccesCommandePage() {
             <path d="M6 16c4 0 9-3 12-8" />
             <path d="M6 16c0 2-1 3-2 4" />
           </svg>
-
           <span>
             Un compte valide est nécessaire pour commander.
           </span>

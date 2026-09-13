@@ -63,6 +63,7 @@ function isFutureOrder(order) {
 export default function ComptePage() {
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [loyaltyProgress, setLoyaltyProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(false);
 
@@ -116,6 +117,36 @@ export default function ComptePage() {
     setLoadingOrders(false);
   }
 
+  async function loadLoyalty(userId) {
+    if (!supabase || !userId) {
+      setLoyaltyProgress(0);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("loyalty_accounts")
+      .select("progress")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error(
+        "Erreur chargement fidélité :",
+        error
+      );
+
+      setLoyaltyProgress(0);
+      return;
+    }
+
+    setLoyaltyProgress(
+      Math.max(
+        0,
+        Math.min(9, Number(data?.progress || 0))
+      )
+    );
+  }
+
   useEffect(() => {
     async function loadUser() {
       if (!isSupabaseConfigured || !supabase) {
@@ -132,9 +163,13 @@ export default function ComptePage() {
       setUser(currentUser);
 
       if (currentUser) {
-        await loadOrders(currentUser.id);
+        await Promise.all([
+          loadOrders(currentUser.id),
+          loadLoyalty(currentUser.id),
+        ]);
       } else {
         setOrders([]);
+        setLoyaltyProgress(0);
       }
 
       setLoading(false);
@@ -151,9 +186,13 @@ export default function ComptePage() {
         setUser(currentUser);
 
         if (currentUser) {
-          await loadOrders(currentUser.id);
+          await Promise.all([
+            loadOrders(currentUser.id),
+            loadLoyalty(currentUser.id),
+          ]);
         } else {
           setOrders([]);
+          setLoyaltyProgress(0);
         }
       }
     );
@@ -170,6 +209,7 @@ export default function ComptePage() {
 
     setUser(null);
     setOrders([]);
+    setLoyaltyProgress(0);
   }
 
   function openProfileEditor() {
@@ -274,25 +314,13 @@ export default function ComptePage() {
     const isAdmin =
       user.app_metadata?.role === "admin";
 
-    const loyaltyEligibleOrders = orders.filter(
-      (order) =>
-        order.payment_status === "paid" &&
-        Number(order.total || 0) >= 10
-    );
-
-    const loyaltyCount = loyaltyEligibleOrders.length;
-
-    const loyaltyProgress = Math.min(
-      loyaltyCount,
-      10
-    );
-
-    const loyaltyUnlocked = loyaltyCount >= 10;
-
     const loyaltyRemaining = Math.max(
-      10 - loyaltyCount,
+      10 - loyaltyProgress,
       0
     );
+
+    const nextFormulaDiscounted =
+      loyaltyProgress === 9;
 
     return (
       <main className="account-page">
@@ -441,7 +469,7 @@ export default function ComptePage() {
                       color: "#6B715F",
                     }}
                   >
-                    Achats de 10 € minimum
+                    1 formule achetée = 1 point
                   </p>
                 </div>
               </div>
@@ -487,14 +515,14 @@ export default function ComptePage() {
                 style={{
                   fontSize: "12px",
                   fontWeight: "700",
-                  color: loyaltyUnlocked
+                  color: nextFormulaDiscounted
                     ? "#5A7F0D"
                     : "#6B715F",
                 }}
               >
-                {loyaltyUnlocked
-                  ? "Avantage débloqué"
-                  : `${loyaltyRemaining} restant${
+                {nextFormulaDiscounted
+                  ? "Avantage prêt"
+                  : `${loyaltyRemaining} restante${
                       loyaltyRemaining > 1 ? "s" : ""
                     }`}
               </span>
@@ -534,11 +562,11 @@ export default function ComptePage() {
                 color: "#4F5548",
               }}
             >
-              {loyaltyUnlocked
-                ? "Votre avantage fidélité de 50 % est débloqué."
-                : `Encore ${loyaltyRemaining} achat${
+              {nextFormulaDiscounted
+                ? "Votre prochaine formule est à -50 %."
+                : `Encore ${loyaltyRemaining} formule${
                     loyaltyRemaining > 1 ? "s" : ""
-                  } de 10 € minimum avant votre avantage de 50 %.`}
+                  } avant votre formule à -50 %.`}
             </p>
           </div>
 

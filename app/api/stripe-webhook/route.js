@@ -45,8 +45,6 @@ function formatPickupDate(dateString) {
 
 /*
  * Formate le prix.
- * Exemple :
- * 18.9 -> 18,90 €
  */
 function formatPrice(value) {
   const amount = Number(value);
@@ -68,6 +66,10 @@ function formatPrice(value) {
  * Envoie la notification "Nouvelle commande"
  * à tous les téléphones admins inscrits.
  *
+ * La notification contient également le nombre
+ * réel de commandes encore à traiter afin que
+ * la pastille de l'application soit synchronisée.
+ *
  * Une erreur de notification ne bloque jamais
  * la création de la commande.
  */
@@ -86,7 +88,6 @@ async function sendNewOrderNotification(
       console.error(
         "Notification commande non envoyée : configuration VAPID incomplète."
       );
-
       return;
     }
 
@@ -96,6 +97,10 @@ async function sendNewOrderNotification(
       privateKey
     );
 
+    /*
+     * Récupère tous les téléphones admins
+     * inscrits aux notifications.
+     */
     const {
       data: subscriptions,
       error: subscriptionsError,
@@ -108,7 +113,6 @@ async function sendNewOrderNotification(
         "Impossible de récupérer les abonnements push admins :",
         subscriptionsError
       );
-
       return;
     }
 
@@ -116,9 +120,48 @@ async function sendNewOrderNotification(
       console.log(
         "Aucun téléphone admin inscrit aux notifications."
       );
-
       return;
     }
+
+    /*
+     * Compte le nombre réel de commandes
+     * encore à traiter.
+     *
+     * Une commande terminée ou annulée
+     * ne doit pas apparaître dans la pastille.
+     */
+    const {
+      count: waitingCount,
+      error: waitingCountError,
+    } = await supabase
+      .from("orders")
+      .select("*", {
+        count: "exact",
+        head: true,
+      })
+      .not(
+        "status",
+        "in",
+        '("Terminée","Annulée")'
+      );
+
+    if (waitingCountError) {
+      console.error(
+        "Impossible de compter les commandes à traiter :",
+        waitingCountError
+      );
+    }
+
+    /*
+     * Au moment où cette fonction est appelée,
+     * une nouvelle commande vient d'être créée.
+     * On garde donc au minimum 1 si le comptage
+     * échoue exceptionnellement.
+     */
+    const badgeCount = Math.max(
+      1,
+      Number(waitingCount || 1)
+    );
 
     const customerName =
       order.customer_name?.trim() ||
@@ -139,10 +182,15 @@ async function sendNewOrderNotification(
       `${pickupDate} à ${pickupTime}`,
     ].filter(Boolean);
 
+    /*
+     * badgeCount sera récupéré par public/sw.js
+     * pour mettre à jour la pastille de l'icône.
+     */
     const payload = JSON.stringify({
       title: "🛒 Nouvelle commande So Fresh",
       body: bodyParts.join(" — "),
       url: "/admin",
+      badgeCount,
     });
 
     let sent = 0;
@@ -171,9 +219,8 @@ async function sendNewOrderNotification(
         );
 
         /*
-         * Le téléphone n'est plus inscrit :
-         * on supprime automatiquement
-         * l'ancien abonnement.
+         * Supprime automatiquement les anciens
+         * abonnements qui ne sont plus valides.
          */
         if (
           pushError?.statusCode === 404 ||
@@ -191,20 +238,149 @@ async function sendNewOrderNotification(
     }
 
     console.log(
-      `Notifications nouvelle commande : ${sent} envoyée(s), ${failed} échec(s).`
+      `Notifications nouvelle commande : ${sent} envoyée(s), ${failed} échec(s). Pastille : ${badgeCount}.`
     );
   } catch (error) {
-    /*
-     * Très important :
-     * une panne de notification ne doit jamais
-     * faire échouer le paiement ou créer
-     * une deuxième commande.
-     */
     console.error(
       "Erreur générale notification nouvelle commande :",
       error
     );
   }
+}
+
+/*
+ * Crédite la fidélité après paiement Stripe confirmé.
+ *
+ * Protection anti-double crédit :
+ * loyalty_events.stripe_session_id est UNIQUE.
+ * Si Stripe renvoie le même webhook,
+ * aucun point n'est ajouté une 2e fois.
+ */
+async function applyLoyalty(
+  supabase,
+  pendingCheckout,
+  stripeSessionId
+) {
+  const userId =
+    pendingCheckout.user_id;
+
+  const formulaCount = Math.max(
+    0,
+    Number(
+      pendingCheckout.loyalty_formula_count || 0
+    )
+  );
+
+  if (!userId || formulaCount <= 0) {
+    return;
+  }
+
+  /*
+   * On tente d'enregistrer le paiement
+   * dans le journal fidélité.
+   *
+   * Si stripe_session_id existe déjà,
+   * Supabase renvoie 23505.
+   */
+  const {
+    error: eventError,
+  } = await supabase
+    .from("loyalty_events")
+    .insert({
+      stripe_session_id:
+        stripeSessionId,
+      user_id:
+        userId,
+      formula_count:
+        formulaCount,
+    });
+
+  if (eventError) {
+    if (eventError.code === "23505") {
+      console.log(
+        "Fidélité déjà créditée pour ce paiement Stripe."
+      );
+      return;
+    }
+
+    throw eventError;
+  }
+
+  /*
+   * Lecture du compteur actuel.
+   * Pas de ligne = 0/10.
+   */
+  const {
+    data: loyaltyAccount,
+    error: loyaltyReadError,
+  } = await supabase
+    .from("loyalty_accounts")
+    .select("progress")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (loyaltyReadError) {
+    throw loyaltyReadError;
+  }
+
+  const currentProgress = Math.max(
+    0,
+    Math.min(
+      9,
+      Number(
+        loyaltyAccount?.progress || 0
+      )
+    )
+  );
+
+  /*
+   * Le cycle repart automatiquement à 0
+   * chaque fois qu'on atteint 10.
+   *
+   * Exemples :
+   * 8 + 1 = 9
+   * 9 + 1 = 0
+   * 9 + 3 = 2
+   */
+  const nextProgress =
+    (currentProgress + formulaCount) % 10;
+
+  const {
+    error: loyaltyUpdateError,
+  } = await supabase
+    .from("loyalty_accounts")
+    .upsert(
+      {
+        user_id: userId,
+        progress: nextProgress,
+        updated_at:
+          new Date().toISOString(),
+      },
+      {
+        onConflict: "user_id",
+      }
+    );
+
+  if (loyaltyUpdateError) {
+    /*
+     * Si l'update échoue, on supprime
+     * l'événement pour permettre à Stripe
+     * de retenter proprement.
+     */
+    await supabase
+      .from("loyalty_events")
+      .delete()
+      .eq(
+        "stripe_session_id",
+        stripeSessionId
+      );
+
+    throw loyaltyUpdateError;
+  }
+
+  console.log(
+    `Fidélité mise à jour : ${currentProgress}/10 -> ${nextProgress}/10 (${formulaCount} formule(s)).`
+  );
 }
 
 export async function POST(request) {
@@ -355,8 +531,8 @@ export async function POST(request) {
     }
 
     /*
-     * Empêche de traiter deux fois
-     * le même paiement Stripe.
+     * Si le checkout est déjà entièrement traité,
+     * aucun doublon.
      */
     if (
       pendingCheckout.status === "paid"
@@ -368,63 +544,127 @@ export async function POST(request) {
     }
 
     /*
-     * Création définitive de la commande.
-     *
-     * On récupère la commande créée
-     * grâce à .select().single().
+     * Vérifie si la commande existe déjà
+     * avec cette session Stripe.
+     * Cela protège aussi les retries du webhook.
      */
     const {
-      data: createdOrder,
-      error: orderError,
+      data: existingOrder,
+      error: existingOrderError,
     } = await supabase
       .from("orders")
-      .insert({
-        customer_name:
-          pendingCheckout.customer_name,
-
-        customer_phone:
-          pendingCheckout.customer_phone,
-
-        user_id:
-          pendingCheckout.user_id,
-
-        pickup_date:
-          pendingCheckout.pickup_date,
-
-        pickup_time:
-          pendingCheckout.pickup_time,
-
-        items:
-          pendingCheckout.items,
-
-        total:
-          pendingCheckout.total,
-
-        status: "Nouvelle",
-
-        payment_status: "paid",
-
-        stripe_session_id:
-          session.id,
-      })
       .select("*")
-      .single();
+      .eq(
+        "stripe_session_id",
+        session.id
+      )
+      .maybeSingle();
 
-    if (orderError) {
+    if (existingOrderError) {
       console.error(
-        "Erreur création de la commande :",
-        orderError
+        "Erreur vérification commande existante :",
+        existingOrderError
       );
 
       return new Response(
-        "La commande n’a pas pu être enregistrée",
+        "Vérification commande impossible",
+        { status: 500 }
+      );
+    }
+
+    let createdOrder =
+      existingOrder || null;
+
+    let orderCreatedNow = false;
+
+    if (!createdOrder) {
+      const {
+        data: insertedOrder,
+        error: orderError,
+      } = await supabase
+        .from("orders")
+        .insert({
+          customer_name:
+            pendingCheckout.customer_name,
+
+          customer_phone:
+            pendingCheckout.customer_phone,
+
+          user_id:
+            pendingCheckout.user_id,
+
+          pickup_date:
+            pendingCheckout.pickup_date,
+
+          pickup_time:
+            pendingCheckout.pickup_time,
+
+          items:
+            pendingCheckout.items,
+
+          total:
+            pendingCheckout.total,
+
+          status: "Nouvelle",
+
+          payment_status: "paid",
+
+          stripe_session_id:
+            session.id,
+        })
+        .select("*")
+        .single();
+
+      if (orderError) {
+        console.error(
+          "Erreur création de la commande :",
+          orderError
+        );
+
+        return new Response(
+          "La commande n’a pas pu être enregistrée",
+          { status: 500 }
+        );
+      }
+
+      createdOrder =
+        insertedOrder;
+
+      orderCreatedNow = true;
+    }
+
+    /*
+     * La fidélité n'est créditée qu'ici,
+     * donc uniquement après paiement
+     * confirmé Stripe.
+     */
+    try {
+      await applyLoyalty(
+        supabase,
+        pendingCheckout,
+        session.id
+      );
+    } catch (loyaltyError) {
+      console.error(
+        "Erreur mise à jour fidélité :",
+        loyaltyError
+      );
+
+      /*
+       * On renvoie 500 pour que Stripe retente.
+       * La commande existante sera détectée
+       * au prochain passage et ne sera pas recréée.
+       */
+      return new Response(
+        "La fidélité n’a pas pu être mise à jour",
         { status: 500 }
       );
     }
 
     /*
-     * On marque immédiatement
-     * le checkout comme payé.
+     * On marque le checkout payé seulement
+     * lorsque commande + fidélité sont
+     * correctement finalisées.
      */
     const {
       error: updateError,
@@ -445,6 +685,11 @@ export async function POST(request) {
         "Commande créée mais pending_checkouts non actualisé :",
         updateError
       );
+
+      return new Response(
+        "Finalisation de commande impossible",
+        { status: 500 }
+      );
     }
 
     console.log(
@@ -452,16 +697,19 @@ export async function POST(request) {
     );
 
     /*
-     * Notification aux téléphones admins.
-     *
-     * On utilise le même système
-     * que la notification
-     * "Nouveau client So Fresh".
+     * Notification admin uniquement lors
+     * de la création réelle de la commande,
+     * pas lors d'un retry Stripe.
      */
-    await sendNewOrderNotification(
-      supabase,
+    if (
+      orderCreatedNow &&
       createdOrder
-    );
+    ) {
+      await sendNewOrderNotification(
+        supabase,
+        createdOrder
+      );
+    }
 
     return new Response(
       "ok",
