@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sendMail } from "@/lib/mailer";
+import { sendMail } from "../../../lib/mailer";
 
 export async function GET() {
   try {
