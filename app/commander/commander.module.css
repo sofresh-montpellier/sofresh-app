@@ -390,7 +390,7 @@
   display: flex !important;
   gap: 8px !important;
   width: calc(100% + 28px) !important;
-  margin: 0 -14px 10px !important;
+ margin: 0 0 10px !important;
   padding: 4px 14px 10px !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
