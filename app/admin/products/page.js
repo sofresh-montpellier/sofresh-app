@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../../../lib/supabase";
 
 const DEFAULT_PRODUCT_IMAGE = "/produit-generique.png";
@@ -127,6 +127,81 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("Toutes");
+  const [availabilityFilter, setAvailabilityFilter] = useState("Tous");
+  const [sortFilter, setSortFilter] = useState("display_order");
+
+  const filteredProducts = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return products
+      .filter((product) => {
+        const matchesSearch =
+          !normalizedSearch ||
+          String(product.name || "")
+            .toLowerCase()
+            .includes(normalizedSearch) ||
+          String(product.description || "")
+            .toLowerCase()
+            .includes(normalizedSearch);
+
+        const matchesCategory =
+          categoryFilter === "Toutes" ||
+          product.category === categoryFilter;
+
+        const matchesAvailability =
+          availabilityFilter === "Tous" ||
+          (availabilityFilter === "Disponibles" &&
+            Boolean(product.available)) ||
+          (availabilityFilter === "Indisponibles" &&
+            !Boolean(product.available));
+
+        return (
+          matchesSearch &&
+          matchesCategory &&
+          matchesAvailability
+        );
+      })
+      .sort((a, b) => {
+        if (sortFilter === "name") {
+          return String(a.name || "").localeCompare(
+            String(b.name || ""),
+            "fr",
+            { sensitivity: "base" }
+          );
+        }
+
+        if (sortFilter === "price_asc") {
+          return Number(a.price || 0) - Number(b.price || 0);
+        }
+
+        if (sortFilter === "price_desc") {
+          return Number(b.price || 0) - Number(a.price || 0);
+        }
+
+        const orderDifference =
+          Number(a.display_order || 0) -
+          Number(b.display_order || 0);
+
+        if (orderDifference !== 0) {
+          return orderDifference;
+        }
+
+        return String(a.name || "").localeCompare(
+          String(b.name || ""),
+          "fr",
+          { sensitivity: "base" }
+        );
+      });
+  }, [
+    products,
+    searchTerm,
+    categoryFilter,
+    availabilityFilter,
+    sortFilter,
+  ]);
 
   async function loadProducts() {
     setLoading(true);
@@ -686,6 +761,116 @@ export default function ProductsPage() {
           </div>
         </div>
 
+        <div
+          className="products-admin-filters"
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "minmax(220px, 1.6fr) minmax(170px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr)",
+            gap: "12px",
+            marginBottom: "18px",
+          }}
+        >
+          <div>
+            <label htmlFor="product-search">
+              Rechercher un produit
+            </label>
+            <input
+              id="product-search"
+              type="search"
+              value={searchTerm}
+              onChange={(event) =>
+                setSearchTerm(event.target.value)
+              }
+              placeholder="Ex. Coca, César, bagel…"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="product-family-filter">
+              Famille de produit
+            </label>
+            <select
+              id="product-family-filter"
+              value={categoryFilter}
+              onChange={(event) =>
+                setCategoryFilter(event.target.value)
+              }
+            >
+              <option value="Toutes">
+                Toutes les familles
+              </option>
+              {categories.map((category) => (
+                <option
+                  value={category}
+                  key={`filter-${category}`}
+                >
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="product-availability-filter">
+              Disponibilité
+            </label>
+            <select
+              id="product-availability-filter"
+              value={availabilityFilter}
+              onChange={(event) =>
+                setAvailabilityFilter(event.target.value)
+              }
+            >
+              <option value="Tous">Tous les statuts</option>
+              <option value="Disponibles">Disponibles</option>
+              <option value="Indisponibles">Indisponibles</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="product-sort-filter">
+              Trier par
+            </label>
+            <select
+              id="product-sort-filter"
+              value={sortFilter}
+              onChange={(event) =>
+                setSortFilter(event.target.value)
+              }
+            >
+              <option value="display_order">
+                Ordre d’affichage
+              </option>
+              <option value="name">Nom A → Z</option>
+              <option value="price_asc">
+                Prix croissant
+              </option>
+              <option value="price_desc">
+                Prix décroissant
+              </option>
+            </select>
+          </div>
+        </div>
+
+        {!loading && (
+          <div
+            style={{
+              marginBottom: "14px",
+              color: "var(--muted)",
+              fontSize: "13px",
+              fontWeight: "700",
+            }}
+          >
+            {filteredProducts.length} produit
+            {filteredProducts.length > 1 ? "s" : ""} affiché
+            {filteredProducts.length > 1 ? "s" : ""}
+            {filteredProducts.length !== products.length
+              ? ` sur ${products.length}`
+              : ""}
+          </div>
+        )}
+
         {loading && <p>Chargement…</p>}
 
         {!loading && products.length === 0 && (
@@ -694,8 +879,16 @@ export default function ProductsPage() {
           </div>
         )}
 
+        {!loading &&
+          products.length > 0 &&
+          filteredProducts.length === 0 && (
+            <div className="empty">
+              Aucun produit ne correspond aux filtres.
+            </div>
+          )}
+
         <div className="products-admin-list">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <article
               className={`product-admin-card ${
                 product.available
@@ -789,6 +982,20 @@ export default function ProductsPage() {
           ))}
         </div>
       </section>
+
+      <style jsx>{`
+        @media (max-width: 900px) {
+          .products-admin-filters {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .products-admin-filters {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </main>
   );
 }
