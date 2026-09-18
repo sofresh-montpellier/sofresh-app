@@ -423,7 +423,7 @@
   scroll-snap-align: start;
 }
 
-.page:global(.commander-modern) .productCategoryChipActive {
+.page:global(.commander-modern) button.productCategoryChipActive {
   background: #5a7f0d !important;
   color: #ffffff !important;
   box-shadow: 0 4px 12px rgba(90, 127, 13, 0.16) !important;
