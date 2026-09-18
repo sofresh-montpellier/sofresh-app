@@ -1781,10 +1781,30 @@ export default function Home() {
                         <div className={`commander-product-copy ${styles.productCopy}`}>
                           <h3>{product.name}</h3>
 
-                          <p>
-                            {product.description ||
-                              "Préparé avec soin par So Fresh."}
-                          </p>
+                          {product.description &&
+                            product.description.trim() &&
+                            product.description.trim().toUpperCase() !== "EMPTY" && (
+                              <p
+                                style={{
+                                  whiteSpace: isFormula
+                                    ? "pre-line"
+                                    : "normal",
+                                }}
+                              >
+                                {isFormula
+                                  ? product.description
+                                      .split(/[,;\n]+/)
+                                      .map((line) => line.trim())
+                                      .filter(Boolean)
+                                      .map((line) =>
+                                        /[.!?]$/.test(line)
+                                          ? line
+                                          : line
+                                      )
+                                      .join("\n")
+                                  : product.description}
+                              </p>
+                            )}
                         </div>
 
                         <div className={`commander-product-footer ${styles.productFooter}`}>
