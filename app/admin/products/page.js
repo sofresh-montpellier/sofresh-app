@@ -132,6 +132,7 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("Toutes");
   const [availabilityFilter, setAvailabilityFilter] = useState("Tous");
   const [sortFilter, setSortFilter] = useState("display_order");
+  const [imageToDelete, setImageToDelete] = useState("");
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -239,6 +240,7 @@ export default function ProductsPage() {
   function resetForm() {
     setEditingId(null);
     setForm(emptyForm);
+    setImageToDelete("");
     setMessage("");
 
     if (fileInputRef.current) {
@@ -248,6 +250,7 @@ export default function ProductsPage() {
 
   function startEdit(product) {
     setEditingId(product.id);
+    setImageToDelete("");
 
     setForm({
       name: product.name || "",
@@ -271,6 +274,67 @@ export default function ProductsPage() {
       top: 0,
       behavior: "smooth",
     });
+  }
+
+  function getStoragePathFromPublicUrl(imageUrl) {
+    if (!imageUrl || imageUrl === DEFAULT_PRODUCT_IMAGE) {
+      return "";
+    }
+
+    try {
+      const url = new URL(imageUrl);
+      const marker =
+        "/storage/v1/object/public/product-images/";
+      const markerIndex = url.pathname.indexOf(marker);
+
+      if (markerIndex === -1) {
+        return "";
+      }
+
+      return decodeURIComponent(
+        url.pathname.slice(markerIndex + marker.length)
+      );
+    } catch {
+      return "";
+    }
+  }
+
+  function removeCurrentPhoto() {
+    if (
+      !form.image_url ||
+      form.image_url === DEFAULT_PRODUCT_IMAGE
+    ) {
+      setMessage(
+        "Ce produit utilise déjà l’image générique So Fresh."
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Supprimer la photo actuelle de ce produit ?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const storagePath =
+      getStoragePathFromPublicUrl(form.image_url);
+
+    setImageToDelete(storagePath);
+
+    setForm((current) => ({
+      ...current,
+      image_url: DEFAULT_PRODUCT_IMAGE,
+    }));
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    setMessage(
+      "Photo retirée. Cliquez sur « Enregistrer les modifications » pour confirmer."
+    );
   }
 
   async function uploadProductImage(event) {
@@ -440,8 +504,23 @@ export default function ProductsPage() {
       ? "Produit modifié avec succès."
       : "Produit ajouté avec succès.";
 
+    if (imageToDelete) {
+      const { error: deleteImageError } =
+        await supabase.storage
+          .from("product-images")
+          .remove([imageToDelete]);
+
+      if (deleteImageError) {
+        console.error(
+          "Erreur suppression ancienne photo :",
+          deleteImageError
+        );
+      }
+    }
+
     setEditingId(null);
     setForm(emptyForm);
+    setImageToDelete("");
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -686,6 +765,21 @@ export default function ProductsPage() {
                   }}
                 />
               </div>
+
+              {editingId &&
+                form.image_url !== DEFAULT_PRODUCT_IMAGE && (
+                  <button
+                    type="button"
+                    className="danger-button"
+                    onClick={removeCurrentPhoto}
+                    disabled={saving || uploading}
+                    style={{
+                      marginTop: "10px",
+                    }}
+                  >
+                    Supprimer la photo
+                  </button>
+                )}
             </div>
           )}
 
