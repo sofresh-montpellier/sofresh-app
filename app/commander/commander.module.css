@@ -471,6 +471,18 @@
   object-position: center !important;
 }
 
+/* Boissons : afficher bouteilles et canettes en entier, sans recadrage */
+.page:global(.commander-modern) .productImageDrink {
+  padding: 12px 8px 12px 12px !important;
+  background: #ffffff !important;
+}
+
+.page:global(.commander-modern) .productImageDrink img {
+  object-fit: contain !important;
+  object-position: center !important;
+  border-radius: 12px !important;
+}
+
 .page:global(.commander-modern) .productContent {
   min-width: 0 !important;
   padding: 12px 12px 11px 14px !important;

@@ -1757,7 +1757,13 @@ export default function Home() {
                       className={`product-row-card commander-product-card ${styles.productCard}`}
                       key={product.id}
                     >
-                      <div className={`product-row-image commander-product-image ${styles.productImage}`}>
+                      <div
+                        className={`product-row-image commander-product-image ${styles.productImage} ${
+                          product.normalized_category === "Boissons"
+                            ? styles.productImageDrink
+                            : ""
+                        }`}
+                      >
                         {product.image_url ? (
                           <img
                             src={product.image_url}
