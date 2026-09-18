@@ -75,21 +75,38 @@ const categoryAliases = {
 
 const categoryOrder = [
   "Formules",
-  "Burgers",
   "Salades",
-  "Maxi Salades",
-  "Wraps",
-  "Pâtes",
-  "Soupes",
-  "Paninis",
-  "Clubs",
-  "Tacos",
-  "Sandwichs",
-  "Bagels",
+  "Sandwichs & Co",
+  "Plats chauds",
   "Boissons",
   "Desserts",
-  "Pause sucrée / salée",
+  "Extras & Snacking",
 ];
+
+const categoryGroups = {
+  Formules: ["Formules"],
+  Salades: ["Salades", "Maxi Salades"],
+  "Sandwichs & Co": [
+    "Burgers",
+    "Clubs",
+    "Paninis",
+    "Sandwichs",
+    "Wraps",
+    "Tacos",
+    "Bagels",
+  ],
+  "Plats chauds": ["Plats chauds", "Pâtes", "Soupes"],
+  Boissons: ["Boissons"],
+  Desserts: ["Desserts"],
+  "Extras & Snacking": ["Pause sucrée / salée"],
+};
+
+const categorySectionLabels = {
+  Sandwichs: "Baguettes",
+  Boissons: "Boissons",
+  Desserts: "Desserts",
+  "Pause sucrée / salée": "Extras & Snacking",
+};
 
 function getCategoryImage(category) {
   if (category === "Pause sucrée / salée") {
@@ -125,6 +142,30 @@ function normalizeCategory(category) {
     cleanCategory.toLocaleLowerCase("fr-FR");
 
   return categoryAliases[key] || cleanCategory;
+}
+
+function getMainCategory(category) {
+  const normalized = normalizeCategory(category);
+
+  for (const [mainCategory, children] of Object.entries(categoryGroups)) {
+    if (children.includes(normalized)) return mainCategory;
+  }
+
+  return normalized;
+}
+
+function getMainCategoryImage(mainCategory) {
+  const mainCategoryImages = {
+    Formules: "/cat-formules.png",
+    Salades: "/cat-salades.png",
+    "Sandwichs & Co": "/cat-sandwichs-co.png",
+    "Plats chauds": "/cat-plats-chauds.png",
+    Boissons: "/cat-boissons.png",
+    Desserts: "/cat-desserts.png",
+    "Extras & Snacking": "/cat-extras-snacking.png",
+  };
+
+  return mainCategoryImages[mainCategory] || "/logo-carre.png";
 }
 
 function parseTimeToMinutes(value) {
@@ -552,8 +593,10 @@ export default function Home() {
     const normalizedCategory =
       normalizeCategory(requestedCategory);
 
-    if (categoryOrder.includes(normalizedCategory)) {
-      setCategory(normalizedCategory);
+    const mainCategory = getMainCategory(normalizedCategory);
+
+    if (categoryOrder.includes(mainCategory)) {
+      setCategory(mainCategory);
     }
   }, []);
 
@@ -1093,10 +1136,10 @@ export default function Home() {
         return products;
       }
 
-      return products.filter(
-        (product) =>
-          product.normalized_category ===
-          category
+      const allowedCategories = categoryGroups[category] || [category];
+
+      return products.filter((product) =>
+        allowedCategories.includes(product.normalized_category)
       );
     }, [
       products,
@@ -1669,7 +1712,7 @@ export default function Home() {
                 >
                   <div className={`category-family-image ${styles.categoryImage}`}>
                     <img
-                      src={getCategoryImage(currentCategory)}
+                      src={getMainCategoryImage(currentCategory)}
                       alt={currentCategory}
                     />
                   </div>
@@ -1739,7 +1782,112 @@ export default function Home() {
 
             {!loadingProducts && (
               <section className={`product-list-mobile commander-product-list ${styles.productList}`}>
-                {visibleProducts.map((product) => {
+                {(() => {
+                  const sections =
+                    category === "Formules"
+                      ? [{ key: "Formules", label: "", products: visibleProducts }]
+                      : (categoryGroups[category] || [category])
+                          .map((sectionCategory) => ({
+                            key: sectionCategory,
+                            label:
+                              categorySectionLabels[sectionCategory] ||
+                              sectionCategory,
+                            products: visibleProducts.filter(
+                              (product) =>
+                                product.normalized_category === sectionCategory
+                            ),
+                          }))
+                          .filter((section) => section.products.length > 0);
+
+                  return (
+                    <>
+                      {category !== "Formules" && sections.length > 1 && (
+                        <div
+                          style={{
+                            margin: "2px 0 16px",
+                            padding: "12px",
+                            borderRadius: "16px",
+                            background: "#f7f8f1",
+                            border: "1px solid rgba(90,127,13,0.10)",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginBottom: "9px",
+                              fontSize: "12px",
+                              lineHeight: 1.2,
+                              fontWeight: "800",
+                              color: "#5A7F0D",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.04em",
+                            }}
+                          >
+                            Choisir une famille
+                          </div>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "7px",
+                            }}
+                          >
+                            {sections.map((section) => (
+                              <button
+                                key={section.key}
+                                type="button"
+                                onClick={() =>
+                                  document
+                                    .getElementById(`section-${section.key}`)
+                                    ?.scrollIntoView({
+                                      behavior: "smooth",
+                                      block: "start",
+                                    })
+                                }
+                                style={{
+                                  minHeight: "34px",
+                                  padding: "7px 11px",
+                                  borderRadius: "999px",
+                                  border: "1px solid rgba(90,127,13,0.16)",
+                                  background: "#ffffff",
+                                  color: "#174825",
+                                  fontSize: "11px",
+                                  lineHeight: 1,
+                                  fontWeight: "750",
+                                  whiteSpace: "nowrap",
+                                  boxShadow: "0 2px 7px rgba(38,48,34,0.05)",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                {section.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {sections.map((section) => {
+                        const sectionProducts = section.products;
+
+                        return (
+                          <div
+                            key={section.key}
+                            id={`section-${section.key}`}
+                            style={{ scrollMarginTop: "110px" }}
+                          >
+                            {category !== "Formules" && sections.length > 1 && (
+                              <h2
+                                style={{
+                                  margin: "18px 2px 10px",
+                                  fontSize: "18px",
+                                  color: "#24300f",
+                                }}
+                              >
+                                {section.label}
+                              </h2>
+                            )}
+
+{sectionProducts.map((product) => {
                   const rawProductQuantity =
                     cart[product.id];
 
@@ -1784,23 +1932,12 @@ export default function Home() {
                           {product.description &&
                             product.description.trim() &&
                             product.description.trim().toUpperCase() !== "EMPTY" && (
-                              <p
-                                style={{
-                                  whiteSpace: isFormula
-                                    ? "pre-line"
-                                    : "normal",
-                                }}
-                              >
+                              <p style={{ whiteSpace: isFormula ? "pre-line" : "normal" }}>
                                 {isFormula
                                   ? product.description
                                       .split(/[,;\n]+/)
                                       .map((line) => line.trim())
                                       .filter(Boolean)
-                                      .map((line) =>
-                                        /[.!?]$/.test(line)
-                                          ? line
-                                          : line
-                                      )
                                       .join("\n")
                                   : product.description}
                               </p>
@@ -1875,6 +2012,12 @@ export default function Home() {
                     </article>
                   );
                 })}
+                          </div>
+                        );
+                      })}
+                    </>
+                  );
+                })()}
               </section>
             )}
 
