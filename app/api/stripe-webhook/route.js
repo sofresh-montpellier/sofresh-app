@@ -117,9 +117,52 @@ export async function POST(request) {
       console.error("Commande créée mais pending non actualisé :", updateError);
     }
 
-    // Correctif volontairement ciblé :
-    // fidélité, mail et push seront raccordés après validation de la création
-    // de commande, afin d'éviter les doubles crédits/envois lors des retries Stripe.
+    // Fidélité So Fresh : 1 formule payée = 1 point.
+    // La 10e formule bénéficie de -50 %, puis le compteur repart à 0.
+    // Les valeurs utilisées ont été figées dans pending_checkouts avant Stripe.
+    //
+    // La protection anti-doublon placée plus haut sur stripe_session_id garantit
+    // qu'un retry Stripe ne crédite pas une deuxième fois la fidélité.
+    if (pending.user_id) {
+      const startProgress = Math.max(
+        0,
+        Math.min(9, Number(pending.loyalty_start_progress ?? 0))
+      );
+
+      const formulaCount = Math.max(
+        0,
+        Number(pending.loyalty_formula_count ?? 0)
+      );
+
+      let finalProgress = startProgress;
+
+      for (let i = 0; i < formulaCount; i += 1) {
+        finalProgress = finalProgress === 9 ? 0 : finalProgress + 1;
+      }
+
+      if (formulaCount > 0) {
+        const { error: loyaltyError } = await supabase
+          .from("loyalty_accounts")
+          .upsert(
+            {
+              user_id: pending.user_id,
+              progress: finalProgress,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id" }
+          );
+
+        if (loyaltyError) {
+          // Le paiement et la commande sont déjà validés.
+          // On journalise donc l'erreur sans provoquer un retry Stripe
+          // qui pourrait perturber la finalisation déjà réussie.
+          console.error(
+            "Commande créée mais fidélité non actualisée :",
+            loyaltyError
+          );
+        }
+      }
+    }
 
     return NextResponse.json({
       received: true,
