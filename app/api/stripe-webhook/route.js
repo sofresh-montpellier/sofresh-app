@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
@@ -16,6 +17,73 @@ function getSupabaseAdmin() {
     process.env.SUPABASE_SECRET_KEY,
     { auth: { persistSession: false, autoRefreshToken: false } }
   );
+}
+
+async function sendAdminOrderPush(supabase, order, pending) {
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const privateKey = process.env.VAPID_PRIVATE_KEY;
+
+  if (!publicKey || !privateKey) {
+    console.error("Commande créée mais configuration VAPID incomplète.");
+    return;
+  }
+
+  webpush.setVapidDetails(
+    "https://sofresh-app-five.vercel.app",
+    publicKey,
+    privateKey
+  );
+
+  const { data: subscriptions, error: subscriptionsError } = await supabase
+    .from("admin_push_subscriptions")
+    .select("*");
+
+  if (subscriptionsError) {
+    console.error(
+      "Commande créée mais abonnements push admin introuvables :",
+      subscriptionsError
+    );
+    return;
+  }
+
+  const orderLabel = order.order_number
+    ? `Commande n°${order.order_number}`
+    : "Nouvelle commande";
+
+  const total = Number(pending.total || 0).toLocaleString("fr-FR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const payload = JSON.stringify({
+    title: "🛎️ Nouvelle commande So Fresh",
+    body: `${orderLabel} – ${total} €`,
+    url: "/admin",
+  });
+
+  for (const subscription of subscriptions || []) {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: subscription.p256dh,
+            auth: subscription.auth,
+          },
+        },
+        payload
+      );
+    } catch (pushError) {
+      console.error("Erreur notification nouvelle commande :", pushError);
+
+      if (pushError?.statusCode === 404 || pushError?.statusCode === 410) {
+        await supabase
+          .from("admin_push_subscriptions")
+          .delete()
+          .eq("endpoint", subscription.endpoint);
+      }
+    }
+  }
 }
 
 export async function POST(request) {
@@ -119,10 +187,6 @@ export async function POST(request) {
 
     // Fidélité So Fresh : 1 formule payée = 1 point.
     // La 10e formule bénéficie de -50 %, puis le compteur repart à 0.
-    // Les valeurs utilisées ont été figées dans pending_checkouts avant Stripe.
-    //
-    // La protection anti-doublon placée plus haut sur stripe_session_id garantit
-    // qu'un retry Stripe ne crédite pas une deuxième fois la fidélité.
     if (pending.user_id) {
       const startProgress = Math.max(
         0,
@@ -153,9 +217,6 @@ export async function POST(request) {
           );
 
         if (loyaltyError) {
-          // Le paiement et la commande sont déjà validés.
-          // On journalise donc l'erreur sans provoquer un retry Stripe
-          // qui pourrait perturber la finalisation déjà réussie.
           console.error(
             "Commande créée mais fidélité non actualisée :",
             loyaltyError
@@ -163,6 +224,10 @@ export async function POST(request) {
         }
       }
     }
+
+    // Push admin après création réussie de la commande.
+    // Une erreur push ne doit jamais annuler une commande payée.
+    await sendAdminOrderPush(supabase, order, pending);
 
     return NextResponse.json({
       received: true,
