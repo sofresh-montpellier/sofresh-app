@@ -213,8 +213,6 @@ export async function POST(request) {
     if (
       customerName.length < 1 ||
       customerName.length > 100 ||
-      customerPhone.length < 6 ||
-      customerPhone.length > 30 ||
       !isValidDate(pickupDate) ||
       !pickupTime ||
       requestedItems.length === 0
@@ -223,6 +221,22 @@ export async function POST(request) {
         {
           error:
             "Les informations de commande sont incomplètes.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const normalizedCustomerPhone = customerPhone.replace(
+      /[\\s.()-]/g,
+      ""
+    );
+
+    if (!/^0[1-9]\\d{8}$/.test(normalizedCustomerPhone)) {
+      return NextResponse.json(
+        {
+          error:
+            "Vérifiez votre numéro de téléphone (10 chiffres requis).",
+          field: "customer_phone",
         },
         { status: 400 }
       );
@@ -891,7 +905,7 @@ export async function POST(request) {
       .from("pending_checkouts")
       .insert({
         customer_name: customerName,
-        customer_phone: customerPhone,
+        customer_phone: normalizedCustomerPhone,
         user_id: userId,
         pickup_date: pickupDate,
         pickup_time: pickupTime,
