@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Utensils, UserRound } from "lucide-react";
+import { supabase } from "../../lib/supabase";
 
 export default function AppShell({ children }) {
   const [cartCount, setCartCount] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -19,6 +22,30 @@ export default function AppShell({ children }) {
     const updateCartCount = (event) => setCartCount(event.detail || 0);
     window.addEventListener("sofresh-cart-count", updateCartCount);
     return () => window.removeEventListener("sofresh-cart-count", updateCartCount);
+  }, []);
+
+  useEffect(() => {
+    async function checkSession() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setIsConnected(Boolean(session?.user));
+      setAuthReady(true);
+    }
+
+    checkSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsConnected(Boolean(session?.user));
+      setAuthReady(true);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const isAccueil = pathname === "/" || pathname.startsWith("/accueil-v2");
@@ -35,9 +62,12 @@ export default function AppShell({ children }) {
         </div>
       )}
 
-      <div className="sf-app-with-bottom-nav">{children}</div>
+      <div className={authReady && isConnected ? "sf-app-with-bottom-nav" : ""}>
+        {children}
+      </div>
 
-      <nav className="sf-bottom-nav" aria-label="Navigation principale">
+      {authReady && isConnected && (
+        <nav className="sf-bottom-nav" aria-label="Navigation principale">
         <Link
           href="/accueil-v2"
           className={
@@ -67,7 +97,8 @@ export default function AppShell({ children }) {
           <UserRound size={25} strokeWidth={1.9} />
           <span>Compte</span>
         </Link>
-      </nav>
+        </nav>
+      )}
     </>
   );
 }
